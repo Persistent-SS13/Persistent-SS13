@@ -4,7 +4,7 @@
 *.rsc
 *.dmb
 *.lk
-
+*.sav
 #ignore any files in config/, except those in subdirectories.
 /config/*
 !config/**/*/

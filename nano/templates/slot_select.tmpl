@@ -1,0 +1,10 @@
+<h3>Select the slot to save to<h3>
+<br>
+{{for data.slots}}
+	{{if value.open}}
+		{{:helper.link(value.name, '', {'choice_slot' : value.index}, '','')}}
+	{{else}}
+		{{:helper.link(value.name, '', {'choice' : 'wrong_choice'}, 'disabled','')}}
+	{{/if}}
+	<br><br>
+{{/for}}

@@ -1,0 +1,52 @@
+<center><H2>{{:data.title}}</H2></center>
+<br>
+{{if data.department}}
+	<H1><i>This invoice is for the {{:data.departmentname}} Department</b></i></H2>
+{{else}}
+	<H1><i>This invoice belongs to {{:data.owner}}</b></i></H2>
+{{/if}}
+<br>
+<H1><i>This invoice is in relation to the following item/items</b></i></H2>
+<br>
+<div class="itemContentWide">
+	<div class="statusDisplay">
+		<div class="line" style="overflow-y: auto; overflow-x: hidden; scrollbar-base-color: #336699; scrollbar-arrow-color: #ffffff; height: 140px;">
+			{{:data.desc}}
+			<br>
+			<b>Total Cost:</b> {{:data.cost}}
+		</div>
+	</div>
+</div>
+<br>
+{{if data.authreq}} 
+	{{if data.authenticated}}
+		<h3>Authorization Granted</h3>
+	{{else}}
+		<h3>Authorization Required</h3>
+		<br>
+		Obtain authorization from one of the following:
+		<br>
+		{{for data.auther}}
+			{{:value.title}}
+			<br>
+		{{/for}}
+		{{if data.authable}}
+			Sign here: {{:helper.link('Authorize Purchase' , '', {'authed' : '1'}, null, null)}} or stamp to approve.
+		{{/if}}
+	{{/if}}
+{{/if}}
+<br>
+{{if data.paid}}
+	<h3>This invoice has been paid by {{:data.paidname}}. This document will now slowly decay and will not last longer than one day.</h3>
+{{else}}
+	{{if data.department}}
+		<h3>This invoice is for the {{:data.departmentname}}. The items will belong to that department.</h3>
+		{{:helper.link('Make Payment (DEPARTMENT)' , 'shopping-cart', {'confdept' : '1'}, data.ismember ? null : 'disabled')}}
+	{{else}}
+		{{if data.is_owner == 0}}
+			<h3>Warning! This invoice is for {{:data.owner}}! You will not recieve these items!</h3>
+			<br>
+		{{/if}}
+		{{:helper.link('Make Payment (DNA)' , 'shopping-cart', {'confirmed' : '1'}, data.authenticated ? null : 'disabled')}} or swipe ID to pay.
+	{{/if}}
+{{/if}}

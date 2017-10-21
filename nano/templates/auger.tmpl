@@ -1,0 +1,80 @@
+<div class='item'>
+  <h2>Electro-Auger Control Panel</h2>
+</div>
+<div class='item'>
+  <div class='itemLabel'>
+	Auger Status:
+  </div>
+  <div class='itemContent'>
+	{{if data.active}}
+		<font color='green'>Active</font>
+	{{else data.malfunction}}
+		<font color='red'>Malfunction</font>
+	{{else data.maintenance}}
+		<font color='yellow'>Maintenance Panel Open</font>
+	{{else}}
+		Idle
+	{{/if}}
+  </div>
+  <div class='itemLabel'>
+	Chassis Integrity:
+  </div>
+  <div class='itemContent'>
+	{{if !data.malfunction}}
+		{{if data.warning}}
+			<font color='orange'>{{:data.health}} / {{:data.maxhealth}}</font>
+		{{else}}
+			<font color='green'>{{:data.health}} / {{:data.maxhealth}}</font>
+		{{/if}}
+	{{else}}
+		<font color='red'>Critical</font>
+	{{/if}}
+  </div>
+  <div class='itemLabel'>
+	Magno-Anchor:
+  </div>
+  <div class='itemContent'>
+	{{if data.anchored}}
+		<font color='green'>Active</font>
+	{{else}}
+		Inactive
+	{{/if}}
+  </div>
+  <div class='itemLabel'>
+	Output Direction:
+  </div>
+  <div class='itemContent'>
+	{{:data.output_dir}}
+  </div>
+  <div class='itemLabel'>
+	Current Position:
+  </div>
+  <div class='itemContent'>
+	{{if data.over_turf}}
+		{{if data.over_ore}} 
+			{{if data.remaining}}
+				<font color='orange'>{{:data.over_ore}}, {{:data.remaining}} Remaining</font>
+			{{else}}
+				<font color='red'>{{:data.over_ore}}, 0 Remaining</font>
+			{{/if}}
+		{{else}}
+			No Materials Found
+		{{/if}}
+	{{else}}
+		<font color='red'>Invalid Location</font>
+	{{/if}}
+  </div>    
+
+</div>
+<hr>
+<br>
+Auger Control:
+<br><br>
+{{:helper.link('-OFF-', '', {'choice' : 'auger_off'}, data.active ? '' : 'disabled')}}{{:helper.link('-ON-', '', {'choice' : 'auger_on'}, data.can_activate ? '' : 'disabled')}}<br><br>
+Magno-Anchor Control:
+<br><br>
+{{:helper.link('-OFF-', '', {'choice' : 'anchor_off'}, data.unanchorable ? '' : 'disabled')}}{{:helper.link('-ON-', '', {'choice' : 'anchor_on'}, data.anchored ? 'disabled' : '')}}<br><br>
+Output Direction Control:
+<br><br>
+{{:helper.link('-WEST-', '', {'choice' : 'direction', 'dir' : 8}, data.direction == 8 ? 'disabled' : '')}}
+{{:helper.link('-SOUTH-', '', {'choice' : 'direction', 'dir' : 2}, data.direction == 2 ? 'disabled' : '')}}{{:helper.link('-EAST-', '', {'choice' : 'direction', 'dir' : 4}, data.direction == 4 ? 'disabled' : '')}}

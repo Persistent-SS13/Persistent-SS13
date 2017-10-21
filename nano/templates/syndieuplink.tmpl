@@ -1,0 +1,49 @@
+
+{{:helper.syndicateMode()}}
+
+<H2><span class="white">Welcome, {{:data.name}}.</span></H2>
+
+<div class="itemContent">
+		{{:helper.link('General Information', 'gear', {'menu' : 0}, null, 'fixedLeftWider')}}
+		{{:helper.link('Objective', 'gear', {'menu' : 1}, '', 'fixedLeftWider')}}
+		{{:helper.link('Active Operatives', 'gear', {'menu' : 2}, null, 'fixedLeftWider')}}
+		{{:helper.link('Close', 'gear', {'lock' : "1"}, null, 'fixedLeft')}}
+</div>
+
+
+
+{{if data.menu == 0}}
+    <H2><span class="white">General Information:</span></H2>
+	Your codename is <b>{{:data.codename}}</b>  
+	<br>
+	<br>
+	The code phrase is <b>{{:data.codephrase}}</b>
+	<br>
+	and the response is <b>{{:data.response}}</b>
+	<br>
+	Use this information to make contact with your fellow operatives.
+	<br>
+	<br>
+	{{if data.isactive == 1}}
+		You have an assignment. Check the objectives tab for more information.
+	{{/if}}	
+	{{if data.isactive == 0}}
+		You do not have an assignment.
+		<br>
+		Lay low or export illegal goods with a hacked shuttle, 
+		<br>
+		and <b>always</b> help your fellow syndicate operatives.
+	{{/if}}	
+{{/if}}	
+{{if data.menu == 1}}
+    <H2><span class="white">Objective:</span></H2>
+	"Your codename is "
+	"The code phrase is and the response is "
+	"The Syndicate frequency is "
+{{/if}}	
+{{if data.menu == 2}}
+    <H2><span class="white">Connected Operatives:</span></H2>
+	{{for data.members}}
+		<b>{{:value.codename}}</b>, {{:value.department}}, {{:value.status}}
+	{{/for}}
+{{/if}}			

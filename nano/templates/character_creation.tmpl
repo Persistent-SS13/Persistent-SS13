@@ -1,0 +1,124 @@
+<!--
+Title: CHARACTER CREATION
+ -->
+<div class='statusDisplay' style='max-width: 256px; position: absolute; left: 350px; top: 55px'><img src=previewicon.png height=128 width=128><img src=previewicon2.png height=128 width=128></div>
+{{if data.create_menu == 1}}
+	<table width='100%'><tr><td width='405px' height='90px' valign='top'>
+		<h2>Identity</h2>
+		<div class="itemLabel">Full Name:</div>
+		<div class="itemContents">
+			{{if data.nameChose == 1}}
+				{{:helper.link(data.name, '', {'choice' : "choose_name"}, '','')}}
+			{{else data.nameChose == 2}}
+				{{:helper.link('Name Taken!', '', {'choice' : "choose_name"}, '','')}}
+			{{else}}
+				{{:helper.link('Enter Name', '', {'choice' : "choose_name"}, '','')}}
+			{{/if}}
+			{{:helper.link('Random', 'refresh', {'choice' : "randomize_name"}, '','')}}<br><br>
+		</div>
+		<div class="itemLabel">Gender:</div><div class="itemContents">{{:helper.link(data.gender, '', {'choice' : 'toggle_gender'}, '','')}}</div><br><br>
+		<div class="itemLabel">Age:</div><div class="itemContents">{{:helper.link(data.age, '', {'choice' : 'choose_age'}, '','')}}</div><br><br>
+		<div class="itemLabel">Species:</div><div class="itemContents">{{:helper.link(data.species, '', {'choice' : 'choose_species'}, '','')}}</div><br>
+		</td><td width='405px' height='200px' valign='top'>
+	</td></tr></table><hr>
+	<table width='100%'><tr><td width='405px' height='200px' valign='top'>
+		<h2>Appearance</h2>
+		{{:helper.link('Random Appearance & Clothing', 'refresh', {'choice' : 'randomize_appearance'}, '','')}}<br><br>
+		{{if data.headacc}}
+			<b>{{:data.headaccname}}:</b><br>{{:helper.link(data.ha_style, '', {'choice' : 'choose_hastyle'}, '','')}}{{:helper.link('Choose Color', '', {'choice' : 'choose_hacolor'}, '','')}} {{:data.hacolorsquare}}<br><br>
+		{{/if}}
+		{{if data.bodymark}}
+			<b>Body Markings:</b><br>{{:helper.link(data.m_style, '', {'choice' : 'choose_mstyle'}, '','')}}{{:helper.link('Choose Color', '', {'choice' : 'choose_mcolor'}, '','')}} {{:data.mcolorsquare}}<br><br>
+		{{/if}}
+		<b>Hair:</b><br>{{:helper.link(data.h_style, '', {'choice' : 'choose_hstyle'}, '','')}}{{:helper.link('Choose Color', '', {'choice' : 'choose_hcolor'}, '','')}} {{:data.hcolorsquare}}<br><br>
+		<b>Facial Hair:</b><br>{{:helper.link(data.f_style, '', {'choice' : 'choose_fstyle'}, '','')}}{{:helper.link('Choose Color', '', {'choice' : 'choose_fcolor'}, '','')}} {{:data.fcolorsquare}}<br><br>
+		{{if data.eyecolor}}
+			<b>Eyes:</b><br>{{:helper.link('Choose Color', '', {'choice' : 'choose_ecolor'}, '','')}} {{:data.ecolorsquare}}<br><br>
+		{{/if}}
+		{{if data.skincolor}}
+			<b>Skin Color:</b><br>{{:helper.link('Choose Color', '', {'choice' : 'choose_scolor'}, '','')}} {{:data.scolorsquare}}<br><br>
+		{{/if}}
+		{{if data.skintone}}
+			<b>Skin Tone:</b><br>{{:helper.link(data.stone, '', {'choice' : 'choose_stone'}, '','')}}<br><br>
+		{{/if}}
+		{{if data.body_accessory}}
+			<b>Body Accessory:</b><br>{{:helper.link(data.bacc_style, '', {'choice' : 'choose_bacc'}, '','')}}<br><br>
+		{{/if}}
+		
+		
+		{{:helper.link('Set Flavor Text', '', {'choice' : 'choose_flavortext'}, '','')}}<br><br>
+		<i>{{:data.flavortext}}</i><br>
+		</td><td width='405px' height='200px' valign='top'>
+		<h2>Clothing</h2>
+		<b>Jumpsuit:</b><br>{{:helper.link(data.jumpsuit, '', {'choice' : 'choose_jumpsuit'}, '','')}}<br><br>
+		<b>Underwear:</b><br>{{:helper.link(data.underwear, '', {'choice' : 'choose_underwear'}, '','')}}<br><br>
+		<b>Undershirt:</b><br>{{:helper.link(data.undershirt, '', {'choice' : 'choose_undershirt'}, '','')}}<br><br>
+		<b>Backpack Type:</b><br>{{:helper.link(data.backpack, '', {'choice' : 'choose_backpack'}, '','')}}<br><br>
+		<h2>Starting Qualification</h2>
+		<i>Most characters earn their qualifications (and faction affilliations) by spending time on the station. Whitelists for certifications are very rare.</i><br>
+		<b>Choose Certifiaction:</b><br>{{:helper.link(data.cert, '', {'choice' : 'choose_cert'}, '','')}}<br><br>
+	</td></tr></table>
+	<hr>
+	{{:helper.link('Proceed to Stat Assignment', '', {'choice' : 'choose_stats'}, data.nameChose == 1 ? null : 'disabled','')}}
+{{else data.create_menu == 2}}
+	<table width='100%'><tr><td width='405px' valign='top'>
+		<h2>Identity</h2>
+		<div class="itemLabel">Full Name:</div>
+		<div class="itemContents">
+			{{:data.name}}
+		</div>
+		<div class="itemLabel">Gender:</div><div class="itemContents">{{:data.gender}}</div>
+		<div class="itemLabel">Age:</div><div class="itemContents">{{:data.age}}</div>
+		<div class="itemLabel">Species:</div><div class="itemContents">{{:data.species}}</div>
+		</td><td width='405px' valign='top'>
+	</td></tr></table><br>
+	<h2>Stats</h2>
+	<i>Your stats are a measure of the psychological strengths your character has. <br>Every time you level up you can choose two stats to increase. Species base stats are included here but aren't available when outside of a natural body.</i>
+	<h3>Unassigned Stat Points: {{:data.stats_left}}</h3>
+	<i>Grit is the minds ability to push its body past its comfortable limits. It controls how much you can lift and pull in both humanoid and synthetic bodies. It also affects melee damage and melee hit chance. Crucial for the Supply divison but also used whenever heavy lifting is required.</i><br>
+	<b>GRIT: {{:data.true_grit}}</b>{{:helper.link('< - ', '', {'choice' : 'decrease_grit'}, data.grit ? null : 'disabled','')}}{{:helper.link(' - >', '', {'choice' : 'increase_grit'}, data.stats_left ? null : 'disabled','')}}<br><br>
+	<i>Fortitude allows characters to take more physical damage while resisting the debilitating effects of pain. It also allows you to sprint or carry heavy things (or overclock synthetics) for longer. Crucial for the Security divison and mercenaries, useful for characters in danger.</i><br>
+	<b>FORTITUDE: {{:data.true_fortitude}}</b>{{:helper.link('< - ', '', {'choice' : 'decrease_fortitude'}, data.fortitude ? null : 'disabled','')}}{{:helper.link(' - >', '', {'choice' : 'increase_fortitude'}, data.stats_left ? null : 'disabled','')}}<br><br>
+	<i>Reflex governs your ability to observe and react. It affects your attack speed for melee weapons and hit chance for ranged weapons. It also controls the speed and success of dexterity and precision based tasks. Crucial for the Security divison and mercenaries, also helps miners, engineers and even surgeons.</i><br>
+	<b>REFLEX: {{:data.true_reflex}}</b>{{:helper.link('< - ', '', {'choice' : 'decrease_reflex'}, data.reflex ? null : 'disabled','')}}{{:helper.link(' - >', '', {'choice' : 'increase_reflex'}, data.stats_left ? null : 'disabled','')}}<br><br>
+	<i>Creativity is the ability to produce novel ideas that others value. It affects tasks that are solved by lateral thinking, such as applied research, evidence analysis and engineering design decisions. Crucial for the advanced members of the Science divison, it also helps chefs, investigators and a variety of other jobs.</i><br>
+	<b>CREATIVITY: {{:data.true_creativity}}</b>{{:helper.link('< - ', '', {'choice' : 'decrease_creativity'}, data.creativity ? null : 'disabled','')}}{{:helper.link(' - >', '', {'choice' : 'increase_creativity'}, data.stats_left ? null : 'disabled','')}}<br><br>
+	<i>Focus controls how much mental punishment you can take and how much leisure you need between working. It can greatly reduce the time required to do tedious tasks like paperwork that are common to many positions. Crucial for members of the Medical divison but it also improves your work capacity for all mental jobs.</i><br>
+	<b>FOCUS: {{:data.true_focus}}</b>{{:helper.link('< - ', '', {'choice' : 'decrease_focus'}, data.focus ? null : 'disabled','')}}{{:helper.link(' - >', '', {'choice' : 'increase_focus'}, data.stats_left ? null : 'disabled','')}}<br><br>
+	{{:helper.link('Return to Appearance Editor', '', {'choice' : 'choose_appearance'}, null,'')}}{{:helper.link('Proceed to Finalization', '', {'choice' : 'choose_finish'}, data.stats_left ? 'disabled' : null,'')}}
+	
+{{else data.create_menu == 3}}
+	<table width='100%'><tr><td width='405px' valign='top'>
+		<h2>Identity</h2>
+		<div class="itemLabel">Full Name:</div>
+		<div class="itemContents">
+			{{:data.name}}
+		</div>
+		<div class="itemLabel">Gender:</div><div class="itemContents">{{:data.gender}}</div>
+		<div class="itemLabel">Age:</div><div class="itemContents">{{:data.age}}</div>
+		<div class="itemLabel">Species:</div><div class="itemContents">{{:data.species}}</div>
+		<div class="itemLabel">Grit:</div><div class="itemContents">{{:data.true_grit}}</div>
+		<div class="itemLabel">Fortitude:</div><div class="itemContents">{{:data.true_fortitude}}</div>
+		<div class="itemLabel">Reflex:</div><div class="itemContents">{{:data.true_reflex}}</div>
+		<div class="itemLabel">Creativity:</div><div class="itemContents">{{:data.true_creativity}}</div>
+		<div class="itemLabel">Focus:</div><div class="itemContents">{{:data.true_focus}}</div>
+		</td><td width='405px' valign='top'>
+	</td></tr></table><br>
+	<hr>
+	<h2>Ambitions</h2>
+	<i>Your ambition gives you bonus objectives that award EXP. <br>You'll get different objectives based on your ambition.</i>
+	<br>
+	<h3>Wealth</h3>
+	<i>You desire cash and all the things that it can buy.<br>Get stronger while flaunting your wealth and fancy items over your poorer colleagues.</i>
+	<br>{{:helper.link('Select Wealth', '', {'choice' : 'choose_wealth'}, null,'')}}<br><br>
+	<h3>Leisure</h3>
+	<i>Avoiding real work while consuming food and drink (and any other substance) is what life is all about.<br>Self improvement has never been this easy.</i>
+	<br>{{:helper.link('Select Recreation', '', {'choice' : 'choose_leisure'}, null,'')}}<br><br>
+	<h3>Power</h3>
+	<i>All you want in life is to have your greatness recognised.<br>Climbing the corporate ladder and developing your department will make you a force to be reckoned with.</i>
+	<br>{{:helper.link('Select Power', '', {'choice' : 'choose_power'}, null,'')}}<br><br>
+	<h3>Selected: {{:data.ambition}}</h3>
+	<hr>
+	{{:helper.link('Return to Appearance Editor', '', {'choice' : 'choose_appearance'}, null,'')}}{{:helper.link('Return to Statistics', '', {'choice' : 'choose_stats'}, null,'')}}{{:helper.link('Save Character to Slot', '', {'choice' : 'finish_character'}, data.ambitionChose ? null : 'disabled','')}}
+	
+{{/if}}

@@ -1,0 +1,10 @@
+<NotepadPlus>
+    <Session activeView="0">
+        <mainView activeIndex="0">
+            <File firstVisibleLine="859" xOffset="0" scrollWidth="616" startPos="36455" endPos="36455" selMode="0" lang="Normal Text" encoding="-1" filename="B:\Users\PC\Downloads\Paradise-master (1)\Paradise-master\code\modules\mob\new_player\preferences_setup.dm" backupFilePath="" originalFileLastModifTimestamp="1471678678" />
+            <File firstVisibleLine="2506" xOffset="0" scrollWidth="2338" startPos="88677" endPos="88677" selMode="0" lang="Normal Text" encoding="-1" filename="B:\Users\PC\Downloads\Paradise-master (1)\Paradise-master\code\modules\client\preference\preferences.dm" backupFilePath="" originalFileLastModifTimestamp="1478542798" />
+            <File firstVisibleLine="634" xOffset="0" scrollWidth="1701" startPos="23253" endPos="23253" selMode="0" lang="Normal Text" encoding="-1" filename="B:\Users\PC\Downloads\Paradise-master (1)\Paradise-master\code\modules\client\preference\preferences_mysql.dm" backupFilePath="" originalFileLastModifTimestamp="1478419903" />
+        </mainView>
+        <subView activeIndex="0" />
+    </Session>
+</NotepadPlus>

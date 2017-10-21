@@ -1,0 +1,21 @@
+{{if data.is_owner == 0}} 
+	<div class="item">
+        <b><H1>Private Contract</H1></b>
+		<br>
+		<br>
+		<H2>Please present this to {{:data.owner}}</H2>
+		
+    </div>
+{{else}}
+	{{if data.syndie == 1}}
+		{{:helper.syndicateMode()}}
+	{{/if}}
+	 <H2>{{:data.title}}</H2>
+	<H1><i>This document is meant for you, <b>{{:data.owner}}</b></i></H2>
+	<br>
+	<br>
+	<b>{{:data.desc}}</b>
+	<br>
+	{{:helper.link('If these terms are acceptable to you, press your thumb here' , 'gear', {'confirmed' : '1'}, null, null)}}
+	
+{{/if}}

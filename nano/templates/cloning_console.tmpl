@@ -1,0 +1,96 @@
+<!-- 
+Title: Cloning Console UI 
+Used In File(s): \code\game\machinery\computer\cloning.dm
+-->
+{{if data.menu == 1}}
+	<h2>Welcome to Nanotransen Pay-4-Clone.</h2>
+	<h3>Brains can be inserted directly into a cloning pod or spare bodies can be created through the scanner.</h3>
+	<br>
+	<h2>Modules</h2>
+	<div class="item">
+		<div class="itemLabelNarrow">Scanner</div>
+		<div class="itemContentWide{{if data.scanner}} good{{else}} bad{{/if}}">
+			{{if data.scanner}} Found{{else}} Error: Not detected!{{/if}}
+		</div>
+	</div>
+	<div class="item">
+		<div class="itemLabelNarrow">Pods</div>
+		<div class="itemContentWide{{if data.numberofpods}} good{{else}} bad{{/if}}">
+			{{if data.numberofpods}} Found {{:data.numberofpods}}{{else}} Error: None detected!{{/if}}
+		</div>
+	</div>
+	{{if data.scanner}}
+		<h2>Scanner Status</h2>
+		<div class="itemLabelNarrow">Occupant: {{if data.occupant}}{{:data.occupant}}{{else}}None{{/if}}</div>
+		<br>
+		<div class="itemLabelNarrow">Locked:{{if data.locked}} Yes{{else}} No{{/if}}</div>
+	{{/if}}
+	{{if data.numberofpods}}
+		<h2>Pods</h2>
+		{{for data.pods}}
+			<b>{{:value.name}}</b></br>
+			{{if value.occupied}}
+				<div class="item">
+					<div class="itemLabelNarrow">Occupant: {{:value.occupant}}</div>
+					{{if value.processing}}
+						<div class="itemContentWide good">
+							<b>Cloning in process</b>
+						</div>
+					{{else}}
+						<div class="itemContentWide">
+							{{:helper.link('Select', 'check', {'selectpod' : value.pod}, '')}}
+						</div>
+					{{/if}}
+				</div>
+			{{else}}
+				{{:helper.link('Select for scanner', 'check', {'selectpodscanner' : value.pod}, data.occupant ? '' : 'disabled')}}
+			{{/if}}
+		{{/for}}
+	{{/if}}
+	
+	
+{{/if}}
+{{if data.menu == 2}}
+	<h2>Cloning Plan</h2>
+	<div class="item">
+		<div class="itemLabelNarrow">Economy Package: 1500</div>
+		{{:helper.link('Select', 'check', {'selectpackage' : 1}, data.selected ? 'disabled' : '')}}
+		An energy efficient procedure that often results in undesirable effects such as mutations, DNA drift and occasionally loss of limbs.. and hair.
+	</div>
+	<div class="item">
+		<div class="itemLabelNarrow">Premium Package: 2500</div>
+		{{:helper.link('Select', 'check', {'selectpackage' : 2}, data.selected ? 'disabled' : '')}}
+		A perfect clone of the supplied DNA, this is the best cloning procedure creds can buy.
+	</div>
+	{{if data.selected}}
+		<h2>Payments</h2>
+		{{for data.payments}}
+			<div class="itemLabelNarrow">{{:value.name}} : {{:value.amount}}</div>
+			<br>
+		{{/for}}
+		<br>
+		<div class="itemLabelNarrow">Remaining : {{:data.remaining}}</div>
+		<br>
+		<b>Swipe ID card or </b> <br>{{:helper.link('Authorize Payment', 'check', {'payment' : 1}, data.remaining ? '' : 'disabled')}}
+		<h2>Confirm</h2>
+		{{:helper.link('Begin Cloning', '', {'clone' : 1}, data.remaining ? 'disabled' : '')}}
+	{{/if}}
+	<br>
+	<hr>
+		{{if data.cancelconfirm}}
+			<h3>Are you sure you want to cancel?</h3>
+			<br>
+			{{:helper.link('YES', '', {'cancelconfirm' : 1}, '')}}  {{:helper.link('NO', '', {'cancelcancel' : 1}, '')}}
+		{{else}}
+			{{:helper.link('Cancel Cloning', 'close', {'cancel' : 1}, '')}}
+		{{/if}}
+		<br>
+		Warning! This will cancel the cloning procedure. All authorized payments will be lost.
+{{/if}}
+{{if data.menu == 3}}
+	<br>
+	<br>
+	<center><h1><b>Thank you for choosing Nanotransen Cloning</b></h1></center>
+	<hr>
+	<center><h2>The cloning procedure is starting..</h2></center>
+{{/if}}

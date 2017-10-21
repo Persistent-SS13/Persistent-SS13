@@ -40,7 +40,7 @@
 	// 2: Disintegrate at full damage, continue damage propogation
 	var/fail_at_full_damage = 0
 
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;damage;species;perma_injury;open;stage;cavity;sabotaged;encased;hidden;implants;wounds;children;parent"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;damage;species;perma_injury;open;stage;cavity;sabotaged;encased;hidden;implants;wounds"
 	
 	var/obj/item/organ/external/parent
 	var/list/obj/item/organ/external/children

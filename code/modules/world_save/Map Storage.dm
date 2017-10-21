@@ -113,6 +113,9 @@ map_storage
 	
 	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement)
 		if(existing_references["[ind]"])
+			if(starting_loc)
+				var/atom/movable/A = existing_references["[ind]"]
+				A.loc = starting_loc
 			return existing_references["[ind]"]
 		savefile.cd = "/entries/[ind]"
 		var/type = savefile["type"]
@@ -355,6 +358,8 @@ map_storage
 		if(locind != "0")
 			loc = Load_Entry(savefile, locind)
 		var/mob/mob = Load_Entry(savefile, bodyind)
+		if(!mob)
+			return
 		if(!M)
 			mob.mind = new()
 			M = mob.mind
@@ -362,7 +367,21 @@ map_storage
 		if(!savefile)
 			message_admins("savefile not found!")
 			return
-		
+			
+		for(var/datum/dat in all_loaded)
+			dat.after_load()
+		for(var/atom/movable/ob in all_loaded)
+			ob.initialize()
+			ob.after_load()
+			if(ob.load_datums)
+				if(ob.reagents)
+					ob.reagents.my_atom = ob
+			if(istype(ob, /turf/simulated))
+				var/turf/simulated/Te = ob
+				//Te.blocks_air = initial(Te.blocks_air)
+				Te.new_air()
+				
+				
 		if(transfer)
 			M.transfer_to(mob)
 		if(loc)

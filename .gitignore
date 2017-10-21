@@ -19,3 +19,4 @@ data/
 *.db
 stddef.dm
 .atom-build.json
+*.sav

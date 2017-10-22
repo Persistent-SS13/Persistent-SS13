@@ -381,7 +381,6 @@ map_storage
 				//Te.blocks_air = initial(Te.blocks_air)
 				Te.new_air()
 				
-				
 		if(transfer)
 			M.transfer_to(mob)
 		if(loc)

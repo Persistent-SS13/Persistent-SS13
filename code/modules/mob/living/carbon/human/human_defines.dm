@@ -117,3 +117,9 @@ var/global/default_martial_art = new/datum/martial_art
 		for(var/obj/item/organ/internal/O in internal_organs)
 			O.owner = character
 			O.insert(character)
+	domutcheck(src)
+	sync_organ_dna(assimilate=0)
+	UpdateAppearance()
+	force_update_limbs()
+	update_eyes()
+	regenerate_icons()

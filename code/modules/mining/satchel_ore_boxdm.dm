@@ -8,7 +8,7 @@
 	desc = "A heavy metal box, which can be filled with solid ore types."
 	density = 1
 	pressure_resistance = 5*ONE_ATMOSPHERE
-	var/conglo_amount = 0
+	var/conglo_amount = 0 // Need to make this a list so ores can be added without having to edit ore boxes every time
 	var/orichilum_amount = 0
 	var/maximum = 10
 	w_class = 4
@@ -37,30 +37,35 @@
 		icon_state = initial(icon_state)
 	return 1
 /obj/structure/ore_box/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-
 	if(istype(W, /obj/item/weapon/shovel))
 		var/list/possible = list()
-		if(conglo_amount) possible += "conglo"
-		if(orichilum_amount) possible += "orichilum"
-		if(!possible.len) return
-		var/piletype = /obj/structure/orepile
-		var/chose = pick(possible)
+		if(conglo_amount)
+			possible += /obj/structure/orepile/conglo
+		if(orichilum_amount)
+			possible += /obj/structure/orepile/orichilum
+		if(!possible.len)
+			return
+
+		var/pile_type = pick(possible)
 		var/obj/structure/orepile/pile
-		if(chose == "conglo")
-			piletype = /obj/structure/orepile/conglo
-		else if(chose == "orichilum")
-			piletype = /obj/structure/orepile/orichilum
+
 		for(var/obj/structure/orepile/orep in range(1, loc))
 			pile = orep
 			break
 		if(!pile)
-			var/d = pick(cardinal)
-			var/turf/T = get_step(loc, d)
-			pile = new piletype(T)
+			var/turf/T = get_turf(user)
+			pile = new pile_type(T)
 		else
 			pile.amount += 1
 			pile.update()
+
+		switch(pile_type)
+			if(/obj/structure/orepile/conglo)
+				conglo_amount--
+			if(/obj/structure/orepile/orichilum)
+				orichilum_amount--
 		return
+	return ..()
 	
 /obj/structure/ore_box/attack_animal(var/mob/living/simple_animal/M)//No more buckling hostile mobs to chairs to render them immobile forever
 	if(M.environment_smash)

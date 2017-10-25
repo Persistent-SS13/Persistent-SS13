@@ -59,12 +59,13 @@ datum
 		load_contents = 0
 		should_save = 1
 		map_storage_saved_vars = ""
+		safe_list_vars = ""
 atom
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;id"
 	load_contents = 1
 mob
-/obj/effect
-	should_save = 0
+//	/obj/effect
+//		should_save = 1
 /*************************************************************************
 MAP STORAGE DATUM
 **************************************************************************/
@@ -142,6 +143,8 @@ map_storage
 			return
 		all_loaded += object
 		existing_references["[ind]"] = object
+		
+		
 		for(var/v in savefile.dir)
 			savefile.cd = "/entries/[ind]"
 			if(v == "type")
@@ -173,7 +176,8 @@ map_storage
 							var/atom/movable/A = Load_Entry(savefile, y)
 							final_list += A
 						else
-							final_list += Numeric(x)
+							final_list += "**unique**"
+							final_list[final_list.len] = Numeric(xa)
 				object.vars[v] = final_list
 			else if(findtext(savefile[v], "**entry"))
 				var/x = savefile[v]
@@ -195,7 +199,7 @@ map_storage
 		return object
 	proc/BuildVarDirectory(savefile/savefile, atom/A, var/contents = 0)
 		if(!A.should_save)
-			return
+			return 0
 		// If this object has no variables to save, skip it
 		var/ind = saving_references.Find(A)
 		var/ref = 0
@@ -224,6 +228,7 @@ map_storage
 		// Add any variables changed and their associated values to a list called changed_vars.
 		var/list/changed_vars = list()
 		var/list/changing_vars = params2list(A.map_storage_saved_vars)
+		var/list/safe_lists = params2list(A.safe_list_vars)
 		if(istype(A, /atom/movable))
 			var/atom/movable/AM = A
 			if(contents && AM.load_datums)
@@ -247,28 +252,31 @@ map_storage
 					savefile.cd = "/entries/[ref]"
 					savefile["[v]"] = "**entry[conparams]"  
 				else if(istype(A.vars[v], /list))
-					var/list/lis = A.vars[v]
-					if(lis.len)
-						var/list/fixed_list = list()
-						for(var/firstval in lis)
-							if(istype(firstval, /obj))
-								var/conparams = BuildVarDirectory(savefile, firstval, 1)
-								if(!conparams)
-									continue
-								fixed_list += "**entry[conparams]"
-							else if(istype(firstval, /datum))
-								var/conparams = BuildVarDirectory(savefile, firstval, 1)
-								if(!conparams)
-									continue
-								fixed_list += "**entry[conparams]"
-							else
-								fixed_list += firstval
-						savefile.cd = "/entries/[ref]"
-						savefile["[v]"] = "**list[list2params(fixed_list)]"
+					if(safe_lists.Find(v))
+						savefile["[v]"] << A.vars[v]
 					else
-						if(A.vars[v] != initial(A.vars[v]))
+						var/list/lis = A.vars[v]
+						if(lis.len)
+							var/list/fixed_list = list()
+							for(var/firstval in lis)
+								if(istype(firstval, /obj))
+									var/conparams = BuildVarDirectory(savefile, firstval, 1)
+									if(!conparams)
+										continue
+									fixed_list += "**entry[conparams]"
+								else if(istype(firstval, /datum))
+									var/conparams = BuildVarDirectory(savefile, firstval, 1)
+									if(!conparams)
+										continue
+									fixed_list += "**entry[conparams]"
+								else
+									fixed_list += firstval
 							savefile.cd = "/entries/[ref]"
-							savefile["[v]"] = "**emptylist"
+							savefile["[v]"] = "**list[list2params(fixed_list)]"
+						else
+							if(A.vars[v] != initial(A.vars[v]))
+								savefile.cd = "/entries/[ref]"
+								savefile["[v]"] = "**emptylist"
 				else if(A.vars[v] != initial(A.vars[v]) || v == "pixel_x" || v == "pixel_y")
 					savefile.cd = "/entries/[ref]"
 					savefile["[v]"] = A.vars[v]
@@ -295,6 +303,8 @@ map_storage
 // If the value is numeric, convert it to a number and return the number value. If
 // the value is text, then return it as it is.
 	proc/Numeric(text)
+		if(islist(text))
+			return text
 		if(IsNumeric(text))
 			return text2num(text)
 		else
@@ -384,6 +394,7 @@ map_storage
 		if(transfer)
 			M.transfer_to(mob)
 		if(loc)
+			mob.loc = loc
 			return loc
 		else
 			return mob

@@ -46,6 +46,11 @@
 		var/piletype = /obj/structure/orepile
 		var/chose = pick(possible)
 		var/obj/structure/orepile/pile
+		user.visible_message("[user] begins shoveling [chose] out of the box...")
+		switch(do_after_stat(user, delay = 100, needhand = 1, target = src, progress = 1, action_name = "shovel the [chose]", 
+				auto_emote = 1, stat_used = 1, minimum = 0, maximum = 8, maxed_delay = 40, progressive_failure = 0, 
+				minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 15, 
+				progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 0.5, sound_file = 'sound/effects/tong_pickup.ogg'))
 		if(chose == "conglo")
 			piletype = /obj/structure/orepile/conglo
 		else if(chose == "orichilum")

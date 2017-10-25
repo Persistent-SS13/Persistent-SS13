@@ -98,7 +98,7 @@ var/global/list/bad_blocks[0]
 	var/list/SE_structure[DNA_SE_LENGTH]
 
 	map_storage_saved_vars = "uni_identity;b_type;real_name;species;SE;UI;unique_enzymes;SE_structure"
-
+	safe_list_vars = "SE;UI"
 // Make a copy of this strand.
 // USE THIS WHEN COPYING STUFF OR YOU'LL GET CORRUPTION!
 /datum/dna/proc/Clone()
@@ -425,8 +425,8 @@ var/global/list/bad_blocks[0]
 		return "This never happens!"
 		
 	for(var/x in numsToAssign)
-		SE_structure[x]=0
-	SE_structure[DNA_SE_LENGTH] = 0 // last is always blank E I E I O
+		SE_structure[x]=new /datum/dna/gene
+	SE_structure[DNA_SE_LENGTH] =new /datum/dna/gene // last is always blank E I E I O
 	// Monkeyblock is always last.
 	// MONKEYBLOCK = DNA_SE_LENGTH
 

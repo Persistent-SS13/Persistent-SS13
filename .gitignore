@@ -20,3 +20,7 @@ data/
 stddef.dm
 .atom-build.json
 *.sav
+Persistent-SS13/
+*.sav
+*.sav
+Science.sav

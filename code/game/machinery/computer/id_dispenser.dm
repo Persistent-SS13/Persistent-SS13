@@ -114,6 +114,7 @@
 		C.access = acceses
 		C.registered_name = H.real_name
 		C.rank = job
+		
 		C.assignment = get_default_title(H.mind.ranks[to_strings(job.department_flag)], job)
 		C.sex = capitalize(H.gender)
 		C.age = H.age

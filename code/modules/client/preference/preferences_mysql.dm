@@ -3017,6 +3017,7 @@
 	var/ind = 0
 	while( pos )
 		ind += 1
+		l += "**unique**"
 		if (copytext( text, 1, pos ) == "0" || text2num(copytext( text, 1, pos )))
 			l[ind] = text2num(copytext( text, 1, pos ))
 		else

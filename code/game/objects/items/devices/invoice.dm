@@ -142,7 +142,7 @@
 	data["department"] = department
 	data["departmentname"] = department_name
 	if(department)
-		if(usr.mind.assigned_job.department_flag == department || usr.mind.assigned_job.department_flag == COMMAND)
+		if(usr.mind.assigned_job && (usr.mind.assigned_job.department_flag == department || usr.mind.assigned_job.department_flag == COMMAND))
 			data["ismember"] = 1
 	if(authentication.len)
 		data["authenticated"] = authenticated

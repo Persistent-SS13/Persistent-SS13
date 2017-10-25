@@ -424,14 +424,6 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 					var/new_name = reject_bad_name(t_name, min_length = 5)
 					var/found = 0
 					if(new_name)
-						var/DBQuery/query = dbcon.NewQuery("SELECT real_name FROM [format_table_name("character")] WHERE real_name='[sql_sanitize_text(new_name)]' ORDER BY slot")
-						if(!query.Execute())
-							var/err = query.ErrorMsg()
-							log_game("SQL ERROR during name checking. Error : \[[err]\]\n")
-							message_admins("SQL ERROR during name checking. Error : \[[err]\]\n")
-							return
-						while(query.NextRow())
-							found = 1
 						if(found)
 							to_chat(user, "<font color='red'>Invalid name. A character with that name already exists.</font>")
 							nameChose = 2
@@ -991,11 +983,24 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 	if(href_list["choice_slot"])
 		default_slot = text2num(href_list["choice_slot"])
 		slot = default_slot
-		create_account()
-		setup_ranks()
 		var/mob/living/carbon/human/Hu = preview_model
+		Hu.real_name = real_name
+		Hu.dna.ready_dna(Hu, flatten_SE = 1)
 		Hu.dna.ResetUIFrom(Hu)
+		Hu.sync_organ_dna(assimilate=1)
 		var/datum/mind/mind = new()
+		
+		Hu.equip_or_collect(new /obj/item/device/radio/headset, slot_r_ear)
+		Hu.equip_or_collect(new /obj/item/device/pda, slot_wear_pda)
+		var/obj/item/weapon/implant/crewtracker/implant = new()
+		mind.primary_cert = job_master.GetCert("intern")
+		implant.loc = Hu
+		var/list/ranks = get_standard_departments()
+		mind.ranks = list()
+		for(var/a in ranks)
+			var/stringrank = to_strings(a)
+			mind.ranks[stringrank] = 1
+			
 		mind.initial_account = new()
 		mind.initial_account.money = 500
 		mind.stat_Grit = stat_Grit
@@ -1004,6 +1009,8 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 		mind.stat_Creativity = stat_Creativity
 		mind.stat_Focus = stat_Focus
 		mind.char_slot = slot
+		mind.name = real_name
+		
 		map_storage.Save_Char(user,mind,Hu, slot)
 		create_single_spawnicon(user.client, slot)
 		slot_interact(user,close = 1)
@@ -2618,6 +2625,13 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 					var/datum/mind/mind = new()
 					mind.initial_account = new()
 					mind.initial_account.money = 500
+					mind.primary_cert = job_master.GetCert("intern")
+					if(mind.primary_cert)
+						message_admins("primary_cert set!")
+					else
+						mind.primary_cert = new /datum/cert/intern()
+						message_admins("resetting primary cert..")
+						message_admins("mindcert : [mind.primary_cert.uid]")
 					mind.stat_Grit = stat_Grit
 					mind.stat_Fortitude = stat_Fortitude
 					mind.stat_Reflex = stat_Reflex

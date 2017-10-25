@@ -609,11 +609,9 @@
 	if(!enter_allowed)
 		to_chat(usr, "\blue There is an administrative lock on entering the game!")
 		return 0
-	message_admins("LATE SPAWN PERSISTENT")
 	ticker.show_info(src)
 	//	job_master.AssignPersistantRole(src, rank, 1)
 	var/character = create_character()	//creates the human and transfers vars and mind
-	message_admins("CHARACTER CREATED [character]")
 	var/mob/living/mobbie
 	var/obj/objie
 	if(istype(character, /mob/living))
@@ -633,13 +631,13 @@
 	else if(mobbie)
 		mobbie.loc = pick(latejoin)
 		join_message = "has arrived on the station"
-	if(mobbie && mobbie.mind)
-	//	job_master.EquipRankPersistant(mobbie, rank, 1)
+	if(mobbie && mobbie.mind && mobbie.mind.primary_cert)
+		rank = mobbie.mind.primary_cert.uid
+		job_master.EquipRankPersistant(mobbie, rank, 1)
 		data_core.manifest_inject(mobbie)
 		ticker.minds += mobbie.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 		AnnounceArrival(mobbie, rank, join_message)
 		callHook("latespawn", list(mobbie))
-	message_admins("ATTEMPT LATE SPAWN FINISHED!!")
 	qdel(src)
 
 	
@@ -783,10 +781,6 @@
 		mind.current = src
 		mind.key = key
 		var/atom/movable/H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
-		if(!H)
-			message_admins("create_character FAILED!!")
-		if(H.loc)
-			H = H.loc
 		return H
 	else
 		mind = new()
@@ -794,10 +788,6 @@
 		mind.current = src
 		mind.key = key
 		var/atom/movable/H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
-		if(!H)
-			message_admins("create_character FAILED!!")
-		if(H.loc)
-			H = H.loc
 		return H
 	message_admins("create_character FAILED!!")
 	return 0

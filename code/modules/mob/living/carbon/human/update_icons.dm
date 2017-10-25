@@ -268,8 +268,11 @@ var/global/list/damage_icon_parts = list()
 
 		if(part)
 			icon_key += "[part.species.race_key]"
-			icon_key += "[part.dna.GetUIState(DNA_UI_GENDER)]"
-			icon_key += "[part.dna.GetUIValue(DNA_UI_SKIN_TONE)]"
+			if(!part.dna)
+				message_admins("no dna found for part: [part]")
+			else
+				icon_key += "[part.dna.GetUIState(DNA_UI_GENDER)]"
+				icon_key += "[part.dna.GetUIValue(DNA_UI_SKIN_TONE)]"
 			if(part.s_col)
 				icon_key += "[rgb(part.s_col[1], part.s_col[2], part.s_col[3])]"
 			if(part.s_tone)

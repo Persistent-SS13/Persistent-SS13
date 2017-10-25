@@ -512,7 +512,7 @@ var/round_start_time = 0
 			if(player.mind.assigned_role == "Captain")
 				captainless=0
 			if(player.mind.assigned_role != "MODE")
-				job_master.EquipRankPersistant(player, player.mind.assigned_role, 0)
+				job_master.EquipRankPersistant(player, player.mind.primary_cert.uid, 0)
 				EquipCustomItems(player)
 	if(captainless)
 		for(var/mob/M in player_list)
@@ -532,7 +532,9 @@ var/round_start_time = 0
 	for(var/mob/living/player in player_list)
 		if(player && player.mind && player.mind.assigned_role)
 			if(player.mind.assigned_role != "MODE")
-				job_master.EquipRankPersistant(player, player.mind.assigned_role, 0)
+				if(!player.mind.primary_cert)
+					player.mind.primary_cert = job_master.GetCert("intern")
+				job_master.EquipRankPersistant(player, player.mind.primary_cert.uid, 0)
 
 								
 				

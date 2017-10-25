@@ -17,6 +17,8 @@ var/global/list/limb_icon_cache = list()
 /obj/item/organ/external/proc/sync_colour_to_human(var/mob/living/carbon/human/H)
 	if(status & ORGAN_ROBOT && !(species && species.name == "Machine")) //machine people get skin color
 		return
+	if(!dna)
+		message_admins("no dna found for part, part: [src]")
 	if(dna.unique_enzymes != H.dna.unique_enzymes) // This isn't MY arm
 		if(1)	//!(H.species.bodyflags & HAS_ICON_SKIN_TONE)
 			sync_colour_to_dna()

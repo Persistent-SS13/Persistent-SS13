@@ -103,7 +103,7 @@
 	var/photo
 	var/dat
 	var/stamped = 0
-	
+	should_save = 0
 	var/datum/mind/assigned_mind = 0
 	var/list/certs = list()
 	var/department = SUPPORT

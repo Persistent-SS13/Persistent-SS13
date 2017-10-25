@@ -261,11 +261,16 @@ mob/verb
 	for(var/i=1, i<=max_save_slots, i++)
 		slot++
 		var/mob/H = load_mind(C, 0, 0, 1, 1)
-		if(!H)
-			continue
-		var/mobmind = H.mind
-		if(H.loc)
-			H = H.loc
+		if(istype(H, /mob))
+			var/mob/mobbie = H
+			minds_list[i] = mobbie.mind
+		else
+			var/obj/obbie = H
+			if(!obbie)
+				return
+			for(var/mob/mobbie in obbie.contents)
+				minds_list[i] = mobbie.mind
+				break
 		var/icon/flaticon = getFlatIcon(H)
 		var/icon/flat = icon('icons/effects/effects.dmi', "icon_state"="nothing") 
 		if(gender == "female" && istype(H, /mob/living/carbon/human))
@@ -273,7 +278,6 @@ mob/verb
 			flat.Blend(flaticon, ICON_OVERLAY, 2)
 			flaticon = flat
 		preview_icons[i] = flaticon
-		minds_list[i] = mobmind
 	return preview_icons
 /datum/preferences/proc/create_single_spawnicon(client/C, var/_slot)
 	if(!preview_icons || !preview_icons.len || !minds_list || !minds_list.len)
@@ -295,7 +299,6 @@ mob/verb
 		var/obj/obbie = H
 		message_admins("obbie found!")
 		for(var/mob/mobbie in obbie.contents)
-			message_admins("")
 			minds_list[_slot] = mobbie.mind
 			break
 	return

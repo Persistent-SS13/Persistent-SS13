@@ -1,13 +1,14 @@
 /datum/mind
 	var/key
 	map_storage_saved_vars = "primary_cert;certs;cert_title;char_slot;ranks;faction;faction_uid;initial_account;stat_Grit;stat_Fortitude;stat_Reflex;stat_Creativity;stat_Focus;ambition"
+	safe_list_vars = "ranks"
 	var/name				//replaces mob/var/original_name
 	var/mob/living/current
 	var/mob/living/original	//TODO: remove.not used in any meaningful way ~Carn. First I'll need to tweak the way silicon-mobs handle minds.
 	var/active = 0
 	var/job = 0
 	// PERSISTANCE EDIT
-	var/datum/cert/primary_cert = 0
+	
 	var/list/certs = list()
 	var/cert_title = ""
 	var/default_slot = 0  
@@ -30,10 +31,6 @@
 	var/ambition = 0
 	var/char_slot = 0
 	
-	
-	
-	
-	
 	// for persistance
 	
 	var/memory
@@ -45,7 +42,7 @@
 	var/list/spell_list = list() // Wizard mode & "Give Spell" badmin button.
 
 	var/role_alt_title
-
+	var/datum/cert/primary_cert
 	var/datum/cert/assigned_job
 	var/list/kills=list()
 	var/list/datum/objective/objectives = list()
@@ -73,6 +70,10 @@
 
 	//put this here for easier tracking ingame
 	var/datum/money_account/initial_account
+	
+
+	
+	
 /datum/mind/proc/transfer_to(mob/living/new_character)
 	if(!istype(new_character))
 		log_to_dd("## DEBUG: transfer_to(): Some idiot has tried to transfer_to() a non mob/living mob. Please inform Carn")
@@ -92,7 +93,7 @@
 
 	if(active)
 		new_character.key = key		//now transfer the key to link the client to our new body
-
+			
 /datum/mind/proc/store_memory(new_text)
 	memory += "[new_text]<BR>"
 

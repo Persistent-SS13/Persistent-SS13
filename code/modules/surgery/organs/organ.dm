@@ -31,7 +31,7 @@ var/list/organ_cache = list()
 
 	var/sterile = 0 //can the organ be infected by germs?
 	var/tough = 0 //can organ be easily damaged?
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;damage"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;damage;dna;species"
 /obj/item/organ/proc/update_health()
 	return
 

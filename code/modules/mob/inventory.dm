@@ -155,7 +155,8 @@
 	if(hasvar(src,"wear_suit")) if(src:wear_suit) items += src:wear_suit
 //	if(hasvar(src,"w_radio")) if(src:w_radio) items += src:w_radio  commenting this out since headsets go on your ears now PLEASE DON'T BE MAD KEELIN
 	if(hasvar(src,"w_uniform")) if(src:w_uniform) items += src:w_uniform
-
+	if(hasvar(src,"underwear")) if(src:underwear) items += src:underwear
+	if(hasvar(src,"undershirt")) if(src:undershirt) items += src:undershirt
 	//if(hasvar(src,"l_hand")) if(src:l_hand) items += src:l_hand
 	//if(hasvar(src,"r_hand")) if(src:r_hand) items += src:r_hand
 

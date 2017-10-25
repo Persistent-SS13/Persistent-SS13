@@ -51,20 +51,23 @@
 				auto_emote = 1, stat_used = 1, minimum = 0, maximum = 8, maxed_delay = 40, progressive_failure = 0, 
 				minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 15, 
 				progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 0.5, sound_file = 'sound/effects/tong_pickup.ogg'))
-		if(chose == "conglo")
-			piletype = /obj/structure/orepile/conglo
-		else if(chose == "orichilum")
-			piletype = /obj/structure/orepile/orichilum
-		for(var/obj/structure/orepile/orep in range(1, loc))
-			pile = orep
-			break
-		if(!pile)
-			var/d = pick(cardinal)
-			var/turf/T = get_step(loc, d)
-			pile = new piletype(T)
-		else
-			pile.amount += 1
-			pile.update()
+			if(1)
+				if(chose == "conglo")
+					piletype = /obj/structure/orepile/conglo
+					conglo_amount--
+				else if(chose == "orichilum")
+					piletype = /obj/structure/orepile/orichilum
+					orichilum_amount--
+				for(var/obj/structure/orepile/orep in range(1, loc))
+					pile = orep
+					break
+				if(!pile)
+					var/d = pick(cardinal)
+					var/turf/T = get_step(loc, d)
+					pile = new piletype(T)
+				else
+					pile.amount += 1
+					pile.update()
 		return
 	
 /obj/structure/ore_box/attack_animal(var/mob/living/simple_animal/M)//No more buckling hostile mobs to chairs to render them immobile forever

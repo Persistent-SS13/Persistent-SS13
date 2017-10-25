@@ -298,6 +298,8 @@ mob/verb
 	else
 		var/obj/obbie = H
 		message_admins("obbie found!")
+		if(!obbie)
+			message_admins("NO OBBIE FOUND! YIKES")
 		for(var/mob/mobbie in obbie.contents)
 			minds_list[_slot] = mobbie.mind
 			break

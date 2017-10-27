@@ -51,7 +51,7 @@ research holder datum.
 	var/list/known_tech = list()				//List of locally known tech.
 	var/list/possible_designs = list()		//List of all designs (at base reliability).
 	var/list/known_designs = list()			//List of available designs (at base reliability).
-
+	map_storage_saved_vars = "known_tech;known_designs"
 /datum/research/New()		//Insert techs into possible_tech here. Known_tech automatically updated.
 	for(var/T in subtypesof(/datum/tech))
 		possible_tech += new T(src)
@@ -175,7 +175,7 @@ datum/tech	//Datum of individual technologies.
 	var/max_level = 1          // Maximum level this can be at (for job objectives)
 	var/rare = 1						//How much CentCom wants to get that tech. Used in supply shuttle tech cost calculation.
 	var/list/req_tech = list()			//List of ids associated values of techs required to research this tech. "id" = #
-
+	map_storage_saved_vars = ""
 
 //Trunk Technologies (don't require any other techs and you start knowning them).
 

@@ -421,7 +421,8 @@ obj/item/toy/cards/deck
 	w_class = 2
 	var/cooldown = 0
 	var/list/cards = list()
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;cards"
+	safe_list_vars = "cards"
 obj/item/toy/cards/deck/New()
 	..()
 	icon_state = "deck_[deckstyle]_full"
@@ -645,7 +646,7 @@ obj/item/toy/cards/singlecard
 	var/cardname = null
 	var/flipped = 0
 	pixel_x = -5
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;cardname;flipped;parentdeck"
 
 obj/item/toy/cards/singlecard/examine(mob/user)
 	if(..(user, 0))

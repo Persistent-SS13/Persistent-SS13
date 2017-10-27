@@ -1001,8 +1001,7 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 			var/stringrank = to_strings(a)
 			mind.ranks[stringrank] = 1
 			
-		mind.initial_account = new()
-		mind.initial_account.money = 500
+		mind.initial_account = create_account(real_name, 500)
 		mind.stat_Grit = stat_Grit
 		mind.stat_Fortitude = stat_Fortitude
 		mind.stat_Reflex = stat_Reflex

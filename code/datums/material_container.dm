@@ -17,7 +17,8 @@
 	var/list/materials = list()
 	//MAX_STACK_SIZE = 50
 	//MINERAL_MATERIAL_AMOUNT = 2000
-
+	map_storage_saved_vars = "total_amount;max_amount;sheet_type;owner;materials"
+	safe_list_vars = "materials"
 /datum/material_container/New(obj/O, list/mat_list, max_amt = 0)
 	owner = O
 	max_amount = max(0, max_amt)
@@ -209,7 +210,7 @@
 	var/amount = 0
 	var/material_type = null
 	var/sheet_type = null
-
+	map_storage_saved_vars = "amount;material_type;sheet_type"
 /datum/material/metal
 
 /datum/material/metal/New()

@@ -28,12 +28,13 @@
 	// spawn new ones
 	if(spawned < spawn_size && nextSpawn < world.time)
 		playsound(loc, 'sound/effects/hole_dug3.ogg', 50, 1)
-		spawn(30)
+		nextSpawn = (world.time + rand(5, 30))
+		spawn(10)
 			var/mob/living/simple_animal/hostile/asteroid/petraspider/A = new squad_type(loc)
 			if(aggro)
 				A.Aggro()
 			squad += A
-			nextSpawn = (world.time + rand(10, 70))
+			
 			spawned++
 /turf/simulated/floor/plating/airless/asteroid/hole
 	name = "asteroid (spider hole)"
@@ -58,7 +59,7 @@
 		switch(do_after_stat(user, delay = P.digspeed*1.5, needhand = 1, target = src, progress = 1, action_name = "collapse the tunnel", auto_emote = 1, stat_used = 1, minimum = 0, maximum = 8, maxed_delay = P.digspeed/1.5, progressive_failure = 0, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 5, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1, sound_file = pick(P.digsound)))
 			if(1)
 				src.visible_message("<span class='notice'>[src] collapses in on itself.</span>")
-				src.ChangeTurf(/turf/simulated/floor/plating/airless/asteroid)
+				src.ChangeTurf(/turf/simulated/floor/plating/airless/asteroid, keep_icon = FALSE)
 /**********************Mineral deposits**************************/
 
 #define NORTH_EDGING	"north"

@@ -1,5 +1,14 @@
 /datum/proc/after_load()
 	return
+	
+proc/lagstopsleep()
+	var/tickstosleep = 1
+	do
+		sleep(world.tick_lag*tickstosleep)
+		tickstosleep *= 2 //increase the amount we sleep each time since sleeps are expensive (5-15 proc calls)
+	while(world.tick_usage > 75 && (tickstosleep*world.tick_lag) < 32) //stop if we get to the point where we sleep for seconds at a time
+
+
 proc/mdlist2params(list/l)
                            //This converts a multidimensional list into a set of parameters. The
                            //output is in the following format: "name1=value1&name2=(name3=value3)"
@@ -111,8 +120,11 @@ map_storage
 			src.ignore_types = ignore
 		return
 	
-	
-	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement)
+
+	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 1)
+		var/nextContents
+		if(nocontents)
+			nextContents = 2
 		if(existing_references["[ind]"])
 			if(starting_loc)
 				var/atom/movable/A = existing_references["[ind]"]
@@ -144,23 +156,22 @@ map_storage
 		all_loaded += object
 		existing_references["[ind]"] = object
 		
-		
 		for(var/v in savefile.dir)
 			savefile.cd = "/entries/[ind]"
 			if(v == "type")
 				continue
 			else if(v == "content")
-				if(savefile[v])
-				var/list/refs = params2list(savefile[v])
-				var/finished = 0
-				while(!finished)
-					finished = 1
-					for(var/obj/ob in object.contents)
-						finished = 0
-						ob.forceMove(locate(200, 100, 2))
-						ob.Destroy()
-				for(var/x in refs)
-					var/atom/movable/A = Load_Entry(savefile, x, null, object)
+				if(nocontents != 2)
+					var/list/refs = params2list(savefile[v])
+					var/finished = 0
+					while(!finished)
+						finished = 1
+						for(var/obj/ob in object.contents)
+							finished = 0
+							ob.forceMove(locate(200, 100, 2))
+							ob.Destroy()
+					for(var/x in refs)
+						var/atom/movable/A = Load_Entry(savefile, x, null, object, nocontents = nextContents)
 			else if(findtext(savefile[v], "**list"))
 				var/x = savefile[v]
 				var/list/fixed = string_explode(x, "list")
@@ -183,7 +194,7 @@ map_storage
 				var/x = savefile[v]
 				var/list/fixed = string_explode(x, "entry")
 				x = fixed[2]
-				var/atom/movable/A = Load_Entry(savefile, x)
+				var/atom/movable/A = Load_Entry(savefile, x, nocontents = nextContents)
 				object.vars[v] = A
 			else if(savefile[v] == "**null")
 				object.vars[v] = null
@@ -195,6 +206,7 @@ map_storage
 				savefile.cd = "/entries/[ind]"
 				object.vars[v] = Numeric(savefile[v])
 			savefile.cd = "/entries/[ind]"
+			if (world.tick_usage > 90) lagstopsleep()
 		savefile.cd = ".."
 		return object
 	proc/BuildVarDirectory(savefile/savefile, atom/A, var/contents = 0)

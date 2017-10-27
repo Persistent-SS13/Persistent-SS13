@@ -159,7 +159,7 @@
 	var/b_facial = 0
 	var/f_style = "Shaved"
 
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;damage;perma_injury;open;stage;cavity;sabotaged;encased;hidden;implants;wounds;r_hair;g_hair;b_hair;h_style;r_headacc;g_headacc;b_headacc;ha_style;r_facial;g_facial;b_facial;f_style;children;parent;dna;species"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;damage;perma_injury;open;stage;cavity;sabotaged;encased;hidden;implants;wounds;r_hair;g_hair;b_hair;h_style;r_headacc;g_headacc;b_headacc;ha_style;r_facial;g_facial;b_facial;f_style;children;parent;dna;species;internal_organs"
 /obj/item/organ/external/head/remove()
 	if(owner)
 		if(!istype(dna))

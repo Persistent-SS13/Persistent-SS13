@@ -33,7 +33,7 @@ var/global/default_martial_art = new/datum/martial_art
 	var/socks = "Nude" //Which socks the player wants
 	var/backbag = 2		//Which backpack type the player has chosen. Nothing, Satchel or Backpack.
 
-	map_storage_saved_vars = "name;real_name;r_markings;g_markings;b_markings;m_style;r_eyes;g_eyes;b_eyes;s_tone;r_skin;g_skin;b_skin;lip_style;lip_color;age;b_type;w_uniform;shoes;belt;gloves;glasses;l_ear;r_ear;wear_id;wear_pda;r_store;l_store;s_store;undewear;undershirt;head;toxloss;oxyloss;cloneloss;brainloss;internal_organs;organs;age;wear_mask;wear_suit;dna;species;back;genderl;r_hand;l_hand"
+	map_storage_saved_vars = "name;real_name;r_markings;g_markings;b_markings;m_style;r_eyes;g_eyes;b_eyes;s_tone;r_skin;g_skin;b_skin;lip_style;lip_color;age;b_type;w_uniform;shoes;belt;gloves;glasses;l_ear;r_ear;wear_id;wear_pda;r_store;l_store;s_store;undewear;undershirt;head;toxloss;oxyloss;cloneloss;brainloss;internal_organs;organs;age;wear_mask;wear_suit;dna;species;back;gender;r_hand;l_hand"
 	//Equipment slots
 	var/obj/item/w_uniform = null
 	var/obj/item/shoes = null

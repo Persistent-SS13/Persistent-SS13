@@ -41,6 +41,7 @@
 	return (!density)
 /obj/structure/closet/after_load()
 	if(opened)
+		opened = 0
 		open()
 /obj/structure/closet/get_weight()
 	if(recalc)

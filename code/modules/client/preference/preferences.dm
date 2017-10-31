@@ -543,7 +543,6 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 					
 					ha_style = "None" // No Vulp ears on Unathi
 					m_style = "None" // No Unathi markings on Tajara
-					preview_model.m_style = m_style
 					body_accessory = "None" //no vulptail on humans damnit
 					update_preview_icon_new(1)
 					CharacterCreateProc(user, 1)
@@ -1000,7 +999,6 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 		for(var/a in ranks)
 			var/stringrank = to_strings(a)
 			mind.ranks[stringrank] = 1
-			
 		mind.initial_account = create_account(real_name, 500)
 		mind.stat_Grit = stat_Grit
 		mind.stat_Fortitude = stat_Fortitude
@@ -1010,7 +1008,7 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 		mind.char_slot = slot
 		mind.name = real_name
 		
-		map_storage.Save_Char(user,mind,Hu, slot)
+		map_storage.Save_Char(user.client,mind,Hu, slot)
 		create_single_spawnicon(user.client, slot)
 		slot_interact(user,close = 1)
 		ui_interact(user,close = 1)

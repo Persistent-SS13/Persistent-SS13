@@ -42,7 +42,7 @@
 	var/lights = 0
 	var/lights_power = 6
 	var/emagged = 0
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;radio;cell;internal_tank"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;radio;cell;internal_tank;cargo;equipment;health;dna;selected"
 	
 	
 	var/stat_Grit = 3
@@ -122,7 +122,15 @@
 ////////////////////////
 ////// Helpers /////////
 ////////////////////////
-
+/obj/mecha/after_load()
+	var/list/loaded = equipment
+	equipment = list()
+	for(var/i in 1 to loaded.len)
+		var/obj/item/mecha_parts/mecha_equipment/thing = loaded[i]
+		thing.attach(src)
+	for(var/mob/M in contents)
+		occupant = M
+		break
 /obj/mecha/proc/get_stat(var/stat)
 	switch(stat)
 		if(1)

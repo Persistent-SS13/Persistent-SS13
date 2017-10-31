@@ -41,10 +41,8 @@
 
 	if(H.mind && (H.mind.assigned_role != "MODE"))
 		var/assignment
-		if(H.mind.role_alt_title)
-			assignment = H.mind.role_alt_title
-		else if(H.mind.assigned_role)
-			assignment = H.mind.assigned_role
+		if(H.mind.assigned_job)
+			assignment = H.mind.assigned_job.title
 		else if(H.job)
 			assignment = H.job
 		else
@@ -57,7 +55,10 @@
 		var/datum/data/record/G = new()
 		G.fields["id"]			= id
 		G.fields["name"]		= H.real_name
-		G.fields["real_rank"]	= H.mind.assigned_role
+		if(H.mind.assigned_job)
+			G.fields["real_rank"]	= H.mind.assigned_job.title
+		else
+			G.fields["real_rank"] = "Unassigned (Contact NT)"
 		G.fields["rank"]		= assignment
 		G.fields["age"]			= H.age
 		G.fields["fingerprint"]	= md5(H.dna.uni_identity)
@@ -121,7 +122,7 @@
 		L.fields["b_dna"]		= H.dna.unique_enzymes
 		L.fields["enzymes"]		= H.dna.SE // Used in respawning
 		L.fields["identity"]	= H.dna.UI // "
-		L.fields["image"]		= getFlatIcon(H)	//This is god-awful
+		L.fields["image"]		= getFlatIcon(H)
 		locked += L
 	return
 

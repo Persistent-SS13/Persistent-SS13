@@ -126,6 +126,7 @@ Class Procs:
 	power_change()
 /obj/machinery/after_load()
 	power_change()
+	RefreshParts()
 /obj/machinery/proc/addAtProcessing()
 	if(use_power)
 		myArea = get_area_master(src)

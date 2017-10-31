@@ -1521,7 +1521,7 @@
 	else
 		to_chat(usr, "\blue [self ? "Your" : "[src]'s"] pulse is [src.get_pulse(GETPULSE_HAND)].")
 
-/mob/living/carbon/human/proc/set_species(var/new_species, var/default_colour, var/delay_icon_update = 0, var/loading = 0)
+/mob/living/carbon/human/proc/set_species(var/new_species, var/default_colour, var/delay_icon_update = 0)
 
 	var/datum/species/oldspecies = species
 	if(!dna)
@@ -1572,7 +1572,6 @@
 		see_invisible = SEE_INVISIBLE_LEVEL_ONE
 	else
 		see_invisible = SEE_INVISIBLE_LIVING
-
 	if(species.base_color && default_colour)
 		//Apply colour.
 		r_skin = hex2num(copytext(species.base_color, 2, 4))
@@ -1585,8 +1584,7 @@
 
 	if(!(species.bodyflags & HAS_SKIN_TONE))
 		s_tone = 0
-	if(!loading)
-		species.create_organs(src)
+	species.create_organs(src)
 
 	//Handle default hair/head accessories for created mobs.
 	var/obj/item/organ/external/head/H = get_organ("head")

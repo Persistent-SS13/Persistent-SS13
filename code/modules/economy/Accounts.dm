@@ -62,7 +62,7 @@ var/global/list/all_money_accounts = list()
 	//create a new account
 	var/datum/money_account/M = new()
 	M.owner_name = new_owner_name
-	M.remote_access_pin = rand(1111, 111111)
+	M.remote_access_pin = rand(1111, 9999)
 	M.money = starting_funds
 
 	//create an entry in the account transaction log for when it was created
@@ -152,7 +152,7 @@ var/global/list/all_money_accounts = list()
 	var/security_level = 0	//0 - auto-identify from worn ID, require only account number || REDO FOR PERSISTANCE
 							//1 - require manual login / account number and pin
 							//2 - require card and manual login
-	map_storage_saved_vars = "owner_name;account_numer;remote_access_pin;money;suspended;transaction_log;security_level"
+	map_storage_saved_vars = "owner_name;account_number;remote_access_pin;money;suspended;transaction_log;security_level"
 /datum/money_account/New()
 	..()
 	//security_level = pick (0,1) //Stealing is now slightly viable

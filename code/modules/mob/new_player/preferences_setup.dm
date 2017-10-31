@@ -267,7 +267,7 @@ mob/verb
 		else
 			var/obj/obbie = H
 			if(!obbie)
-				return
+				continue
 			for(var/mob/mobbie in obbie.contents)
 				minds_list[i] = mobbie.mind
 				break
@@ -325,9 +325,8 @@ mob/verb
 			preview_model.shoes = new /obj/item/clothing/shoes/black()
 			random_character()
 		body_accessory = "None"
-		var/datum/species/S = all_species[species]
 		preview_model.deleting = 1
-		preview_model.change_species(species, null, 0, 1)
+		preview_model.change_species(species)
 		preview_model.dna.ready_dna(preview_model)
 		preview_model.deleting = 0
 		preview_model.b_type = b_type

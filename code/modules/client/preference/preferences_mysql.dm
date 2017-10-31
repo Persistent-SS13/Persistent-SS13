@@ -57,7 +57,6 @@
 	return 1
 
 /datum/preferences/proc/save_preferences(client/C)
-
 	// Might as well scrub out any malformed be_special list entries while we're here
 	for(var/role in be_special)
 		if(!(role in special_roles))
@@ -106,7 +105,7 @@
 	return 0
 	
 /datum/preferences/proc/load_mind(client/C, datum/mind/mind, var/firstTime = 0, var/nocontents = 0, var/transfer = 0)
-	return map_storage.Load_Char(C.key, slot, mind, transfer)
+	return map_storage.Load_Char(C.ckey, slot, mind, transfer)
 	if(!slot)	slot = default_slot
 	message_admins("load_mind ran [C.ckey] slot:[slot] nocontents:[firstTime]")
 	slot = sanitize_integer(slot, 1, max_save_slots, initial(default_slot))
@@ -252,6 +251,10 @@
 
 
 /datum/preferences/proc/delete_mind(client/C)
+	if(fexists("char_saves/[C.ckey]/[slot].sav"))
+		fdel("char_saves/[C.ckey]/[slot].sav")
+	preview_icons = list()
+	mind
 	if(!slot)
 		return
 	var/DBQuery/firstquery = dbcon.NewQuery("SELECT body_type, body FROM [format_table_name("character")] WHERE ckey='[C.ckey]' AND slot='[slot]'")

@@ -175,7 +175,7 @@ datum/tech	//Datum of individual technologies.
 	var/max_level = 1          // Maximum level this can be at (for job objectives)
 	var/rare = 1						//How much CentCom wants to get that tech. Used in supply shuttle tech cost calculation.
 	var/list/req_tech = list()			//List of ids associated values of techs required to research this tech. "id" = #
-	map_storage_saved_vars = ""
+	map_storage_saved_vars = "level"
 
 //Trunk Technologies (don't require any other techs and you start knowning them).
 
@@ -301,7 +301,7 @@ datum/tech/robotics
 	w_class = 1
 	materials = list(MAT_METAL=30, MAT_GLASS=10)
 	var/datum/tech/stored
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stored"
 /obj/item/weapon/disk/tech_disk/New()
 	src.pixel_x = rand(-5.0, 5)
 	src.pixel_y = rand(-5.0, 5)
@@ -315,7 +315,7 @@ datum/tech/robotics
 	w_class = 1
 	materials = list(MAT_METAL=30, MAT_GLASS=10)
 	var/datum/design/blueprint
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;blueprint"
 /obj/item/weapon/disk/design_disk/New()
 	src.pixel_x = rand(-5.0, 5)
 	src.pixel_y = rand(-5.0, 5)

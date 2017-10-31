@@ -145,7 +145,8 @@
 	var/light_type = /obj/item/weapon/light/tube		// the type of light item
 	var/fitting = "tube"
 	var/switchcount = 0			// count of number of times switched on/off
-								// this is used to calc the probability the light burns out
+	map_storage_saved_vars = "status;switchcount;rigged;brightness_range;brightness_power;brightness_color;density;icon_state;dir;name;pixel_x;pixel_y"
+		// this is used to calc the probability the light burns out
 
 	var/rigged = 0				// true if rigged to explode
 

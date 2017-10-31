@@ -482,105 +482,7 @@ var/global/datum/controller/occupations/job_master
 
 	proc/EquipRank(var/mob/living/carbon/human/H, var/rank, var/joined_late = 0)
 		if(!H)	return null
-		var/datum/job/job = GetJob(rank)
-		if(job)
-			//Equip custom gear loadout.
-			job.apply_fingerprints(H)
-
-			//If some custom items could not be equipped before, try again now.
-		else
-			to_chat(H, "Your job is [rank] and the game just can't handle it! Please report this bug to an administrator.")
-
-		H.job = rank
-
-		if(!joined_late)
-			var/obj/S = null
-			for(var/obj/effect/landmark/start/sloc in landmarks_list)
-				if(sloc.name != rank)	continue
-				if(locate(/mob/living) in sloc.loc)	continue
-				S = sloc
-				break
-			if(!S)
-				S = locate("start*[rank]") // use old stype
-			if(istype(S, /obj/effect/landmark/start) && istype(S.loc, /turf))
-				H.loc = S.loc
-			// Moving wheelchair if they have one
-			if(H.buckled && istype(H.buckled, /obj/structure/stool/bed/chair/wheelchair))
-				H.buckled.loc = H.loc
-				H.buckled.dir = H.dir
-
-		var/datum/money_account/M = create_savedaccount(H.real_name, H.mind.energy_creds, H.mind.account)
-		if(H.mind)
-			var/remembered_info = ""
-
-			remembered_info += "<b>Your account number is:</b> #[M.account_number]<br>"
-			remembered_info += "<b>Your account pin is:</b> [M.remote_access_pin]<br>"
-			remembered_info += "<b>Your account funds are:</b> $[M.money]<br>"
-
-			if(M.transaction_log.len)
-				var/datum/transaction/T = M.transaction_log[1]
-				remembered_info += "<b>Your account was created:</b> [T.time], [T.date] at [T.source_terminal]<br>"
-			H.mind.store_memory(remembered_info)
-
-			H.mind.initial_account = M
-
-		// If they're head, give them the account info for their department
-		if(H.mind && job.head_position)
-			var/remembered_info = ""
-			var/datum/money_account/department_account = department_accounts[job.department]
-
-			if(department_account)
-				remembered_info += "<b>Your department's account number is:</b> #[department_account.account_number]<br>"
-				remembered_info += "<b>Your department's account pin is:</b> [department_account.remote_access_pin]<br>"
-				remembered_info += "<b>Your department's account funds are:</b> $[department_account.money]<br>"
-
-			H.mind.store_memory(remembered_info)
-
-		spawn(0)
-			to_chat(H, "<span class='boldnotice'>Your account number is: [M.account_number], your account pin is: [M.remote_access_pin]</span>")
-
-		var/alt_title = null
-		if(H.mind)
-			H.mind.assigned_role = rank
-			alt_title = H.mind.role_alt_title
-
-			switch(rank)
-			//	if("Cyborg")
-			//		return H.Robotize()
-			//	if("AI")
-			//		return H
-			//	if("Clown")	//don't need bag preference stuff!
-			//		if(rank=="Clown") // Clowns DO need to breathe, though - N3X
-			//			H.species.equip(H)
-
-			H.species.equip(H)
-
-		to_chat(H, "<B>You are the [alt_title ? alt_title : rank].</B>")
-		to_chat(H, "<b>As the [alt_title ? alt_title : rank] you answer directly to [job.supervisors]. Special circumstances may change this.</b>")
-		if(job.req_admin_notify)
-			to_chat(H, "<b>You are playing a job that is important for the game progression. If you have to disconnect, please notify the admins via adminhelp.</b>")
-
-		spawnIdNew(H, rank, H.client.prefs.certs, alt_title)
-		// 		spawnId(H, rank, alt_title)
-		// 		H.equip_to_slot_or_del(new /obj/item/device/radio/headset(H), slot_l_ear)
-
-		//Gives glasses to the vision impaired
-		if(H.disabilities & DISABILITY_FLAG_NEARSIGHTED)
-			var/equipped = H.equip_to_slot_or_del(new /obj/item/clothing/glasses/regular(H), slot_glasses)
-			if(equipped != 1)
-				var/obj/item/clothing/glasses/G = H.glasses
-				if(istype(G) && !G.prescription)
-					G.prescription = 1
-					G.name = "prescription [G.name]"
-		H.regenerate_icons()
-
-		H.sec_hud_set_ID()
-		H.sec_hud_set_implants()
 		return H
-
-
-		
-		
 		
 		
 	proc/EquipRankPersistant(var/mob/living/H, var/rank, var/joined_late = 0)
@@ -635,7 +537,12 @@ var/global/datum/controller/occupations/job_master
 				H.buckled.loc = H.loc
 				H.buckled.dir = H.dir
 		if(H.mind)
-			var/datum/money_account/M = H.mind.initial_account
+			var/datum/money_account/M 
+			if(H.mind.initial_account && H.mind.initial_account.remote_access_pin && H.mind.initial_account.account_number)
+				M = H.mind.initial_account
+			else
+				M = create_account(H.real_name, 500)
+				H.mind.initial_account = M
 			var/remembered_info = ""
 			remembered_info += "<b>Your account number is:</b> #[M.account_number]<br>"
 			remembered_info += "<b>Your account pin is:</b> [M.remote_access_pin]<br>"
@@ -646,7 +553,6 @@ var/global/datum/controller/occupations/job_master
 				remembered_info += "<b>Your account was created:</b> [T.time], [T.date] at [T.source_terminal]<br>"
 			H.mind.store_memory(remembered_info)
 
-			H.mind.initial_account = M
 			if(M)	
 				spawn(1)
 					to_chat(H, "<span class='boldnotice'>Your account number is: [M.account_number], your account pin is: [M.remote_access_pin]</span>")

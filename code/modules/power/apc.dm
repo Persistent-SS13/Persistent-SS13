@@ -199,6 +199,10 @@
 	for(var/obj/machinery/power/terminal/term in loc.contents)
 		terminal = term
 		terminal.master = src
+	if(operating)
+		toggle_breaker()
+		spawn(1)
+			toggle_breaker()
 	..()
 /obj/machinery/power/apc/proc/init()
 	has_electronics = 2 //installed and secured
@@ -1046,12 +1050,7 @@
 
 	src.update()
 	update_icon()
-/obj/machinery/power/apc/after_load()
-	if(operating)
-		toggle_breaker()
-		spawn(1)
-			toggle_breaker()
-		
+	
 /obj/machinery/power/apc/proc/malfoccupy(var/mob/living/silicon/ai/malf)
 	if(!istype(malf))
 		return

@@ -2,10 +2,10 @@
 #define AUTOLATHE_CATEGORY_MENU   2
 #define AUTOLATHE_SEARCH_MENU     3
 
-/obj/machinery/autolathe
-	name = "autolathe"
-	desc = "It produces items using metal and glass."
-	icon_state = "autolathe"
+/obj/machinery/mineral/conglo_smelter
+	name = "conglo processing unit"
+	desc = "It processes conglo and plasma into a variety of useful materials"
+	icon_state = "autol"
 	density = 1
 
 	var/operating = 0.0
@@ -26,28 +26,10 @@
 	active_power_usage = 100
 	var/busy = 0
 	var/prod_coeff
-	var/datum/wires/autolathe/wires = null
-
 	var/list/being_built = list()
-	var/datum/research/files
-	var/list/datum/design/matching_designs
-	var/selected_category
-	var/screen = 1
-
-	var/datum/material_container/materials
-
-	var/list/categories = list(
-							"Communication",
-							"Construction",
-							"Electronics",
-							"Medical",
-							"Miscellaneous",
-							"Security",
-							"Tools",
-							"Imported"
-							)
-
-/obj/machinery/autolathe/New()
+	var/datum/department/linked_department
+	
+/obj/machinery/mineral/conglo_smelter/New()
 	..()
 	component_parts = list()
 	component_parts += new /obj/item/weapon/circuitboard/autolathe(null)
@@ -56,32 +38,18 @@
 	component_parts += new /obj/item/weapon/stock_parts/matter_bin(null)
 	component_parts += new /obj/item/weapon/stock_parts/manipulator(null)
 	component_parts += new /obj/item/weapon/stock_parts/console_screen(null)
-	materials = new /datum/material_container(src, list(MAT_METAL=1, MAT_GLASS=1))
 	RefreshParts()
 
-	wires = new(src)
-	files = new /datum/research/autolathe(src)
-	matching_designs = list()
-
-/obj/machinery/autolathe/upgraded/New()
-	..()
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/autolathe(null)
-	component_parts += new /obj/item/weapon/stock_parts/matter_bin/super(null)
-	component_parts += new /obj/item/weapon/stock_parts/matter_bin/super(null)
-	component_parts += new /obj/item/weapon/stock_parts/matter_bin/super(null)
-	component_parts += new /obj/item/weapon/stock_parts/manipulator/pico(null)
-	component_parts += new /obj/item/weapon/stock_parts/console_screen(null)
-	RefreshParts()
-
-/obj/machinery/autolathe/Destroy()
-	qdel(wires)
-	wires = null
-	qdel(materials)
-	materials = null
+/obj/machinery/mineral/mineral_depository/proc/LinkDepartment()
+	var/area/A = src.myArea
+	if(istype(A, /area/quartermaster))
+		linked_department = get_department_datum(CARGO)
+	// add custom mining department code here?
+	
+/obj/machinery/mineral/conglo_smelter/Destroy()
 	return ..()
 
-/obj/machinery/autolathe/interact(mob/user)
+/obj/machinery/mineral/conglo_smelter/interact(mob/user)
 	if(shocked && !(stat & NOPOWER))
 		shock(user,50)
 
@@ -89,24 +57,17 @@
 	var/dat
 
 	if(panel_open)
-		dat = wires.GetInteractWindow()
-
+	
 	else
-		switch(screen)
-			if(AUTOLATHE_MAIN_MENU)
-				dat = main_win(user)
-			if(AUTOLATHE_CATEGORY_MENU)
-				dat = category_win(user,selected_category)
-			if(AUTOLATHE_SEARCH_MENU)
-				dat = search_win(user)
+		dat = main_win(user)
 
-	var/datum/browser/popup = new(user, "autolathe", name, 800, 500)
+	var/datum/browser/popup = new(user, "smelter", name, 800, 500)
 	popup.set_content(dat)
 	popup.open()
 
 	return
 
-/obj/machinery/autolathe/attackby(obj/item/O, mob/user, params)
+/obj/machinery/mineral/conglo_smelter/attackby(obj/item/O, mob/user, params)
 	if(busy)
 		to_chat(user, "<span class=\"alert\">The autolathe is busy. Please wait for completion of previous operation.</span>")
 		return 1
@@ -120,7 +81,6 @@
 
 	if(panel_open)
 		if(istype(O, /obj/item/weapon/crowbar))
-			materials.retrieve_all()
 			default_deconstruction_crowbar(O)
 			return 1
 		else
@@ -128,56 +88,17 @@
 			return 1
 	if(stat)
 		return 1
-
-	if(istype(O, /obj/item/weapon/disk/design_disk))
-		user.visible_message("[user] begins to load \the [O] in \the [src]...",
-			"You begin to load a design from \the [O]...",
-			"You hear the chatter of a floppy drive.")
-		busy = 1
-		var/obj/item/weapon/disk/design_disk/D = O
-		if(do_after(user, 14.4, target = src))
-			files.AddDesign2Known(D.blueprint)
-
-		busy = 0
-		return
-
-	var/material_amount = materials.get_item_material_amount(O)
-	if(!material_amount)
-		to_chat(user, "<span class='warning'>This object does not contain sufficient amounts of metal or glass to be accepted by the autolathe.</span>")
-		return 1
-	if(!materials.has_space(material_amount))
-		to_chat(user, "<span class='warning'>The autolathe is full. Please remove metal or glass from the autolathe in order to insert more.</span>")
-		return 1
-	if(!user.unEquip(O))
-		to_chat(user, "<span class='warning'>\The [O] is stuck to you and cannot be placed into the autolathe.</span>")
-		return 1
-
-	busy = 1
-	var/inserted = materials.insert_item(O)
-	if(inserted)
-		if(istype(O,/obj/item/stack))
-			if(O.materials[MAT_METAL])
-				flick("autolathe_o",src)//plays metal insertion animation
-			if(O.materials[MAT_GLASS])
-				flick("autolathe_r",src)//plays glass insertion animation
-			to_chat(user, "<span class='notice'>You insert [inserted] sheet[inserted>1 ? "s" : ""] to the autolathe.</span>")
-			use_power(inserted*100)
-		else
-			to_chat(user, "<span class='notice'>You insert a material total of [inserted] to the autolathe.</span>")
-			use_power(max(500,inserted/10))
-			qdel(O)
-	busy = 0
 	src.updateUsrDialog()
 
-/obj/machinery/autolathe/attack_ghost(mob/user)
+/obj/machinery/mineral/conglo_smelter/attack_ghost(mob/user)
 	interact(user)
 
-/obj/machinery/autolathe/attack_hand(mob/user)
+/obj/machinery/mineral/conglo_smelter/attack_hand(mob/user)
 	if(..(user, 0))
 		return
 	interact(user)
 
-/obj/machinery/autolathe/Topic(href, href_list)
+/obj/machinery/mineral/conglo_smelter/Topic(href, href_list)
 	if(..())
 		return 1
 
@@ -243,7 +164,7 @@
 
 	return
 
-/obj/machinery/autolathe/RefreshParts()
+/obj/machinery/mineral/conglo_smelter/RefreshParts()
 	var/tot_rating = 0
 	prod_coeff = 0
 	for(var/obj/item/weapon/stock_parts/matter_bin/MB in component_parts)
@@ -253,11 +174,11 @@
 	for(var/obj/item/weapon/stock_parts/manipulator/M in component_parts)
 		prod_coeff += M.rating - 1
 
-/obj/machinery/autolathe/proc/get_coeff(var/datum/design/D)
+/obj/machinery/mineral/conglo_smelter/proc/get_coeff(var/datum/design/D)
 	var/coeff = (ispath(D.build_path,/obj/item/stack) ? 1 : 2 ** prod_coeff)//stacks are unaffected by production coefficient
 	return coeff
 
-/obj/machinery/autolathe/proc/build_item(var/datum/design/D, var/multiplier)
+/obj/machinery/mineral/conglo_smelter/proc/build_item(var/datum/design/D, var/multiplier)
 	desc = initial(desc)+"\nIt's building \a [initial(D.name)]."
 	var/is_stack = ispath(D.build_path, /obj/item/stack)
 	var/coeff = get_coeff(D)
@@ -287,7 +208,7 @@
 	updateUsrDialog()
 	desc = initial(desc)
 
-/obj/machinery/autolathe/proc/can_build(var/datum/design/D,var/multiplier=1,var/custom_metal,var/custom_glass)
+/obj/machinery/mineral/conglo_smelter/can_build(var/datum/design/D,var/multiplier=1,var/custom_metal,var/custom_glass)
 	var/coeff = get_coeff(D)
 
 	var/metal_amount = materials.amount(MAT_METAL)
@@ -394,13 +315,12 @@
 	being_built = new /list()
 	//visible_message("[bicon(src)] <b>\The [src]</b> beeps, \"Queue processing finished successfully.\"")
 
-/obj/machinery/autolathe/proc/main_win(mob/user)
+/obj/machinery/mineral/conglo_smelter/proc/main_win(mob/user)
 	var/dat = "<table style='width:100%'><tr>"
 	dat += "<td valign='top' style='margin-right: 300px'>"
-	dat += "<div class='statusDisplay'><h3>Autolathe Menu:</h3><br>"
-	dat += "<b>Total amount:</b> [materials.total_amount] / [materials.max_amount] cm<sup>3</sup><br>"
-	dat += "<b>Metal amount:</b> [materials.amount(MAT_METAL)] cm<sup>3</sup><br>"
-	dat += "<b>Glass amount:</b> [materials.amount(MAT_GLASS)] cm<sup>3</sup><br>"
+	dat += "<div class='statusDisplay'><h3>Conglo Smelter Menu:</h3><br>"
+	dat += "<b>Conglo amount:</b> [materials.amount(MAT_METAL)] cm<sup>3</sup><br>"
+	dat += "<b>Plasma amount:</b> [materials.amount(MAT_GLASS)] cm<sup>3</sup><br>"
 
 	dat += "<form name='search' action='?src=\ref[src]'> \
 	<input type='hidden' name='src' value='\ref[src]'> \
@@ -414,7 +334,7 @@
 	dat += "<table style='width:100%' align='center'><tr>"
 
 	for(var/C in categories)
-		if(line_length > 2)
+		if(line_length > 2
 			dat += "</tr><tr>"
 			line_length = 1
 
@@ -427,72 +347,6 @@
 	dat += "</tr></table>"
 	return dat
 
-/obj/machinery/autolathe/proc/category_win(mob/user,var/selected_category)
-	var/dat = "<table style='width:100%'><tr><td valign='top' style='margin-right: 300px'>"
-	dat += "<div class='statusDisplay'>"
-	dat += "<A href='?src=\ref[src];menu=[AUTOLATHE_MAIN_MENU]'>Return to main menu</A>"
-	dat += "<h3>Browsing [selected_category]:</h3><br>"
-	dat += "<b>Total amount:</b> [materials.total_amount] / [materials.max_amount] cm<sup>3</sup><br>"
-	dat += "<b>Metal amount:</b> [materials.amount(MAT_METAL)] cm<sup>3</sup><br>"
-	dat += "<b>Glass amount:</b> [materials.amount(MAT_GLASS)] cm<sup>3</sup><br>"
-
-	for(var/datum/design/D in files.known_designs)
-		if(!(selected_category in D.category))
-			continue
-
-		if(disabled || !can_build(D))
-			dat += "<span class='linkOff'>[D.name]</span>"
-		else
-			dat += "<a href='?src=\ref[src];make=[D.id];multiplier=1'>[D.name]</a>"
-
-		if(ispath(D.build_path, /obj/item/stack))
-			var/max_multiplier = min(D.maxstack, D.materials[MAT_METAL] ?round(materials.amount(MAT_METAL)/D.materials[MAT_METAL]):INFINITY,D.materials[MAT_GLASS]?round(materials.amount(MAT_GLASS)/D.materials[MAT_GLASS]):INFINITY)
-			if(max_multiplier>10 && !disabled)
-				dat += " <a href='?src=\ref[src];make=[D.id];multiplier=10'>x10</a>"
-			if(max_multiplier>25 && !disabled)
-				dat += " <a href='?src=\ref[src];make=[D.id];multiplier=25'>x25</a>"
-			if(max_multiplier > 0 && !disabled)
-				dat += " <a href='?src=\ref[src];make=[D.id];multiplier=[max_multiplier]'>x[max_multiplier]</a>"
-
-		dat += "[get_design_cost(D)]<br>"
-
-	dat += "</div>"
-	dat += "</td>"
-	dat += get_queue()
-	dat += "</tr></table>"
-	return dat
-
-/obj/machinery/autolathe/proc/search_win(mob/user)
-	var/dat = "<table style='width:100%'><tr><td valign='top' style='margin-right: 300px'>"
-	dat += "<div class='statusDisplay'>"
-	dat += "<A href='?src=\ref[src];menu=[AUTOLATHE_MAIN_MENU]'>Return to main menu</A>"
-	dat += "<h3>Search results:</h3><br>"
-	dat += "<b>Total amount:</b> [materials.total_amount] / [materials.max_amount] cm<sup>3</sup><br>"
-	dat += "<b>Metal amount:</b> [materials.amount(MAT_METAL)] cm<sup>3</sup><br>"
-	dat += "<b>Glass amount:</b> [materials.amount(MAT_GLASS)] cm<sup>3</sup><br>"
-
-	for(var/datum/design/D in matching_designs)
-		if(disabled || !can_build(D))
-			dat += "<span class='linkOff'>[D.name]</span>"
-		else
-			dat += "<a href='?src=\ref[src];make=[D.id];multiplier=1'>[D.name]</a>"
-
-		if(ispath(D.build_path, /obj/item/stack))
-			var/max_multiplier = min(D.maxstack, D.materials[MAT_METAL] ?round(materials.amount(MAT_METAL)/D.materials[MAT_METAL]):INFINITY,D.materials[MAT_GLASS]?round(materials.amount(MAT_GLASS)/D.materials[MAT_GLASS]):INFINITY)
-			if(max_multiplier>10 && !disabled)
-				dat += " <a href='?src=\ref[src];make=[D.id];multiplier=10'>x10</a>"
-			if(max_multiplier>25 && !disabled)
-				dat += " <a href='?src=\ref[src];make=[D.id];multiplier=25'>x25</a>"
-			if(max_multiplier > 0 && !disabled)
-				dat += " <a href='?src=\ref[src];make=[D.id];multiplier=[max_multiplier]'>x[max_multiplier]</a>"
-
-		dat += "[get_design_cost(D)]<br>"
-
-	dat += "</div>"
-	dat += "</td>"
-	dat += get_queue()
-	dat += "</tr></table>"
-	return dat
 
 /obj/machinery/autolathe/proc/get_design_cost(var/datum/design/D)
 	var/coeff = get_coeff(D)

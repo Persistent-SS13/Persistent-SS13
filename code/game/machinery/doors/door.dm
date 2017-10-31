@@ -24,7 +24,7 @@
 	var/emergency = 0
 	var/air_properties_vary_with_direction = 0
 	var/block_air_zones = 1 //If set, air zones cannot merge across the door even when it is opened.
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;autoclose"
 	//Multi-tile doors
 	dir = EAST
 	var/width = 1

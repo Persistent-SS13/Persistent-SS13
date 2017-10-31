@@ -699,10 +699,21 @@ var/round_start_time = 0
 		map_storage.Load(W)
 		
 /datum/controller/gameticker/proc/savestation()
+	var/watch = start_watch()
 	to_chat(world, "<FONT color='blue'><B>SAVING THE STATION! THIS USUALLY TAKES UNDER 10 SECONDS</B></FONT>")
-	var/all_saved = list("Cargo", "Security", "Engineering", "Medical", "Science", "Bridge", "Hallways", "Maintenence", "Quarters")
-	for(var/x in all_saved)
-		saveworld(x)
+	sleep(20)
+	var/started = 0
+	if(processScheduler.isRunning)
+		started = 1
+		processScheduler.stop()
+	map_storage.Save_World(the_station_areas)
+	if(started)
+		processScheduler.start()
+	log_startup_progress("	Saved the station in [stop_watch(watch)]s.")
+	return 1
+	//	var/all_saved = list("Cargo", "Security", "Engineering", "Medical", "Science", "Bridge", "Hallways", "Maintenence", "Quarters")
+	//	for(var/x in all_saved)
+	//	saveworld(x)
 	
 /datum/controller/gameticker/proc/loadstation()
 	var/watch = start_watch()
@@ -711,9 +722,17 @@ var/round_start_time = 0
 		started = 1
 		processScheduler.stop()
 	log_startup_progress("Starting station load...")
-	var/all_saved = list("Cargo", "Security", "Engineering", "Medical", "Science", "Bridge", "Hallways", "Maintenence", "Quarters")
-	for(var/x in all_saved)
-		loadworld(x)
+	sleep(5)
+	map_storage.Load_World(the_station_areas)
+	/**
+	if(fexists("fullstation.sav"))
+		var/savefile/W = new("fullstation.sav")
+		map_storage.Load(W)
+	else
+		var/all_saved = list("Cargo", "Security", "Engineering", "Medical", "Science", "Bridge", "Hallways", "Maintenence", "Quarters")
+		for(var/x in all_saved)
+			loadworld(x)
+	**/
 	if(started)
 		processScheduler.start()
 	log_startup_progress("	Loaded the station in [stop_watch(watch)]s.")

@@ -460,8 +460,6 @@
 			spawn(0)
 				emote("snore")
 	// Keep SSD people asleep
-	if(player_logged && sleeping < 2)
-		sleeping = 2
 	return sleeping
 
 

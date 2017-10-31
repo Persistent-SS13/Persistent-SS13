@@ -95,11 +95,11 @@
 		client.prefs.create_spawnicons(client)	
 	for(var/i=1, i<=client.prefs.max_save_slots, i++)
 		ico = client.prefs.preview_icons[i]
-		mind = client.prefs.minds_list[i]
-		if(mind)
-			name = mind.current.real_name
-			if(mind.initial_account)
-				energy_cred = mind.initial_account.money
+		var/datum/mind/tempmind = client.prefs.minds_list[i]
+		if(tempmind)
+			name = tempmind.current.real_name
+			if(tempmind.initial_account)
+				energy_cred = tempmind.initial_account.money
 			if(ico)
 				user << browse_rsc(ico, "selecticon[i].png")
 			else

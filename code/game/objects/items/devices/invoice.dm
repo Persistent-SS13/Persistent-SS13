@@ -76,7 +76,7 @@
 	if(payment_type == 2)
 		account.hold(cost)
 	else
-		account.charge(cost, destination, name, "Invoice slip", 0, destination.owner_name)
+		account.charge(cost, destination, name, "Invoice slip", 0, destination ? destination.owner_name : null)
 	if(connected)
 		paid = 1
 		paidname = account.owner_name

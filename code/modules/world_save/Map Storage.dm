@@ -206,6 +206,7 @@ map_storage
 				savefile.cd = "/entries/[ind]"
 				object.vars[v] = Numeric(savefile[v])
 			savefile.cd = "/entries/[ind]"
+			TICK_CHECK
 		//	if (world.tick_usage > 90) lagstopsleep()
 		savefile.cd = ".."
 		return object
@@ -449,11 +450,11 @@ map_storage
 				TICK_CHECK
 		return 1
 	proc/Load_World(list/areas)
-		all_loaded = list()
+		
 		for(var/A in areas)
 			var/watch = start_watch()
-			message_admins("Starting to load [A]")
 			existing_references = list()
+			all_loaded = list()
 			var/B = replacetext("[A]", "/", "-")
 			if(!fexists("map_saves/[B].sav"))
 				continue
@@ -473,21 +474,20 @@ map_storage
 						Load_Entry(savefile, turf_ref, old_turf)
 						savefile.cd = "/map/[z]/[y]"
 						TICK_CHECK
+			for(var/i in 1 to all_loaded.len)
+				var/datum/ob = all_loaded[i]
+				ob.after_load()
+				if(istype(ob, /obj))
+					var/obj/obbie = ob
+					if(obbie.load_datums)
+						if(obbie.reagents)
+							obbie.reagents.my_atom = ob
+				if(istype(ob, /turf/simulated))
+					var/turf/simulated/Te = ob
+					//Te.blocks_air = initial(Te.blocks_air)
+					Te.new_air()
 			sleep(1)
 			log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
-		message_admins("all_loaded.len : [all_loaded.len]")
-		for(var/i in 1 to all_loaded.len)
-			var/datum/ob = all_loaded[i]
-			ob.after_load()
-			if(istype(ob, /obj))
-				var/obj/obbie = ob
-				if(obbie.load_datums)
-					if(obbie.reagents)
-						obbie.reagents.my_atom = ob
-			if(istype(ob, /turf/simulated))
-				var/turf/simulated/Te = ob
-				//Te.blocks_air = initial(Te.blocks_air)
-				Te.new_air()	
 // Loading a file is pretty straightforward - you specify the savefile to load from
 // (make sure its an actual savefile, not just a file name), and if necessary you
 // include the savefile's password as an argument. This will automatically check to

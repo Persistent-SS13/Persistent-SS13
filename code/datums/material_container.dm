@@ -22,7 +22,8 @@
 /datum/material_container/New(obj/O, list/mat_list, max_amt = 0)
 	owner = O
 	max_amount = max(0, max_amt)
-
+	if(!mat_list)
+		return
 	if(mat_list[MAT_METAL])
 		materials[MAT_METAL] = new /datum/material/metal()
 	if(mat_list[MAT_GLASS])

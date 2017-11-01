@@ -727,7 +727,14 @@ var/global/nologevent = 0
 		return
 	spawn(0)
 		ticker.savestation()
+/datum/admins/proc/fixapc()
+	set category = "Server"
+	set desc="Fix Apcs"
+	set name="Fix Apcs"
 
+	if(!check_rights(R_SERVER))
+		return
+	fix_all_apcs()
 /datum/admins/proc/loadstation()
 	set category = "Server"
 	set desc="SAAAVE!"

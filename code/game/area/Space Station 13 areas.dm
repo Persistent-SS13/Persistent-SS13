@@ -113,6 +113,9 @@ var/list/ghostteleportlocs = list()
 	icon_state = "start"
 	requires_power = 0
 	lighting_use_dynamic = 0
+	
+/area/space/stationspace
+	name = "\improper Station Space"
 
 /area/space
 	icon_state = "space"

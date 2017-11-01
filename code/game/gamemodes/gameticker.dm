@@ -155,7 +155,6 @@ var/round_start_time = 0
 	setup_economy()
 
 	//shuttle_controller.setup_shuttle_docks()
-//	loadhalf2()
 	spawn(0)//Forking here so we dont have to wait for this to finish
 		mineController = new()
 		mode.post_setup()
@@ -377,7 +376,11 @@ var/round_start_time = 0
 	*/
 
 	processScheduler.start()
-
+	spawn(100)
+		for(var/obj/machinery/power/apc/apc in world)
+			apc.update()
+		
+	
 	if(config.sql_enabled)
 		spawn(3000)
 			statistic_cycle() // Polls population totals regularly and stores them in an SQL DB
@@ -390,7 +393,10 @@ var/round_start_time = 0
 			N.new_player_panel_proc()
 
 	return 1
-
+/proc/fix_all_apcs()
+	for(var/obj/machinery/power/apc/apc in world)
+		apc.update()
+		
 	//Plus it provides an easy way to make cinematics for other events. Just use this as a template :)
 //Plus it provides an easy way to make cinematics for other events. Just use this as a template
 /datum/controller/gameticker/proc/station_explosion_cinematic(station_missed = 0, override = null)
@@ -567,7 +573,7 @@ var/round_start_time = 0
 		spawn
 			declare_completion()
 
-		spawn(50)
+		spawn(600)
 			callHook("roundend")
 
 			if(mode.station_was_nuked)
@@ -649,7 +655,7 @@ var/round_start_time = 0
 		var/datum/preferences/prefs = new()
 		prefs.save_mind(null, employee)	
 		to_chat(employee.current, "<b>Your character has been saved.</b>")
-	savestation()
+
 	//calls auto_declare_completion_* for all modes
 	for(var/handler in typesof(/datum/game_mode/proc))
 		if(findtext("[handler]","auto_declare_completion_"))
@@ -657,8 +663,8 @@ var/round_start_time = 0
 	
 	//Ask the event manager to print round end information
 	event_manager.RoundEnd()
-
-	return 1
+	
+	return savestation()
 
 
 /datum/controller/gameticker/proc/saveworld(var/chosen)
@@ -711,9 +717,6 @@ var/round_start_time = 0
 		processScheduler.start()
 	log_startup_progress("	Saved the station in [stop_watch(watch)]s.")
 	return 1
-	//	var/all_saved = list("Cargo", "Security", "Engineering", "Medical", "Science", "Bridge", "Hallways", "Maintenence", "Quarters")
-	//	for(var/x in all_saved)
-	//	saveworld(x)
 	
 /datum/controller/gameticker/proc/loadstation()
 	var/watch = start_watch()
@@ -724,15 +727,6 @@ var/round_start_time = 0
 	log_startup_progress("Starting station load...")
 	sleep(5)
 	map_storage.Load_World(the_station_areas)
-	/**
-	if(fexists("fullstation.sav"))
-		var/savefile/W = new("fullstation.sav")
-		map_storage.Load(W)
-	else
-		var/all_saved = list("Cargo", "Security", "Engineering", "Medical", "Science", "Bridge", "Hallways", "Maintenence", "Quarters")
-		for(var/x in all_saved)
-			loadworld(x)
-	**/
 	if(started)
 		processScheduler.start()
 	log_startup_progress("	Loaded the station in [stop_watch(watch)]s.")

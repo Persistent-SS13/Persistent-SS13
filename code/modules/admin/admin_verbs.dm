@@ -124,6 +124,7 @@ var/list/admin_verbs_server = list(
 	/datum/admins/proc/saveworld,
 	/datum/admins/proc/loadworld,
 	/datum/admins/proc/savestation,
+	/datum/admins/proc/fixapc,
 	/datum/admins/proc/loadstation,
 	/datum/admins/proc/savechar,
 	/datum/admins/proc/loadchar,

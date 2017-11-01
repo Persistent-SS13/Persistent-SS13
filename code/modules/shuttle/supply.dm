@@ -605,7 +605,7 @@
 	recent[user.name] = world.time + 150
 	var/obj/item/device/invoice/invoice = new()
 	invoice.created_for = user
-	invoice.payment_type = 1 // -- 1 = pay immidietley, 2 = pay on delivery (used for when ordering through the cargo shuttle) 
+	invoice.payment_type = 2 // -- 1 = pay immidietley, 2 = pay on delivery (used for when ordering through the cargo shuttle) 
 	invoice.cost = content_pack.cost // set through creator
 	invoice.invoice_desc = content_pack.desc // set through creator
 	invoice.title = "NT CARGO DEPARTMENT INVOICE" // set through creater, format -- CENTCOM CARGO DEPARTMENT INVOICE

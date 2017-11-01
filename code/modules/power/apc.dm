@@ -196,13 +196,12 @@
 	terminal.master = src
 /obj/machinery/power/apc/after_load()
 	qdel(terminal)
-	for(var/obj/machinery/power/terminal/term in loc.contents)
-		terminal = term
-		terminal.master = src
-	if(operating)
-		toggle_breaker()
-		spawn(1)
-			toggle_breaker()
+	spawn(100)
+		update()
+		if(loc)
+			for(var/obj/machinery/power/terminal/term in loc.contents)
+				terminal = term
+				terminal.master = src
 	..()
 /obj/machinery/power/apc/proc/init()
 	has_electronics = 2 //installed and secured

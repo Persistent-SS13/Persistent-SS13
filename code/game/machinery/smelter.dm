@@ -39,7 +39,7 @@
 	component_parts += new /obj/item/weapon/stock_parts/manipulator(null)
 	component_parts += new /obj/item/weapon/stock_parts/console_screen(null)
 	RefreshParts()
-
+	LinkDepartment()
 /obj/machinery/mineral/mineral_depository/proc/LinkDepartment()
 	var/area/A = src.myArea
 	if(istype(A, /area/quartermaster))
@@ -319,16 +319,8 @@
 	var/dat = "<table style='width:100%'><tr>"
 	dat += "<td valign='top' style='margin-right: 300px'>"
 	dat += "<div class='statusDisplay'><h3>Conglo Smelter Menu:</h3><br>"
-	dat += "<b>Conglo amount:</b> [materials.amount(MAT_METAL)] cm<sup>3</sup><br>"
-	dat += "<b>Plasma amount:</b> [materials.amount(MAT_GLASS)] cm<sup>3</sup><br>"
-
-	dat += "<form name='search' action='?src=\ref[src]'> \
-	<input type='hidden' name='src' value='\ref[src]'> \
-	<input type='hidden' name='search' value='to_search'> \
-	<input type='hidden' name='menu' value='[AUTOLATHE_SEARCH_MENU]'> \
-	<input type='text' name='to_search'> \
-	<input type='submit' value='Search'> \
-	</form><hr>"
+	dat += "<b>Conglo amount:</b> [linked_department.conglo_amount] cm<sup>3</sup><br>"
+	dat += "<b>Plasma amount:</b> [linked_department.plama_amount] cm<sup>3</sup><br>"
 
 	var/line_length = 1
 	dat += "<table style='width:100%' align='center'><tr>"
@@ -368,3 +360,8 @@
 		for(var/datum/design/D in files.known_designs)
 			if("hacked" in D.category)
 				files.known_designs -= D
+/datum/mineral_recipe
+	var/conglo_required = 0
+	var/plasma_required = 0
+	var/refined_type = null
+/datum/mineral_recipe/

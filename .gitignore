@@ -27,3 +27,5 @@ Science.sav
 *.sav
 *.sav
 *.sav
+
+tools/mapmerge/__pycache__/

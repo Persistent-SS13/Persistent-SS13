@@ -207,7 +207,6 @@ map_storage
 				object.vars[v] = Numeric(savefile[v])
 			savefile.cd = "/entries/[ind]"
 			TICK_CHECK
-		//	if (world.tick_usage > 90) lagstopsleep()
 		savefile.cd = ".."
 		return object
 	proc/BuildVarDirectory(savefile/savefile, atom/A, var/contents = 0)
@@ -378,15 +377,18 @@ map_storage
 		var/mindind = savefile["mind"]
 		var/locind = savefile["loc"]
 		var/loc = null
+		TICK_CHECK
 		if(locind != "0")
 			loc = Load_Entry(savefile, locind)
 		var/mob/mob = Load_Entry(savefile, bodyind, nocontents = !transfer)
+		TICK_CHECK
 		if(!mob)
 			return
 		if(!M)
 			mob.mind = new()
 			M = mob.mind
 		var/datum/mind/mind = Load_Entry(savefile, mindind, null, null, M)
+		TICK_CHECK
 		for(var/datum/dat in all_loaded)
 			dat.after_load()
 		for(var/atom/movable/ob in all_loaded)

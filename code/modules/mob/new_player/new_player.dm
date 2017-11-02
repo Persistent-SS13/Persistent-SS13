@@ -91,7 +91,7 @@
 	dat += "<table width='100%'>"
 	if (!client || !client.prefs)
 		return
-	if(!client.prefs.preview_icons || !client.prefs.preview_icons.len || !client.prefs.minds_list || !client.prefs.minds_list.len)	
+	if(!client.prefs.preview_icons || !client.prefs.preview_icons.len || !client.prefs.minds_list || !client.prefs.minds_list.len)
 		client.prefs.create_spawnicons(client)	
 	for(var/i=1, i<=client.prefs.max_save_slots, i++)
 		ico = client.prefs.preview_icons[i]
@@ -141,12 +141,12 @@
 	dat += "<hr>"
 	dat += "<a href='byond://?src=\ref[src];closechar=1'>Close</a><br>"
 	dat += "</center></tt>"
-//		user << browse(dat, "window=saves;size=300x390")
+	//		user << browse(dat, "window=saves;size=300x390")
 	var/datum/browser/popup = new(user, "saves", "<div align='center'>Character Saves</div>", 300, 700)
 	popup.set_content(dat)
 	popup.open(0)
 		
-	
+
 	
 	
 	
@@ -601,44 +601,46 @@
 
 	
 /mob/new_player/proc/AttemptLateSpawnPersistant(rank,var/spawning_at)
-	if(src != usr)
-		return 0
-	if(!ticker || ticker.current_state != GAME_STATE_PLAYING)
-		to_chat(usr, "\red The round is either not ready, or has already finished...")
-		return 0
-	if(!enter_allowed)
-		to_chat(usr, "\blue There is an administrative lock on entering the game!")
-		return 0
-	ticker.show_info(src)
-	//	job_master.AssignPersistantRole(src, rank, 1)
-	var/character = create_character()	//creates the human and transfers vars and mind
-	var/mob/living/mobbie
-	var/obj/objie
-	if(istype(character, /mob/living))
-		mobbie = character
-	else if(istype(character, /obj))
-		objie = character
-		for(var/mob/living/M in objie.contents)
-			if(M.mind)
-				mobbie = M
-				break	
-	//Find our spawning point.
-	var/join_message
-	var/datum/spawnpoint/S
-	if(objie)
-		objie.loc = pick(latejoin)
-		join_message = "has arrived on the station"
-	else if(mobbie)
-		mobbie.loc = pick(latejoin)
-		join_message = "has arrived on the station"
-	if(mobbie && mobbie.mind && mobbie.mind.primary_cert)
-		rank = mobbie.mind.primary_cert.uid
-		job_master.EquipRankPersistant(mobbie, rank, 1)
-		data_core.manifest_inject(mobbie)
-		ticker.minds += mobbie.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
-		AnnounceArrival(mobbie, rank, join_message)
-		callHook("latespawn", list(mobbie))
-	qdel(src)
+	spawn(5)
+		if(src != usr)
+			return 0
+		if(!ticker || ticker.current_state != GAME_STATE_PLAYING)
+			to_chat(usr, "\red The round is either not ready, or has already finished...")
+			return 0
+		if(!enter_allowed)
+			to_chat(usr, "\blue There is an administrative lock on entering the game!")
+			return 0
+		ticker.show_info(src)
+		//	job_master.AssignPersistantRole(src, rank, 1)
+		spawn(0)
+			var/character = create_character()	//creates the human and transfers vars and mind
+			var/mob/living/mobbie
+			var/obj/objie
+			if(istype(character, /mob/living))
+				mobbie = character
+			else if(istype(character, /obj))
+				objie = character
+				for(var/mob/living/M in objie.contents)
+					if(M.mind)
+						mobbie = M
+						break	
+			//Find our spawning point.
+			var/join_message
+			var/datum/spawnpoint/S
+			if(objie)
+				objie.loc = pick(latejoin)
+				join_message = "has arrived on the station"
+			else if(mobbie)
+				mobbie.loc = pick(latejoin)
+				join_message = "has arrived on the station"
+			if(mobbie && mobbie.mind && mobbie.mind.primary_cert)
+				rank = mobbie.mind.primary_cert.uid
+				job_master.EquipRankPersistant(mobbie, rank, 1)
+				data_core.manifest_inject(mobbie)
+				ticker.minds += mobbie.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
+				AnnounceArrival(mobbie, rank, join_message)
+				callHook("latespawn", list(mobbie))
+			qdel(src)
 
 	
 	

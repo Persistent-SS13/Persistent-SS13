@@ -141,15 +141,16 @@ var/round_start_time = 0
 		to_chat(world, "<B>Possibilities:</B> [english_list(modes)]")
 	else
 		src.mode.announce()
-	create_characters() //Create player characters and transfer them
-	collect_minds()
-	equip_characters_persistant()
-	setup_faction_members()
-	
-	data_core.manifest()
-	current_state = GAME_STATE_PLAYING
+	spawn(0)
+		create_characters() //Create player characters and transfer them
+		collect_minds()
+		equip_characters_persistant()
+		setup_faction_members()
+		
+		data_core.manifest()
+		current_state = GAME_STATE_PLAYING
 
-	callHook("roundstart")
+		callHook("roundstart")
 
 	//here to initialize the random events nicely at round start
 	setup_economy()
@@ -396,7 +397,6 @@ var/round_start_time = 0
 /proc/fix_all_apcs()
 	for(var/obj/machinery/power/apc/apc in world)
 		apc.update()
-		
 	//Plus it provides an easy way to make cinematics for other events. Just use this as a template :)
 //Plus it provides an easy way to make cinematics for other events. Just use this as a template
 /datum/controller/gameticker/proc/station_explosion_cinematic(station_missed = 0, override = null)
@@ -494,9 +494,7 @@ var/round_start_time = 0
 
 
 /datum/controller/gameticker/proc/create_characters()
-	
 	for(var/mob/new_player/player in player_list)
-		
 		if(player.ready)
 			show_info(player)
 			var/atom/movable/x = player.create_character()
@@ -573,7 +571,7 @@ var/round_start_time = 0
 		spawn
 			declare_completion()
 
-		spawn(600)
+		spawn(50)
 			callHook("roundend")
 
 			if(mode.station_was_nuked)
@@ -655,7 +653,7 @@ var/round_start_time = 0
 		var/datum/preferences/prefs = new()
 		prefs.save_mind(null, employee)	
 		to_chat(employee.current, "<b>Your character has been saved.</b>")
-
+	
 	//calls auto_declare_completion_* for all modes
 	for(var/handler in typesof(/datum/game_mode/proc))
 		if(findtext("[handler]","auto_declare_completion_"))
@@ -663,8 +661,8 @@ var/round_start_time = 0
 	
 	//Ask the event manager to print round end information
 	event_manager.RoundEnd()
-	
-	return savestation()
+
+	return 1
 
 
 /datum/controller/gameticker/proc/saveworld(var/chosen)

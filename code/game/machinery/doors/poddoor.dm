@@ -6,7 +6,7 @@
 	var/id_tag = 1.0
 	explosion_block = 3
 	var/protected = 1
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id_tag;opacity;density;protected;layer"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id_tag;opacity;density;protected;layer;visible"
 /obj/machinery/door/poddoor/preopen
 	icon_state = "pdoor0"
 	density = 0

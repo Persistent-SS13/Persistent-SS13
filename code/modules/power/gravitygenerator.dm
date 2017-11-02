@@ -126,13 +126,14 @@ var/const/GRAV_NEEDS_WRENCH = 3
 	for(var/area/A in world)
 		if(!is_station_level(A.z)) continue
 		A.gravitychange(0,A)
-	shake_everyone()
+	//	shake_everyone()
 	return ..()
 
 
 /obj/machinery/gravity_generator/main/after_load()
 	message_admins("after_load grav generator!")
 	setup_parts()
+	set_state(1)
 	..()
 /obj/machinery/gravity_generator/main/proc/setup_parts()
 	var/turf/our_turf = get_turf(src)

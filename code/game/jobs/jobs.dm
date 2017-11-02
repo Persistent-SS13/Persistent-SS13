@@ -335,7 +335,12 @@ var/list/whitelisted_positions = list(
 		var/display_name = get_default_title(M.ranks[to_strings(J.department_flag)], J)
 		to_chat(M.current, "<B>You have been reassigned to [alt_title ? alt_title : display_name].</B>")
 		to_chat(M.current, "<b>As an [alt_title ? alt_title : display_name] you answer directly to [J.supervisors]. Work with your colleagues to complete your quota and get paid!</b>")
-		
+	if(M.spawned_id)
+		M.spawned_id.access |= J.get_access
+		M.spawned_id.rank = job
+		M.spawned_id.assignment = get_default_title(H.mind.ranks[to_strings(job.department_flag)], job)
+		M.spawned_id.name = "[M.spawned_id.registered_name]'s ID Card ([M.spawned_id.assignment])"
+
 	var/datum/department/department = get_department_datum(J.department_flag)	
 	var/objcount = 1
 

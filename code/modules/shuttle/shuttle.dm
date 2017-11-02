@@ -17,7 +17,7 @@
 	var/height = 0	//size of covered area, paralell to dir
 	var/dwidth = 0	//position relative to covered area, perpendicular to dir
 	var/dheight = 0	//position relative to covered area, parallel to dir
-
+	map_storage_saved_vars = "name;dir;width;height;dwidth;dheight"
 	//these objects are indestructable
 /obj/docking_port/Destroy()
 	return QDEL_HINT_LETMELIVE

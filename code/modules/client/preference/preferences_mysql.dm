@@ -105,7 +105,8 @@
 	return 0
 	
 /datum/preferences/proc/load_mind(client/C, datum/mind/mind, var/firstTime = 0, var/nocontents = 0, var/transfer = 0)
-	return map_storage.Load_Char(C.ckey, slot, mind, transfer)
+	var/map_storage/temp_storage = new("SS13")
+	return temp_storage.Load_Char(C.ckey, slot, mind, transfer)
 	if(!slot)	slot = default_slot
 	message_admins("load_mind ran [C.ckey] slot:[slot] nocontents:[firstTime]")
 	slot = sanitize_integer(slot, 1, max_save_slots, initial(default_slot))
@@ -1985,7 +1986,8 @@
 
 	
 /datum/preferences/proc/save_mind(client/C, var/datum/mind/H, var/mob/living/carbon/human/Firstbod)
-	return map_storage.Save_Char(C, H, Firstbod, H.char_slot)
+	var/map_storage/temp_storage = new("SS13")
+	return temp_storage.Save_Char(C, H, Firstbod, H.char_slot)
 	var/current = 0
 	var/ckey
 	if(H)

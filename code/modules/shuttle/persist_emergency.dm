@@ -368,6 +368,8 @@
 				timer = world.time
 				open_dock()
 				priority_announcement.Announce("The Departure Shuttle has arrived at Centcom. Active crewmembers will have [time_left] minute before you are forced into the habitat ring to rest before your next deployment.")
+				spawn(0)
+					ticker.savestation()
 		if(SHUTTLE_ENDING)
 			if(time_left <= 0)
 				mode = SHUTTLE_ENDGAME

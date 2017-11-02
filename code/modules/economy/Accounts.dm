@@ -119,7 +119,6 @@ var/global/list/all_money_accounts = list()
 	all_money_accounts.Add(M)
 
 	return M
-
 	
 /proc/create_savedaccount(var/new_owner_name, var/starting_funds, var/list/account)
 
@@ -156,7 +155,8 @@ var/global/list/all_money_accounts = list()
 /datum/money_account/New()
 	..()
 	//security_level = pick (0,1) //Stealing is now slightly viable
-
+/datum/money_account/after_load()
+	all_money_accounts.Add(src)
 /datum/transaction
 	var/target_name = ""
 	var/purpose = ""

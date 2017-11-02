@@ -346,7 +346,7 @@
 	if(D.materials[MAT_METAL])
 		dat += "[D.materials[MAT_METAL] / coeff] metal "
 	if(D.materials[MAT_GLASS])
-		dat += "[D.materials[MAT_GLASS] / coeff] glass"
+		dat += "[D.materials[MAT_GLASS] / coeff] glass "
 	return dat
 
 /obj/machinery/autolathe/proc/adjust_hacked(var/hack)

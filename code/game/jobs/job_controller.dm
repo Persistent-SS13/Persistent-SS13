@@ -686,7 +686,7 @@ var/global/datum/controller/occupations/job_master
 			C.name = "[C.registered_name]'s ID Card ([C.assignment])"
 			C.photo = get_id_photo(H)
 			if(H.mind)
-				C,assigned_mind = H.mind
+				C.assigned_mind = H.mind
 				H.mind.spawned_id = C
 			//put the player's account number onto the ID
 			if(H.mind && H.mind.initial_account)

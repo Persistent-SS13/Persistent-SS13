@@ -72,7 +72,21 @@
 			terminal.connect_to_network()
 		update_icon()
 	return
-
+/obj/machinery/power/smes/after_load()
+	dir_loop:
+		for(var/d in cardinal)
+			var/turf/T = get_step(src, d)
+			for(var/obj/machinery/power/terminal/term in T)
+				if(term && term.dir == turn(d, 180))
+					terminal = term
+					break dir_loop
+	if(!terminal)
+		stat |= BROKEN
+		return
+	terminal.master = src
+	if(!terminal.powernet)
+		terminal.connect_to_network()
+	update_icon()					
 /obj/machinery/power/smes/upgraded/New()
 	..()
 	component_parts = list()

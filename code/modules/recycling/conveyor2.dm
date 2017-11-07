@@ -18,7 +18,7 @@
 	var/id = ""			// the control ID	- must match controller ID
 	var/verted = 1		// set to -1 to have the conveyour belt be inverted, so you can use the other corner icons
 	speed_process = 1
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;id;forwards;backwards;verted"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;id;forwards;backwards;verted;movedir"
 /obj/machinery/conveyor/centcom_auto
 	id = "round_end_belt"
 

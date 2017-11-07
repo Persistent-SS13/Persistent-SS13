@@ -293,12 +293,17 @@
 	var/autostart = 0 		// Automatically search for connected devices
 	var/obj/machinery/power/tracker/connected_tracker = null
 	var/list/connected_panels = list()
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;component_parts;id;track"
 // Used for mapping in solar array which automatically starts itself (telecomms, for example)
 /obj/machinery/power/solar_control/autostart
 	track = 2 // Auto tracking mode
 	autostart = 1 // Automatically start
 
+/obj/machinery/power/solar_control/after_load()
+	src.search_for_connected()
+	if(connected_tracker && track == 2)
+		connected_tracker.set_angle(sun.angle)
+	set_panels(cdir)
 /obj/machinery/power/solar_control/initialize()
 	..()
 	if(!powernet)

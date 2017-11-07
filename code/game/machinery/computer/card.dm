@@ -129,8 +129,8 @@ var/time_last_changed_position = 0
 			"can_demote" = promotable,
 			"is_same" = same)))
 
-	return formatted	
-		
+	return formatted
+
 
 /obj/machinery/computer/card/proc/get_certs()
 	var/list/formatted = list()
@@ -141,6 +141,7 @@ var/time_last_changed_position = 0
 	var/list/job_list = get_department_jobs(modify.assigned_mind.assigned_job.department_flag)
 	
 	for(var/datum/cert/job in job_list)
+		if(job.head_position) continue
 		if(job_blacklisted(job))
 			continue
 		var/has_cert = 0	

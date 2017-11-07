@@ -1125,8 +1125,11 @@
 					to_chat(user,"The scan reveals there is [oreturf.resource_remaining] units of [oreturf.oretype] here.")
 				return
 			var/found = 0
+			var/loop_amount =0
 			for(var/turf/simulated/floor/plating/airless/asteroid/ore/oreturf in range(T, 10))
 				if(!oreturf.resource_remaining) continue
+				loop_amount++
+				if(loop_amount > 5) break
 				found = 1
 				var/northmove = 0 // 1 = north 2 = south 0 = neither
 				var/eastmove = 0 // 1 = east 2 = west 0 = neither

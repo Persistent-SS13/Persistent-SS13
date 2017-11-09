@@ -1161,8 +1161,7 @@
 				to_chat(user,"The scan reveals there is no mineable materials within 10 meters.")
 		if(2)
 			to_chat(user, "You fail to get any useful readings from your scans.")
-	return // additional code for further ranged materials?
-
+	return
 /obj/item/device/mineral_scanner/attack_self(mob/user)
 	to_chat(user, "Use this scanner on the asteroid floor or walls to detect mineable materials.")
 	return

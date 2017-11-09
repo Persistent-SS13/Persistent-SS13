@@ -354,7 +354,7 @@ map_storage
 		var/locind = 0
 		if(istype(current.loc, /obj))
 			locind = BuildVarDirectory(savefile, current.loc, 1)
-			
+			current.loc.should_save = 0
 		savefile.cd = "/data"
 		savefile["body"] = bodyind
 		savefile["mind"] = mindind
@@ -490,6 +490,7 @@ map_storage
 					Te.new_air()
 			sleep(1)
 			log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
+			
 // Loading a file is pretty straightforward - you specify the savefile to load from
 // (make sure its an actual savefile, not just a file name), and if necessary you
 // include the savefile's password as an argument. This will automatically check to

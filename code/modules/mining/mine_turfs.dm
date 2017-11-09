@@ -539,43 +539,7 @@ var/global/list/rockTurfEdgeCache = list(
 	//note that this proc does not call ..()
 	if(!W || !user)
 		return 0
-	/**	
-	if((istype(W, /obj/item/weapon/shovel)))
-		var/turf/T = user.loc
-		if(!( istype(T, /turf) ))
-			return
 
-		if(dug)
-			to_chat(user, "<span class='warning'>This area has already been dug!</span>")
-			return
-
-		to_chat(user, "<span class='notice'>You start digging...</span>")
-
-		sleep(20)
-		if((user.loc == T && user.get_active_hand() == W))
-			to_chat(user, "<span class='notice'>You dig a hole.</span>")
-			gets_dug()
-			return
-
-	if((istype(W, /obj/item/weapon/pickaxe)))
-		var/obj/item/weapon/pickaxe/P = W
-		var/turf/T = user.loc
-		if(!( istype(T, /turf) ))
-			return
-
-		if(dug)
-			to_chat(user, "<span class='warning'>This area has already been dug!</span>")
-			return
-
-		to_chat(user, "<span class='notice'>You start digging...</span>")
-
-		switch(do_after_stat(user, delay = P.digspeed, needhand = 1, target = src, progress = 1, action_name = "dig away dirt", auto_emote = 1, stat_used = 1, minimum = 0, maximum = 8, maxed_delay = P.digspeed/2, progressive_failure = 0, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 5, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1))
-			if(1)
-				if((user.loc == T && user.get_active_hand() == W))
-					to_chat(user, "<span class='notice'>You dig a hole.</span>")
-					gets_dug()
-					return
-	**/
 	if(istype(W,/obj/item/weapon/storage/bag/ore))
 		var/obj/item/weapon/storage/bag/ore/S = W
 		if(S.collection_mode == 1)
@@ -584,50 +548,9 @@ var/global/list/rockTurfEdgeCache = list(
 				return
 	
 	if(istype(W,/obj/item/device/mineral_scanner))
-		to_chat(user, "<span class='notice'>You begin scanning the ground for mineable material...</span>")
-		switch(do_after_stat(user, delay = 70, needhand = 1, target = src, progress = 1, action_name = "take mineral readings", auto_emote = 1, stat_used = 5, minimum = 2, maximum =10, maxed_delay = 30, progressive_failure = 1, minimum_probability = 50, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 5, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1, sound_file = 'sound/machines/signal.ogg'))
-			if(1)
-				if(istype(src, /turf/simulated/floor/plating/airless/asteroid/ore))
-					var/turf/simulated/floor/plating/airless/asteroid/ore/oreturf = src
-					if(oreturf.resource_remaining <= 0)
-						to_chat(user,"The scan reveals there used to be [oreturf.oretype] here but its depleted now.")
-					else
-						to_chat(user,"The scan reveals there is [oreturf.resource_remaining] units of [oreturf.oretype] here.")
-					return
-				var/found = 0
-				for(var/turf/simulated/floor/plating/airless/asteroid/ore/oreturf in range(src, 10))
-					found = 1
-					var/northmove = 0 // 1 = north 2 = south 0 = neither
-					var/eastmove = 0 // 1 = east 2 = west 0 = neither
-					var/vert = 0
-					var/hori = 0
-					if(oreturf.x > x)
-						eastmove = 1
-						hori = oreturf.x - x
-					else if(oreturf.x < x)
-						eastmove = 2
-						hori = x - oreturf.x
-					if(oreturf.y > y)
-						northmove = 1
-						vert = oreturf.y - y
-					else if(oreturf.y < y)
-						northmove = 2
-						vert = y - oreturf.y
-					to_chat(user,"The scan reveals there is [oreturf.resource_remaining] units of [oreturf.oretype] close by.")
-					if(northmove == 1)
-						to_chat(user,"It is [vert] to the north.")
-					else if(northmove == 2)
-						to_chat(user,"It is [vert] to the south.")
-					if(eastmove == 1)
-						to_chat(user,"It is [hori] to the east.")
-					else if(eastmove == 2)
-						to_chat(user,"It is [hori] to the west.")
-					
-				if(!found)
-					to_chat(user,"The scan reveals there is no mineable materials within 10 meters.")
-			if(2)
-				to_chat(user, "You fail to get any useful readings from your scans.")
-		return // additional code for further ranged materials?
+		var/obj/item/device/mineral_scanner/scanner = W
+		
+		return scanner.scan(user, src)
 			
 /turf/simulated/floor/plating/airless/asteroid/gets_drilled()
 	if(!dug)

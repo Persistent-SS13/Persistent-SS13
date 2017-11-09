@@ -211,7 +211,7 @@
 						puller.last_autoemote = world.time + 300
 			else
 				var/mob/living/carbon/M = puller
-				M.adjustStaminaLoss(max(((10-relative)/4)-fort*0.20, 0))
+				M.adjustStaminaLoss(max(((10-relative)/4)-fort*0.10, 0))
 				if(puller.last_autoemote < world.time && relative < 2)
 					if(prob(5))
 						

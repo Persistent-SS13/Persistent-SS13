@@ -147,3 +147,10 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, )
 	containername = "Science Intern Equipment"
 	desc = "Everything a Science Intern needs."
 	authentication = list("rd", "captain", "hop")
+
+/datum/supply_item/clothing	// Section header - use these to set default supply group and crate type for sections
+	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
+	containertype = /obj/structure/closet/crate/secure/plasma
+	group = 2
+
+	

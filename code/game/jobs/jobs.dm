@@ -191,14 +191,15 @@ var/list/whitelisted_positions = list(
 		certs_by_uid["[J.uid]"] = J
 		
 /proc/setup_department_datums()
-	department_datums = list()
-	department_datums += new /datum/department/medical 
-	department_datums += new /datum/department/security 
-	department_datums += new /datum/department/cargo 
-	department_datums += new /datum/department/science 
-	department_datums += new /datum/department/civilian 
-	department_datums += new /datum/department/command
-	department_datums += new /datum/department/engineering
+	if(!department_datums || !department_datums.len)
+		department_datums = list()
+		department_datums += new /datum/department/medical 
+		department_datums += new /datum/department/security 
+		department_datums += new /datum/department/cargo 
+		department_datums += new /datum/department/science 
+		department_datums += new /datum/department/civilian 
+		department_datums += new /datum/department/command
+		department_datums += new /datum/department/engineering
 	
 	
 /proc/get_department_datum(var/a)

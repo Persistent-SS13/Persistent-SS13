@@ -369,7 +369,14 @@
 				open_dock()
 				priority_announcement.Announce("The Departure Shuttle has arrived at Centcom. Active crewmembers will have [time_left] minute before you are forced into the habitat ring to rest before your next deployment.")
 				spawn(0)
+					ticker.mode.populate_department_lists()
+					ticker.mode.process_medical_tasks()
+					for(var/datum/mind/employee in ticker.minds)
+						if(!employee.current) continue
+						map_storage.Save_Char(null, employee, null, employee.char_slot)	
+						to_chat(employee.current, "<b>Your character has been saved.</b>")
 					ticker.savestation()
+
 		if(SHUTTLE_ENDING)
 			if(time_left <= 0)
 				mode = SHUTTLE_ENDGAME

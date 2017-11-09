@@ -18,6 +18,7 @@
 	var/paidname = ""
 	var/department = 0
 	var/department_name
+	should_save = 0
 /obj/item/device/invoice/New()
 	authentication = list()
 	..()

@@ -45,8 +45,7 @@
 	new /obj/item/weapon/shovel(src)
 	new /obj/item/weapon/pickaxe(src)
 	new /obj/item/device/radio/headset/headset_cargo/mining(src)
-	new /obj/item/device/t_scanner/adv_mining_scanner/lesser(src)
-	new /obj/item/weapon/storage/bag/ore(src)
+	new /obj/item/device/mineral_scanner(src)
 	new /obj/item/clothing/glasses/meson(src)
 
 /**********************Shuttle Computer**************************/

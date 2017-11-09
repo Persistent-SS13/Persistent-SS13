@@ -116,6 +116,10 @@ var/list/ghostteleportlocs = list()
 	
 /area/space/stationspace
 	name = "\improper Station Space"
+/area/space/stationspace/q1
+/area/space/stationspace/q2
+/area/space/stationspace/q3
+/area/space/stationspace/q4
 
 /area/space
 	icon_state = "space"
@@ -2627,5 +2631,8 @@ var/list/the_station_areas = list (
 	/area/turret_protected/ai_upload, //do not try to simplify to "/area/turret_protected" --rastaf0
 	/area/turret_protected/ai_upload_foyer,
 	/area/turret_protected/ai,
-	/area/space/stationspace
+	/area/space/stationspace/q1,
+	/area/space/stationspace/q2,
+	/area/space/stationspace/q3,
+	/area/space/stationspace/q4
 )

@@ -21,7 +21,10 @@
 	update_starlight()
 /turf/space/Destroy()
 	return QDEL_HINT_LETMELIVE
-
+/turf/space/after_load()
+	if(!istype(src, /turf/space/transit))
+		icon_state = "[((x + y) ^ ~(x * y) + z) % 25]"
+	update_starlight()
 /turf/space/BeforeChange()
 	..()
 	var/datum/space_level/S = space_manager.get_zlev(z)

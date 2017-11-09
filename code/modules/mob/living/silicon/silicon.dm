@@ -230,16 +230,16 @@
 					for(var/obj/structure/window/win in get_step(AM,t))
 						now_pushing = 0
 						return
-				if(!AM.get_push_able(src))
-					to_chat(src, "[AM] is too heavy to push.")
-					now_pushing = 0
-					return
-				else
-					if(src.client)
-						client.move_delay += pulling.calculate_movedelay()
-					AM.affect_pushstamina(src)
-					if(Adjacent(AM))
-						step(AM, t)
+			if(!AM.get_push_able(src))
+				to_chat(src, "[AM] is too heavy to push.")
+				now_pushing = 0
+				return
+			else
+				if(src.client)
+					client.move_delay += pulling.calculate_movedelay()
+				AM.affect_pushstamina(src)
+				if(Adjacent(AM))
+					step(AM, t)
 		now_pushing = null
 
 /mob/living/silicon/assess_threat() //Secbots won't hunt silicon units

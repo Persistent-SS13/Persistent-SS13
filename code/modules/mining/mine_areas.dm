@@ -47,7 +47,9 @@ var/global/datum/mine_controller/mineController/New()
 								M.playsound_local(M.loc, pick('sound/ambience/ambigen5.ogg','sound/ambience/ambigen4.ogg'), 50, 0)
 			return rand(450, 600)
 		if(3)
-			var/spawns = 1
+			var/spawns = 0
+			if(prob(33))
+				spawns++
 			for(var/mob/M in player_list)
 				if(M.z == 5)
 					if(prob(66))
@@ -78,7 +80,7 @@ var/global/datum/mine_controller/mineController/New()
 			return rand(200, 300)
 		if(4)
 			if(prob(66))
-				var/spawns = 2
+				var/spawns = 1
 				for(var/mob/living/M in player_list)
 					if(M.z == 5)
 						switch(pick(1,2,3))
@@ -135,7 +137,7 @@ var/global/datum/mine_controller/mineController/New()
 			return rand(100, 200)
 		if(5)
 			if(prob(66))
-				var/spawns = 3
+				var/spawns = 2
 				for(var/mob/living/M in player_list)
 					if(M.z == 5)
 						switch(pick(1,2,3))

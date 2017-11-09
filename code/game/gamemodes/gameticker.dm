@@ -68,6 +68,7 @@ var/round_start_time = 0
 		votetimer()
 
 /datum/controller/gameticker/proc/show_info(mob/recipient)
+	return 0
 	var/output = "<B>PERSISTENT SS13<HR></B>"
 	output += "This is an alpha version of a space station 13 script that saves the characters AND the station betwen round!.<br><br>"
 	output += "The character saving is nearly 100% complete and many of the elements that are needed for multi round ss13 (promotions, basic cash economy) are already in place.<br><br>"
@@ -80,7 +81,7 @@ var/round_start_time = 0
 	output += "Just by loading a character you are helping me stress test, if you play around with the new features (such as they are), that helps me test.<br><br>"
 	output += "People should try customizing both their characters and the station as much as possible..<br><br>"
 	output += "Try to have the most unusual department and character when the round ends, "
-	output += "and.. please, REPORT ALL BUGS TO THE <a href='https://discord.gg/CA696Vc'>DISCHORD</a>"
+	output += "and.. please, REPORT ALL BUGS TO THE <a href='https://discord.gg/CA696Vc'>DISCORD</a>"
 	recipient << browse(output,"window=persistinfo;size=550x600")
 /datum/controller/gameticker/proc/setup()
 	// PERSISTANT EDITS
@@ -646,13 +647,6 @@ var/round_start_time = 0
 		to_chat(world, "<b>There [dronecount>1 ? "were" : "was"] [dronecount] industrious maintenance [dronecount>1 ? "drones" : "drone"] this round.")
 
 	mode.declare_completion()//To declare normal completion.
-	mode.populate_department_lists()
-	mode.process_medical_tasks()
-	for(var/datum/mind/employee in minds)
-		if(!employee.current) continue
-		var/datum/preferences/prefs = new()
-		prefs.save_mind(null, employee)	
-		to_chat(employee.current, "<b>Your character has been saved.</b>")
 	
 	//calls auto_declare_completion_* for all modes
 	for(var/handler in typesof(/datum/game_mode/proc))
@@ -723,12 +717,14 @@ var/round_start_time = 0
 		started = 1
 		processScheduler.stop()
 	log_startup_progress("Starting station load...")
+	map_storage.Load_World(list(/area/admin/persistent))
 	sleep(5)
 	map_storage.Load_World(the_station_areas)
 	if(started)
 		processScheduler.start()
 	log_startup_progress("	Loaded the station in [stop_watch(watch)]s.")
 	return 1
+	
 	
 /datum/controller/gameticker/proc/loadhalf()
 	var/watch = start_watch()

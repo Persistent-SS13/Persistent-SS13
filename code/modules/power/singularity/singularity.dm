@@ -28,7 +28,7 @@
 	var/consumedSupermatter = 0 //If the singularity has eaten a supermatter shard and can go to stage six
 	allow_spin = 0
 	burn_state = LAVA_PROOF
-
+	should_save = 0
 /obj/singularity/New(loc, var/starting_energy = 50, var/temp = 0)
 	//CARN: admin-alert for chuckle-fuckery.
 	singularities += src

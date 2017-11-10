@@ -156,6 +156,11 @@ var/global/list/all_money_accounts = list()
 	..()
 	//security_level = pick (0,1) //Stealing is now slightly viable
 /datum/money_account/after_load()
+	for(var/i in 1 to all_money_accounts.len)
+		var/datum/money_account/D = all_money_accounts[i]
+		if(D.owner_name == owner_name)
+			all_money_accounts[i] = src
+			return
 	all_money_accounts.Add(src)
 /datum/transaction
 	var/target_name = ""

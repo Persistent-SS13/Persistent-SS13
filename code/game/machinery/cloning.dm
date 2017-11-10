@@ -467,6 +467,7 @@
 			occupant_brain = brain
 			if(held_brain.brainmob)
 				to_chat(held_brain.brainmob, "You interface with the cloning pod. You can access the cloning console to make payment towards your cloning.")
+				held_brain.brainmob.loc = src
 			else
 				message_admins("brainmob disappeared during cloning! Contact the developer!")
 			return

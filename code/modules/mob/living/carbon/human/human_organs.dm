@@ -71,7 +71,7 @@
 	for(var/limb_tag in list("l_leg","r_leg","l_foot","r_foot"))
 		var/obj/item/organ/external/E = organs_by_name[limb_tag]
 		if(!E || (E.status & (ORGAN_DESTROYED|ORGAN_DEAD)) || E.is_malfunctioning())
-			stance_damage += 4 // let it fail even if just foot&leg. Also malfunctioning happens sporadically so it should impact more when it procs
+			stance_damage += 8 // let it fail even if just foot&leg. Also malfunctioning happens sporadically so it should impact more when it procs
 			// persistant edit here! if theres any wound thats so bad it cant heal naturally
 		else //	if(E.is_broken() || !E.is_usable())
 		//	stance_damage += 1
@@ -101,7 +101,7 @@
 				emote("scream")
 				fall(1)
 			custom_emote(1, "collapses!")
-		Weaken(5) //can't emote while weakened, apparently.
+		Weaken(10) //can't emote while weakened, apparently.
 
 
 /mob/living/carbon/human/proc/handle_grasp()

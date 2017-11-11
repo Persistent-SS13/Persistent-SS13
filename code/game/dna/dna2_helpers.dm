@@ -206,3 +206,32 @@
 		return 1
 	else
 		return 0
+
+/mob/proc/SpeciesFix(var/list/UI=null)
+	if(istype(src, /mob/living/carbon/human))
+		if(UI!=null)
+			src.dna.UI=UI
+			src.dna.UpdateUI()
+		dna.check_integrity()
+		var/mob/living/carbon/human/H = src
+		var/obj/item/organ/external/head/head_organ = H.get_organ("head")
+		H.update_eyes()
+		if(dna.GetUIState(DNA_UI_GENDER))
+			H.change_gender(FEMALE, 0)
+		else
+			H.change_gender(MALE, 0)
+		H.force_update_limbs()
+		H.update_eyes()
+		H.update_hair()
+		H.update_fhair()
+		H.update_markings()
+		H.update_head_accessory()
+
+		return 1
+	else
+		return 0
+		
+		
+		
+		
+		

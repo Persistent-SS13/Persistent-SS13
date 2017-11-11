@@ -984,6 +984,7 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 		slot = default_slot
 		var/mob/living/carbon/human/Hu = preview_model
 		Hu.real_name = real_name
+		Hu.dna.real_name = real_name
 		Hu.dna.ready_dna(Hu, flatten_SE = 1)
 		Hu.dna.ResetUIFrom(Hu)
 		Hu.sync_organ_dna(assimilate=1)
@@ -1007,8 +1008,9 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 		mind.stat_Focus = stat_Focus
 		mind.char_slot = slot
 		mind.name = real_name
-		
-		map_storage.Save_Char(user.client,mind,Hu, slot)
+		mind.current = Hu
+		Hu.ckey = user.client.ckey
+		map_storage.Save_Char(user.client,mind,null, slot)
 		create_single_spawnicon(user.client, slot)
 		slot_interact(user,close = 1)
 		ui_interact(user,close = 1)
@@ -2614,33 +2616,7 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 					close_load_dialog(user)
 					return 1
 				if("chooseslot")
-					default_slot = text2num(href_list["num"])
-					slot = default_slot
-					create_account()
-					setup_ranks()
-					var/Hu = setup_newinv(user)
-					var/datum/mind/mind = new()
-					mind.initial_account = new()
-					mind.initial_account.money = 500
-					mind.primary_cert = job_master.GetCert("intern")
-					if(mind.primary_cert)
-						message_admins("primary_cert set!")
-					else
-						mind.primary_cert = new /datum/cert/intern()
-						message_admins("resetting primary cert..")
-						message_admins("mindcert : [mind.primary_cert.uid]")
-					mind.stat_Grit = stat_Grit
-					mind.stat_Fortitude = stat_Fortitude
-					mind.stat_Reflex = stat_Reflex
-					mind.stat_Creativity = stat_Creativity
-					mind.stat_Focus = stat_Focus
-					mind.char_slot = slot
-					
-					map_storage.Save_Char(user,mind,Hu, slot)
-					close_load_dialog(user)
-					close_character_dialog(user)
 					return 1
-
 				if("chooseinvalid")
 					to_chat(user, "<span class='userdanger'>Character slot occupied! Choose an open slot or delete a character through the lobby screen.</span>")
 

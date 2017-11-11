@@ -633,6 +633,9 @@
 			else if(mobbie)
 				mobbie.loc = pick(latejoin)
 				join_message = "has arrived on the station"
+			if(mobbie && mobbie.mind && !mobbie.mind.primary_cert)
+				message_admins("NO PRIMARY CERT AFTER LOADING!!")
+				mobbie.mind.primary_cert = job_master.GetCert("intern")
 			if(mobbie && mobbie.mind && mobbie.mind.primary_cert)
 				rank = mobbie.mind.primary_cert.uid
 				job_master.EquipRankPersistant(mobbie, rank, 1)

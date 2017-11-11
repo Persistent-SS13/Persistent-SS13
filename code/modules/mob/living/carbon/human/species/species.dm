@@ -189,6 +189,13 @@
 			return stat_Creativity
 		if(STAT_FOCUS)
 			return stat_Focus
+/datum/species/after_load()
+	for(var/limb_type in has_limbs)
+		var/list/organ_data = has_limbs[limb_type]
+		var/limb_path = organ_data["path"]
+		var/obj/item/organ/O = new limb_path()
+		organ_data["descriptor"] = O.name
+		qdel(O)
 /datum/species/proc/create_organs(var/mob/living/carbon/human/H) //Handles creation of mob organs.
 
 	for(var/obj/item/organ/internal/iorgan in H.internal_organs)

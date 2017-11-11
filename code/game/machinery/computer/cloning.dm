@@ -136,7 +136,7 @@
 /obj/machinery/computer/cloning/proc/make_payment(mob/user as mob, var/datum/money_account/account)
 	var/suggest = 0
 	if(selected == 1)
-		suggest = 1500 - paid
+		suggest = 50 - paid
 	if(selected == 2)
 		suggest = 2500 - paid
 	if(account.security_level != 0 || account != user.mind.initial_account) //If card requires pin authentication (ie seclevel 1 or 2)
@@ -210,7 +210,7 @@
 		data["payments"] = tempay
 	data["selected"] = selected	
 	if(selected == 1)
-		data["remaining"] = 1500 - paid
+		data["remaining"] = 50 - paid
 	if(selected == 2)
 		data["remaining"] = 2500 - paid 
 	data["loading"] = loading
@@ -328,7 +328,7 @@
 		if(!selected)
 			message_admins("payment being made before package selected")
 			return
-		if(selected == 1 && paid >= 1500)
+		if(selected == 1 && paid >= 50)
 			message_admins("overpayment at cloning machine")
 			return
 		if(selected == 2 && paid >= 2500)
@@ -342,7 +342,7 @@
 		if(!selected)
 			message_admins("clone attempt without selected package")
 			return
-		if(selected == 1 && paid < 1500)
+		if(selected == 1 && paid < 50)
 			message_admins("clone attempt without enough payment")
 			return
 		if(selected == 2 && paid < 2500)

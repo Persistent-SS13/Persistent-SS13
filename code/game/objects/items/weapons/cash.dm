@@ -29,7 +29,7 @@ var/global/list/moneytypes=list(
 	var/worth = 1 // Per chip
 	var/amount = 1 // number of chips
 	var/stack_color = "#4E054F"
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;worth;amount"
 /obj/item/weapon/spacecash/New(var/new_loc,var/new_amount=1)
 	loc = new_loc
 	name = "[worth] credit chip"

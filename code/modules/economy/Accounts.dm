@@ -148,7 +148,7 @@ var/global/list/all_money_accounts = list()
 	var/suspended = 0
 	var/list/transaction_log = list()
 	var/holding = 0 // persistance: money gets moved to holding when you have transactions authorized
-	var/security_level = 0	//0 - auto-identify from worn ID, require only account number || REDO FOR PERSISTANCE
+	var/security_level = 1	//0 - auto-identify from worn ID, require only account number || REDO FOR PERSISTANCE
 							//1 - require manual login / account number and pin
 							//2 - require card and manual login
 	map_storage_saved_vars = "owner_name;account_number;remote_access_pin;money;suspended;transaction_log;security_level"
@@ -160,6 +160,7 @@ var/global/list/all_money_accounts = list()
 		var/datum/money_account/D = all_money_accounts[i]
 		if(D.owner_name == owner_name)
 			all_money_accounts[i] = src
+			qdel(D)
 			return
 	all_money_accounts.Add(src)
 /datum/transaction

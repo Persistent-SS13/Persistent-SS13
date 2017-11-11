@@ -122,6 +122,7 @@ map_storage
 	
 
 	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0)
+		TICK_CHECK
 		var/nextContents
 		if(nocontents)
 			nextContents = 2
@@ -171,7 +172,7 @@ map_storage
 							ob.forceMove(locate(200, 100, 2))
 							ob.Destroy()
 					for(var/x in refs)
-						var/atom/movable/A = Load_Entry(savefile, x, null, object, nocontents = nextContents)
+						Load_Entry(savefile, x, null, object, nocontents = nextContents)
 			else if(findtext(savefile[v], "**list"))
 				var/x = savefile[v]
 				var/list/fixed = string_explode(x, "list")
@@ -367,7 +368,6 @@ map_storage
 		if(!slot)
 			message_admins("Load_char without slot")
 			return
-		
 		all_loaded = list()
 		existing_references = list()
 		all_loaded = list()

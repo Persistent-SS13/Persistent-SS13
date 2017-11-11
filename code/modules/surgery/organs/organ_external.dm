@@ -67,7 +67,10 @@
 	var/can_grasp
 	var/can_stand
 	var/wound_cleanup_timer
-
+/obj/item/organ/external/after_load()
+	if(loc && istype(loc, /mob/))
+		owner = loc
+	..()
 /obj/item/organ/external/Destroy()
 	if(parent && parent.children)
 		parent.children -= src

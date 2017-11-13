@@ -251,7 +251,7 @@
 	H.update_fire()
 
 /datum/species/plasmaman/handle_reagents(var/mob/living/carbon/human/H, var/datum/reagent/R)
-	if(R.id == "plasma")
+	if(R.id == "plasma" || R.id == "plasma_dust")
 		H.adjustBruteLoss(-0.5*REAGENTS_EFFECT_MULTIPLIER)
 		H.adjustFireLoss(-0.5*REAGENTS_EFFECT_MULTIPLIER)
 		H.adjustPlasma(20)

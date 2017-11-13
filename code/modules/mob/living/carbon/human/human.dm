@@ -161,8 +161,11 @@
 	..(new_loc, "Drask")
 
 /mob/living/carbon/human/monkey/New(var/new_loc)
-	..(new_loc, "Monkey")
-
+	if(..(new_loc, "Monkey"))
+		for(var/obj/item/organ/internal/brain/B in internal_organs)
+			B.deleting = 1
+			break
+			
 /mob/living/carbon/human/farwa/New(var/new_loc)
 	..(new_loc, "Farwa")
 

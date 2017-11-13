@@ -57,7 +57,7 @@
 								break
 							found++
 							i++
-							linked_department.conglo_amount++
+							linked_department.conglo_amount += 5
 							B.conglo_amount--
 					if(i >= pickup_rate)
 						break
@@ -67,7 +67,7 @@
 								break
 							found++
 							i++
-							linked_department.orichilum_amount++
+							linked_department.orichilum_amount += 5
 							B.orichilum_amount--
 				if(i >= pickup_rate)
 					if(found)
@@ -83,7 +83,7 @@
 								break
 							found++
 							i++
-							linked_department.tantiline_amount++
+							linked_department.tantiline_amount += 5
 							B.tantiline_amount--
 				if(i >= pickup_rate)
 					if(found)
@@ -99,7 +99,7 @@
 								break
 							found++
 							i++
-							linked_department.plasma_amount++
+							linked_department.plasma_amount += 5
 							B.plasma_amount--
 				if(i >= pickup_rate)
 					if(found)

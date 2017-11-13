@@ -12,7 +12,7 @@
 	var/list/req_components = null
 	var/list/req_component_names = null // user-friendly names of components
 	var/state = 1
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;components;circuit"
 	// For pods
 	var/list/connected_parts = list()
 	var/pattern_idx=0
@@ -272,7 +272,7 @@ to destroy them and players will be able to make replacements.
 							/obj/item/weapon/stock_parts/cell = 1,
 							/obj/item/weapon/stock_parts/capacitor = 1)
 
-		
+
 /obj/item/weapon/circuitboard/smes
 	name = "circuit board (SMES)"
 	build_path = /obj/machinery/power/smes
@@ -897,7 +897,7 @@ obj/item/weapon/circuitboard/rdserver
 							/obj/item/weapon/stock_parts/micro_laser = 1,
 							/obj/item/weapon/stock_parts/manipulator = 1,
 							/obj/item/device/assembly/igniter = 1)
-							
+
 /obj/item/weapon/circuitboard/resource_desposit
 	name = "circuit board (Resource Depository)"
 	build_path = /obj/machinery/mineral/

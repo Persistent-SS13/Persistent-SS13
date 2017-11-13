@@ -152,5 +152,22 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, )
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
 	containertype = /obj/structure/closet/crate/secure/plasma
 	group = 2
+	containername = "Clothing Order"
+	
+/datum/supply_item/clothing/tophat
+	name = "Sturdy Top Hat"
+	contains = list(/obj/item/clothing/head/that) // /obj/item/weapon/cartidge/engineering
+	cost = 140
+	desc = "It's an amish looking top hat."
+/datum/supply_item/clothing/fedora
+	name = "Fedora"
+	contains = list(/obj/item/clothing/head/fedora) // /obj/item/weapon/cartidge/engineering
+	cost = 120
+	desc = "A black fedora, cool people only."
+/datum/supply_item/clothing/monocle
+	name = "Monocle"
+	contains = list(/obj/item/clothing/glasses/monocle) // /obj/item/weapon/cartidge/engineering
+	cost = 95
+	desc = "Dapper!"
 
 	

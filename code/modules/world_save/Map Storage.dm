@@ -121,7 +121,7 @@ map_storage
 		return
 	
 
-	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0)
+	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0, var/species_override = 0)
 		TICK_CHECK
 		var/nextContents
 		if(nocontents)
@@ -156,7 +156,14 @@ map_storage
 			return
 		all_loaded += object
 		existing_references["[ind]"] = object
-		
+		if(species_override)
+			var/mob/living/carbon/human/hum = object
+			var/x = savefile["species"]
+			var/list/fixed = string_explode(x, "entry")
+			x = fixed[2]
+			var/datum/species/S = Load_Entry(savefile, x)
+			savefile.cd = "/entries/[ind]"
+			hum.set_species(S.name)
 		for(var/v in savefile.dir)
 			savefile.cd = "/entries/[ind]"
 			if(v == "type")
@@ -380,7 +387,7 @@ map_storage
 		TICK_CHECK
 		if(locind != "0")
 			loc = Load_Entry(savefile, locind)
-		var/mob/mob = Load_Entry(savefile, bodyind, nocontents = !transfer)
+		var/mob/mob = Load_Entry(savefile, bodyind, nocontents = !transfer, species_override = 1)
 		TICK_CHECK
 		if(!mob)
 			return

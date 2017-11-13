@@ -464,6 +464,7 @@ BLIND     // can't see anything
 	var/ignore_suitadjust = 1
 	var/adjust_flavour = null
 	var/list/hide_tail_by_species = null
+	map_storage_saved_vars = "density,icon_state;dir;name;pixel_x;pixel_y;suit_adjusted"
 
 //Proc that opens and closes jackets.
 /obj/item/clothing/suit/proc/adjustsuit(var/mob/user)

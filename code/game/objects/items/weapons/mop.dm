@@ -81,6 +81,10 @@
 	throw_range = 4
 	mopspeed = 20
 
+/obj/item/weapon/mop/advanced/examine(mob/user)
+	..(user)
+	to_chat(user, "<span class='notice'>The mop's water tank has [round(reagents.get_reagent_amount("water"))] units of water left.</span>")
+
 /obj/item/weapon/mop/advanced/cyborg
 	mopcap = 40
 

@@ -206,24 +206,19 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, )
 	desc = "A stylish scarf."
 /datum/supply_item/clothing/stripedredscarf
 	name = "Striped Red Scarf"
-	contains = list(/obj/item/clothing/accessory/scarf/stripedredscarf)
+	contains = list(/obj/item/clothing/accessory/stripedredscarf)
 	cost = 100
 	desc = "A stylish scarf."
 /datum/supply_item/clothing/waistcoat
 	name = "Black Waistcoat"
-	contains = list(/obj/item/clothing/under/waistcoat)
+	contains = list(/obj/item/clothing/accessory/waistcoat)
 	cost = 160
 	desc = "A spiffy black waistcoat."
 /datum/supply_item/clothing/sundress
 	name = "Sundress"
-	contains = list(/obj/item/clothing/under/waistcoat)
+	contains = list(/obj/item/clothing/under/sundress)
 	cost = 160
 	desc = "A flowery sundress."
-/datum/supply_item/clothing/stripeddress
-	name = "Striped Dress"
-	contains = list(/obj/item/clothing/under/stripeddress)
-	cost = 160
-	desc = "A fashionable dress."
 /datum/supply_item/clothing/stripeddress
 	name = "Striped Dress"
 	contains = list(/obj/item/clothing/under/stripeddress)

@@ -602,7 +602,6 @@ BLIND     // can't see anything
 	var/basecolor
 	var/easy_femme = 0 // PERSISTANT EDIT!
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;rolled_down;accessories"
-
 /obj/item/clothing/under/proc/can_attach_accessory(obj/item/clothing/accessory/A)
 	if(istype(A))
 		.=1

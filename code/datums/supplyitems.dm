@@ -194,5 +194,43 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, )
 	contains = list(/obj/item/clothing/suit/jacket/miljacket)
 	cost = 200
 	desc = "A canvas jacket styled after military garb."
-
-	
+/datum/supply_item/clothing/redscarf
+	name = "Red Scarf"
+	contains = list(/obj/item/clothing/accessory/scarf/red)
+	cost = 90
+	desc = "A stylish scarf."
+/datum/supply_item/clothing/darkbluescarf
+	name = "Dark Blue Scarf"
+	contains = list(/obj/item/clothing/accessory/scarf/darkblue)
+	cost = 90
+	desc = "A stylish scarf."
+/datum/supply_item/clothing/stripedredscarf
+	name = "Striped Red Scarf"
+	contains = list(/obj/item/clothing/accessory/scarf/stripedredscarf)
+	cost = 100
+	desc = "A stylish scarf."
+/datum/supply_item/clothing/waistcoat
+	name = "Black Waistcoat"
+	contains = list(/obj/item/clothing/under/waistcoat)
+	cost = 160
+	desc = "A spiffy black waistcoat."
+/datum/supply_item/clothing/sundress
+	name = "Sundress"
+	contains = list(/obj/item/clothing/under/waistcoat)
+	cost = 160
+	desc = "A flowery sundress."
+/datum/supply_item/clothing/stripeddress
+	name = "Striped Dress"
+	contains = list(/obj/item/clothing/under/stripeddress)
+	cost = 160
+	desc = "A fashionable dress."
+/datum/supply_item/clothing/stripeddress
+	name = "Striped Dress"
+	contains = list(/obj/item/clothing/under/stripeddress)
+	cost = 160
+	desc = "A fashionable dress."
+/datum/supply_item/clothing/sailordress
+	name = "Sailor Dress"
+	contains = list(/obj/item/clothing/under/sailordress)
+	cost = 190
+	desc = "A dress styled after the formal uniform of a sailor."

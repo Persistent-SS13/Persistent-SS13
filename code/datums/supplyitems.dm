@@ -156,18 +156,43 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, )
 	
 /datum/supply_item/clothing/tophat
 	name = "Sturdy Top Hat"
-	contains = list(/obj/item/clothing/head/that) // /obj/item/weapon/cartidge/engineering
-	cost = 140
+	contains = list(/obj/item/clothing/head/that) 
+	cost = 190
 	desc = "It's an amish looking top hat."
 /datum/supply_item/clothing/fedora
 	name = "Fedora"
-	contains = list(/obj/item/clothing/head/fedora) // /obj/item/weapon/cartidge/engineering
-	cost = 120
+	contains = list(/obj/item/clothing/head/fedora)
+	cost = 150
 	desc = "A black fedora, cool people only."
 /datum/supply_item/clothing/monocle
 	name = "Monocle"
-	contains = list(/obj/item/clothing/glasses/monocle) // /obj/item/weapon/cartidge/engineering
+	contains = list(/obj/item/clothing/glasses/monocle) 
 	cost = 95
 	desc = "Dapper!"
+/datum/supply_item/clothing/navysuit
+	name = "Navy Suit"
+	contains = list(/obj/item/clothing/under/suit_jacket/navy)
+	cost = 260
+	desc = "A navy suit and red tie, intended for the stations finest."
+/datum/supply_item/clothing/kilt
+	name = "Kilt"
+	contains = list(/obj/item/clothing/under/kilt)
+	cost = 200
+	desc = "Noo peeking!"
+/datum/supply_item/clothing/overalls
+	name = "Laborer's Overalls"
+	contains = list(/obj/item/clothing/under/overalls)
+	cost = 160
+	desc = "Generic clothes for the generic proletariat."
+/datum/supply_item/clothing/jeans
+	name = "Jeans and T-shirt"
+	contains = list(/obj/item/clothing/under/pants/jeans, /obj/item/clothing/undershirt/white)
+	cost = 180
+	desc = "A pair of tough blue jeans and a fresh white t-shirt"
+/datum/supply_item/clothing/miljacket
+	name = "Olive Military Jacket"
+	contains = list(/obj/item/clothing/suit/jacket/miljacket)
+	cost = 200
+	desc = "A canvas jacket styled after military garb."
 
 	

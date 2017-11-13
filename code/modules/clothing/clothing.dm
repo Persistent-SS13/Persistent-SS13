@@ -283,7 +283,7 @@ BLIND     // can't see anything
 	var/adjusted_flags = null
 	strip_delay = 40
 	put_on_delay = 40
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;mask_adjusted"
 //Proc that moves gas/breath masks out of the way
 /obj/item/clothing/mask/proc/adjustmask(var/mob/user)
 	var/mob/living/carbon/human/H = usr //Used to check if the mask is on the head, to check if the hands are full, and to turn off internals if they were on when the mask was pushed out of the way.
@@ -588,7 +588,7 @@ BLIND     // can't see anything
 		"Vox" = 'icons/mob/species/vox/uniform.dmi',
 		"Drask" = 'icons/mob/species/drask/uniform.dmi'
 		)
-	var/has_sensor = 1//For the crew computer 2 = unable to change mode
+	var/has_sensor = 0//For the crew computer 2 = unable to change mode
 	var/sensor_mode = 0
 		/*
 		1 = Report living/dead
@@ -600,7 +600,7 @@ BLIND     // can't see anything
 	var/rolled_down = 0
 	var/basecolor
 	var/easy_femme = 0 // PERSISTANT EDIT!
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;rolled_down;accessories"
 /obj/item/clothing/under/proc/can_attach_accessory(obj/item/clothing/accessory/A)
 	if(istype(A))
 		.=1

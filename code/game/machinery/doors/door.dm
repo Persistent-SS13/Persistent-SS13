@@ -29,10 +29,6 @@
 	//Multi-tile doors
 	dir = EAST
 	var/width = 1
-/obj/machinery/door/after_load()
-	open()
-	sleep(5)
-	close()
 /obj/machinery/door/New()
 	. = ..()
 	if(density)

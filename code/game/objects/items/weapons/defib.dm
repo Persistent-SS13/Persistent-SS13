@@ -23,7 +23,7 @@
 	var/obj/item/weapon/twohanded/shockpaddles/paddles
 	var/obj/item/weapon/stock_parts/cell/high/bcell = null
 	var/combat = 0 //can we revive through space suits?
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;paddles"
 /obj/item/weapon/defibrillator/New() //starts without a cell for rnd
 	..()
 	paddles = make_paddles()

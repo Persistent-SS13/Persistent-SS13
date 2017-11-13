@@ -1008,9 +1008,8 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 		mind.stat_Focus = stat_Focus
 		mind.char_slot = slot
 		mind.name = real_name
-		mind.current = Hu
-		Hu.ckey = user.client.ckey
-		map_storage.Save_Char(user.client,mind,null, slot)
+		
+		map_storage.Save_Char(user.client,mind,Hu, slot)
 		create_single_spawnicon(user.client, slot)
 		slot_interact(user,close = 1)
 		ui_interact(user,close = 1)

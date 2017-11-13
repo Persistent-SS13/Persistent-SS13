@@ -21,7 +21,7 @@
 	var/frequency = 0
 	var/logic_id_tag = "default"					//Defines the ID tag to send logic signals to, so you don't have to unlink from doors and stuff
 	var/logic_connect = 0							//Set this to allow the button to send out logic signals when pressed in addition to normal stuff
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;component_parts;id_tag;logic_id_tag"
 /obj/machinery/driver_button/New(turf/loc, var/w_dir=null)
 	..()
 	switch(w_dir)

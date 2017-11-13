@@ -92,7 +92,8 @@
 	if (!client || !client.prefs)
 		return
 	if(!client.prefs.preview_icons || !client.prefs.preview_icons.len || !client.prefs.minds_list || !client.prefs.minds_list.len)
-		client.prefs.create_spawnicons(client)	
+		client.prefs.create_spawnicons(client)
+		sleep(20)
 	for(var/i=1, i<=client.prefs.max_save_slots, i++)
 		ico = client.prefs.preview_icons[i]
 		var/datum/mind/tempmind = client.prefs.minds_list[i]

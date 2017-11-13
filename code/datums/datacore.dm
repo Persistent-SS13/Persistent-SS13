@@ -133,7 +133,7 @@ proc/get_id_photo_new(var/mob/living/Hu) // PERSISTANT AND MARKED FOR CHANGE
 	if (!Hu.mind || !Hu.client || Hu.client.prefs.slot == 0)
 		return get_id_photo_old(Hu)
 		
-	var/H = Hu // .client.prefs.load_mind(Hu.client, 0, 0, 1)
+	var/H = Hu.client.prefs.load_mind(Hu.client, 0, 0, 1)
 	var/obj/obbie
 	var/mob/mobbie
 	if(istype(H, /obj))
@@ -165,7 +165,7 @@ proc/get_id_photo(var/mob/living/Hu) // PERSISTANT AND MARKED FOR CHANGE
 	if (!Hu.mind || !Hu.client || Hu.client.prefs.slot == 0)
 		return get_id_photo_old(Hu)
 		
-	var/H = Hu	// .client.prefs.load_mind(Hu.client, 0, 0, 1)
+	var/H = Hu.client.prefs.load_mind(Hu.client, 0, 0, 1)
 	var/obj/obbie
 	var/mob/mobbie
 	if(istype(H, /obj))

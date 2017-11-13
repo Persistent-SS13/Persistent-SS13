@@ -811,7 +811,7 @@
 	var/inuse = 0
 	var/obj/item/weapon/reagent_containers/beaker = null
 	var/limit = 10
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;beaker" 
 	//IMPORTANT NOTE! A negative number is a multiplier, a positive number is a flat amount to add. 0 means equal to the amount of the original reagent
 	var/list/blend_items = list (
 

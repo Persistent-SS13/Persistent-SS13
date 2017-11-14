@@ -55,9 +55,8 @@
 	//lighting check
 	var/light_amount = 0
 	var/turf/T = get_turf(src)
-	var/atom/movable/lighting_overlay/LO = locate(/atom/movable/lighting_overlay) in T
-	if(LO)
-		light_amount = LO.get_clamped_lum(0.5)*10
+	if(T)
+		light_amount = T.get_lumcount(0.5) * 10
 	else
 		light_amount =  10
 

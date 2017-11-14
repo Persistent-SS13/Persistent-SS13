@@ -8,6 +8,9 @@
 	use_power = 1
 	idle_power_usage = 20
 	active_power_usage = 5000
+	
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;materials"
+	
 	var/time_coeff = 1
 	var/list/resources = list(
 								MAT_METAL=0,

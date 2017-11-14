@@ -26,7 +26,7 @@
 	w_class = 3
 	max_w_class = 2
 	max_combined_w_class = 14
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;l_code;l_set;locked;l_hacking"
+
 	examine(mob/user)
 		if(..(user, 1))
 			to_chat(user, text("The service panel is [src.open ? "open" : "closed"]."))

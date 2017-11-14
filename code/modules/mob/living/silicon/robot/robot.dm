@@ -43,12 +43,10 @@ var/list/robot_verbs_default = list(
 	var/obj/item/weapon/card/id/equip_id = null
 	// Components are basically robot organs.
 	var/list/components = list()
-	var/list/components_save = list()
+
 	var/obj/item/device/mmi/mmi = null
 
-	map_storage_saved_vars = "module;module_active;module_state_1;module_state_2;module_state_3;module_state_4;cell;mmi;opened;wiresexposed;locked;lamp_intensity;magpulse;ionpule_on;ionpulse;installed_module;chassis_mod;icon_state;components_save;oxyloss;toxloss;brainloss;cloneloss;real_name;name"
-	
-	
+
 	var/datum/wires/robot/wires = null
 
 	var/opened = 0
@@ -97,14 +95,6 @@ var/list/robot_verbs_default = list(
 	var/obj/item/borg/module_chip/installed_module = null
 	var/obj/item/borg/chassis_mod/chassis_mod = null
 	var/chassis_mod_toggled = 0
-	
-/mob/living/silicon/robot/before_save()
-	components_save = list()
-	for(var/i in 1 to components.len)
-		components_save += components[i]
-/mob/living/silicon/robot/after_load()
-	for(var/i in 1 to components.len)
-		components[components[i]] = components_save[i]
 /mob/living/silicon/robot/New(loc,var/syndie = 0,var/unfinished = 0, var/alien = 0, var/loaded = 0)
 
 

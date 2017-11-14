@@ -8,7 +8,7 @@
 	var/obj/item/weapon/gun/holstered = null
 	actions_types = list(/datum/action/item_action/accessory/holster)
 	w_class = 3 // so it doesn't fit in pockets
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;holstered"
+
 //subtypes can override this to specify what can be holstered
 /obj/item/clothing/accessory/holster/proc/can_holster(obj/item/weapon/gun/W)
 	if(!W.isHandgun())

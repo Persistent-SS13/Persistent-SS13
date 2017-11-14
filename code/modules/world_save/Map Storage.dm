@@ -1,7 +1,6 @@
 /datum/proc/after_load()
 	return
-/datum/proc/before_save()
-	return
+	
 proc/lagstopsleep()
 	var/tickstosleep = 1
 	do
@@ -159,14 +158,12 @@ map_storage
 		existing_references["[ind]"] = object
 		if(species_override)
 			var/mob/living/carbon/human/hum = object
-			if(hum)
-				var/x = savefile["species"]
-				var/list/fixed = string_explode(x, "entry")
-				x = fixed[2]
-				var/datum/species/S = Load_Entry(savefile, x)
-				savefile.cd = "/entries/[ind]"
-				hum.set_species(S.name)
-			
+			var/x = savefile["species"]
+			var/list/fixed = string_explode(x, "entry")
+			x = fixed[2]
+			var/datum/species/S = Load_Entry(savefile, x)
+			savefile.cd = "/entries/[ind]"
+			hum.set_species(S.name)
 		for(var/v in savefile.dir)
 			savefile.cd = "/entries/[ind]"
 			if(v == "type")
@@ -223,6 +220,7 @@ map_storage
 	proc/BuildVarDirectory(savefile/savefile, atom/A, var/contents = 0)
 		if(!A.should_save)
 			return 0
+		// If this object has no variables to save, skip it
 		var/ind = saving_references.Find(A)
 		var/ref = 0
 		if(ind)
@@ -230,7 +228,6 @@ map_storage
 		else
 			saving_references += A
 			ref = saving_references.len
-			A.before_save()
 		savefile.cd = "/entries/[ref]"
 		savefile["type"] = A.type
 		var/list/content_refs = list()

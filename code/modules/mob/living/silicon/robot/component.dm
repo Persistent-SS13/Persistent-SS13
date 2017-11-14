@@ -10,8 +10,7 @@
 	var/max_damage = 30
 	var/component_disabled = 0
 	var/mob/living/silicon/robot/owner
-	var/component_name = ""
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;installed;powered;toggled;brute_damage;electronics_damage;component_disabled;owner"
+	var/component_name = "" // this is set in the persistant load because im lazy
 // The actual device object that has to be installed for this.
 /datum/robot_component/var/external_type = null
 

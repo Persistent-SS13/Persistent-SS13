@@ -1,5 +1,8 @@
 //This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:32
-
+/mob/living/carbon/brain/after_load()
+	if(istype(container, /obj/item/device/mmi))
+		var/obj/item/device/mmi/mmi = container
+		mmi.brainmob = src
 /mob/living/carbon/brain
 	var/obj/item/container = null
 	var/timeofhostdeath = 0
@@ -9,6 +12,7 @@
 	icon = 'icons/obj/surgery.dmi'
 	icon_state = "brain1"
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;container;name;real_name"
+		
 	New()
 		var/datum/reagents/R = new/datum/reagents(330)
 		reagents = R

@@ -457,6 +457,8 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	containertype = /obj/structure/closet/crate/secure/plasma
 	group = 4
 	containername = "Atmospherics"
+/datum/supply_item/atmospherics/New()
+	containername = name
 /datum/supply_item/atmospherics/oxygen
 	name = "Canister (O2)"
 	containertype = /obj/machinery/portable_atmospherics/canister/oxygen

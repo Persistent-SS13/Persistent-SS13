@@ -17,6 +17,8 @@
 	var/obj/mecha/mecha = null//This does not appear to be used outside of reference in mecha.dm.
 	var/obj/item/weapon/card/id/ins_id = null // PERSISTANT EDIT! even MMIS carry IDs in the globalist future
 // I'm using this for mechs giving MMIs HUDs now
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;held_brain;robot;mecha"
+
 
 /obj/item/device/mmi/attackby(var/obj/item/O as obj, var/mob/user as mob, params)
 	if(istype(O, /obj/item/organ/internal/brain/crystal ))

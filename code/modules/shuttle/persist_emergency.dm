@@ -263,7 +263,7 @@
 				enterTransit()
 				mode = SHUTTLE_TRANSITTO
 				timer = world.time
-				priority_announcement.Announce("The Departure shuttle has left CENTCOM. Estimate approximately [timeLeft(600)] minutes until the shuttle arrives at the station. As soon as the shuttle docks, the CENTCOM teleporter will triangulate and unlock.")
+				priority_announcement.Announce("The Departure shuttle has left CENTCOM. Any crewmembers that do not board the shuttle will forfeit their pay! Estimate approximately [timeLeft(600)] minutes until the shuttle arrives at the station. As soon as the shuttle docks, the CENTCOM teleporter will triangulate and unlock.")
 				
 		if(SHUTTLE_ARRIVED)
 			if(time_left <= 0)
@@ -301,7 +301,7 @@
 					return
 				mode = SHUTTLE_DOCKED
 				timer = world.time
-				priority_announcement.Announce("The Departure shuttle has docked with the station. The shuttle will depart in approximately [timeLeft(600)] minutes unless the Captain or Head of Personnel delays it.")
+				priority_announcement.Announce("The Departure shuttle has docked with the station. Any crewmembers that do not board the shuttle will forfeit their pay! The shuttle will depart in approximately [timeLeft(600)] minutes unless the Captain or Head of Personnel delays it.")
 				for(var/area/shuttle/escape/E in world)
 					E << 'sound/effects/hyperspace_end.ogg'
 		if(SHUTTLE_CALLED)
@@ -369,8 +369,6 @@
 				open_dock()
 				priority_announcement.Announce("The Departure Shuttle has arrived at Centcom. Active crewmembers will have [time_left] minute before you are forced into the habitat ring to rest before your next deployment.")
 				spawn(0)
-					ticker.mode.populate_department_lists()
-					ticker.mode.process_medical_tasks()
 					for(var/datum/mind/employee in ticker.minds)
 						if(!employee.current) continue
 						map_storage.Save_Char(null, employee, null, employee.char_slot)	
@@ -395,7 +393,9 @@
 				mode = SHUTTLE_ESCAPE
 				timer = world.time
 				priority_announcement.Announce("The Departure Shuttle has left the station. Estimate [timeLeft(600)] minutes until the shuttle docks at Central Command.")
-
+				spawn(50)
+					ticker.mode.populate_department_lists()
+					ticker.mode.process_all_tasks()
 /obj/docking_port/mobile/emergency/proc/open_dock();
 /*
 	for(var/obj/machinery/door/poddoor/shuttledock/D in airlocks)

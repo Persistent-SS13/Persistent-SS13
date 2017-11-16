@@ -159,13 +159,15 @@ map_storage
 		existing_references["[ind]"] = object
 		if(species_override)
 			var/mob/living/carbon/human/hum = object
-			if(hum)
+			if(istype(hum, /mob/living/carbon/human))
 				var/x = savefile["species"]
-				var/list/fixed = string_explode(x, "entry")
-				x = fixed[2]
-				var/datum/species/S = Load_Entry(savefile, x)
-				savefile.cd = "/entries/[ind]"
-				hum.set_species(S.name)
+				if(x)
+					var/list/fixed = string_explode(x, "entry")
+					if(fixed)
+						x = fixed[2]
+						var/datum/species/S = Load_Entry(savefile, x)
+						savefile.cd = "/entries/[ind]"
+						hum.set_species(S.name)
 			
 		for(var/v in savefile.dir)
 			savefile.cd = "/entries/[ind]"

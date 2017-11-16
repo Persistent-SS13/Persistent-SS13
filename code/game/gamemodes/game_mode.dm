@@ -39,7 +39,7 @@
 	var/list/cargoplayers = list()
 	var/list/scienceplayers = list()
 	var/list/commandplayers = list()
-	
+	var/list/engineeringplayers = list()
 	
 	
 /datum/game_mode/proc/announce() //to be calles when round starts
@@ -136,12 +136,6 @@
 						msg += "However, we were unable to send you the $[pay] you're entitled."
 					if(useMS && P)
 						useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-						var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-						PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-					break
-
-
 					
 					
 /datum/game_mode/proc/process_medical_tasks() // all these should be called at the end of the round
@@ -156,93 +150,643 @@
 			if(MS.active)
 				useMS = MS
 				break
-	if (1)
-		for(var/datum/mind/employee in ticker.minds)
-			if(!istype(employee.current))
-				return 0
-			var/mob/living/carbon/human/I = employee.current
-			if(I && I.mind)
-				var/turf/location = get_turf(I.loc)
-				if(!location)
-					lostamount += 1
-
-				if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-					if(I.stat != DEAD)
-						escapedalive += 1
-						if(I.health >= I.maxHealth)
-							perfecthealth += 1
-					else
-						deadamount += 1
-
-				else
-					switch(location.loc.type)
-						if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-							if(I.stat != DEAD)
-								escapedalive += 1
-								if(I.health >= I.maxHealth)
-									perfecthealth += 1
-							else
-								deadamount += 1
-						else
-							lostamount += 1
-						// now pay them i guess			
-		for(var/datum/mind/M in medicalplayers)
-			if(istype(medicalplayers[M], /obj/item/device/pda))
-				var/obj/item/device/pda/P=medicalplayers[M]
-				var/completed = 0
-				var/msg = ""
-				var/pay = 0
-				var/basepay = 0
-				var/bonus = 0
-				if(!lostamount)
-					completed = 1
-					msg += "CENTCOMM acknowledges that all valued crewmembers have been extracted. Good work! "
-				else
-					msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
-				if(deadamount)
-					msg += "[escapedalive] left the station alive, with an additional [deadamount] corpses extracted. "
-				else
-					msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
-				if(completed && perfecthealth)
-					msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
-					var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[medicaldep.objectives.Find(/datum/job_objective/department/medical/extract_crewmembers)]
-					pay = jet.calculate_pay(perfecthealth, M)
-					basepay = jet.calculate_basepay(M)
-					bonus = pay - basepay
-				if(M.initial_account)
-					M.initial_account.money += pay
-					var/datum/transaction/T = new()
-					T.target_name = "[command_name()] Payroll"
-					T.purpose = "Payment"
-					T.amount = pay
-					T.date = current_date_string
-					T.time = worldtime2text()
-					T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-					M.initial_account.transaction_log.Add(T)
-					if(completed)
-						if(bonus)
-							msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
-						else	
-							msg += "You have been sent $[pay] for fufilling your quota. "
-				else
-					msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
-
-				if(useMS && P)
-					useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-					var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-					PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-				break
-
 				
-		
+	for(var/datum/mind/employee in ticker.minds)
+		if(!istype(employee.current))
+			return 0
+		var/mob/living/carbon/human/I = employee.current
+		if(I && I.mind)
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				if(I.stat != DEAD)
+					escapedalive += 1
+					if(I.health >= I.maxHealth)
+						perfecthealth += 1
+				else
+					deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						if(I.stat != DEAD)
+							escapedalive += 1
+							if(I.health >= I.maxHealth)
+								perfecthealth += 1
+						else
+							deadamount += 1
+					else
+						lostamount += 1
+		else
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						deadamount += 1
+					else
+						lostamount += 1
+					// now pay them i guess
+	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	for(var/datum/mind/M in medicalplayers)
+		if(istype(medicalplayers[M], /obj/item/device/pda))
+			var/obj/item/device/pda/P=medicalplayers[M]
+			var/completed = 0
+			var/msg = ""
+			var/pay = 0
+			var/basepay = 0
+			var/bonus = 0
+			if(lostamount>ticker.minds/3)
+				completed = 1
+				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+			else
+				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+			if(deadamount)
+				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
+			else
+				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
+			if(completed && perfecthealth)
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				pay = jet.calculate_pay(perfecthealth, M)
+				basepay = jet.calculate_basepay(M)
+				bonus = pay - basepay
+			if(M.initial_account)
+				M.initial_account.money += pay
+				var/datum/transaction/T = new()
+				T.target_name = "[command_name()] Payroll"
+				T.purpose = "Payment"
+				T.amount = pay
+				T.date = current_date_string
+				T.time = worldtime2text()
+				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
+				M.initial_account.transaction_log.Add(T)
+				if(completed)
+					if(bonus)
+						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
+					else	
+						msg += "You have been sent $[pay] for fufilling your quota. "
+			else
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+
+			if(useMS && P)
+				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
+
+				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
+				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
+			break
+				
+/datum/game_mode/proc/process_security_tasks() // all these should be called at the end of the round
+	var/deadamount = 0
+	var/escapedalive = 0
+	var/perfecthealth = 0
+	var/lostamount = 0
+	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/obj/machinery/message_server/useMS = null
+	if(message_servers)
+		for(var/obj/machinery/message_server/MS in message_servers)
+			if(MS.active)
+				useMS = MS
+				break
+				
+	for(var/datum/mind/employee in ticker.minds)
+		if(!istype(employee.current))
+			return 0
+		var/mob/living/carbon/human/I = employee.current
+		if(I && I.mind)
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				if(I.stat != DEAD)
+					escapedalive += 1
+					if(I.health >= I.maxHealth)
+						perfecthealth += 1
+				else
+					deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						if(I.stat != DEAD)
+							escapedalive += 1
+							if(I.health >= I.maxHealth)
+								perfecthealth += 1
+						else
+							deadamount += 1
+					else
+						lostamount += 1
+		else
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						deadamount += 1
+					else
+						lostamount += 1
+					// now pay them i guess
+	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	for(var/datum/mind/M in securityplayers)
+		if(istype(securityplayers[M], /obj/item/device/pda))
+			var/obj/item/device/pda/P=securityplayers[M]
+			var/completed = 0
+			var/msg = ""
+			var/pay = 0
+			var/basepay = 0
+			var/bonus = 0
+			if(lostamount>ticker.minds/3)
+				completed = 1
+				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+			else
+				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+			if(deadamount)
+				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
+			else
+				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
+			if(completed && perfecthealth)
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				
+				pay = jet.calculate_pay(perfecthealth, M)
+				basepay = jet.calculate_basepay(M)
+				bonus = pay - basepay
+			if(M.initial_account)
+				M.initial_account.money += pay
+				var/datum/transaction/T = new()
+				T.target_name = "[command_name()] Payroll"
+				T.purpose = "Payment"
+				T.amount = pay
+				T.date = current_date_string
+				T.time = worldtime2text()
+				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
+				M.initial_account.transaction_log.Add(T)
+				if(completed)
+					if(bonus)
+						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
+					else	
+						msg += "You have been sent $[pay] for fufilling your quota. "
+			else
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+
+			if(useMS && P)
+				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
+
+				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
+				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
+			break
+			
+/datum/game_mode/proc/process_engineering_tasks() // all these should be called at the end of the round
+	var/deadamount = 0
+	var/escapedalive = 0
+	var/perfecthealth = 0
+	var/lostamount = 0
+	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/obj/machinery/message_server/useMS = null
+	if(message_servers)
+		for(var/obj/machinery/message_server/MS in message_servers)
+			if(MS.active)
+				useMS = MS
+				break
+				
+	for(var/datum/mind/employee in ticker.minds)
+		if(!istype(employee.current))
+			return 0
+		var/mob/living/carbon/human/I = employee.current
+		if(I && I.mind)
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				if(I.stat != DEAD)
+					escapedalive += 1
+					if(I.health >= I.maxHealth)
+						perfecthealth += 1
+				else
+					deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						if(I.stat != DEAD)
+							escapedalive += 1
+							if(I.health >= I.maxHealth)
+								perfecthealth += 1
+						else
+							deadamount += 1
+					else
+						lostamount += 1
+		else
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						deadamount += 1
+					else
+						lostamount += 1
+					// now pay them i guess
+	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	for(var/datum/mind/M in engineeringplayers)
+		if(istype(engineeringplayers[M], /obj/item/device/pda))
+			var/obj/item/device/pda/P=engineeringplayers[M]
+			var/completed = 0
+			var/msg = ""
+			var/pay = 0
+			var/basepay = 0
+			var/bonus = 0
+			if(lostamount>ticker.minds/3)
+				completed = 1
+				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+			else
+				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+			if(deadamount)
+				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
+			else
+				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
+			if(completed && perfecthealth)
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				
+				pay = jet.calculate_pay(perfecthealth, M)
+				basepay = jet.calculate_basepay(M)
+				bonus = pay - basepay
+			if(M.initial_account)
+				M.initial_account.money += pay
+				var/datum/transaction/T = new()
+				T.target_name = "[command_name()] Payroll"
+				T.purpose = "Payment"
+				T.amount = pay
+				T.date = current_date_string
+				T.time = worldtime2text()
+				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
+				M.initial_account.transaction_log.Add(T)
+				if(completed)
+					if(bonus)
+						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
+					else	
+						msg += "You have been sent $[pay] for fufilling your quota. "
+			else
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+
+			if(useMS && P)
+				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
+
+				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
+				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
+			break
+
+
+/datum/game_mode/proc/process_command_tasks() // all these should be called at the end of the round
+	var/deadamount = 0
+	var/escapedalive = 0
+	var/perfecthealth = 0
+	var/lostamount = 0
+	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/obj/machinery/message_server/useMS = null
+	if(message_servers)
+		for(var/obj/machinery/message_server/MS in message_servers)
+			if(MS.active)
+				useMS = MS
+				break
+				
+	for(var/datum/mind/employee in ticker.minds)
+		if(!istype(employee.current))
+			return 0
+		var/mob/living/carbon/human/I = employee.current
+		if(I && I.mind)
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				if(I.stat != DEAD)
+					escapedalive += 1
+					if(I.health >= I.maxHealth)
+						perfecthealth += 1
+				else
+					deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						if(I.stat != DEAD)
+							escapedalive += 1
+							if(I.health >= I.maxHealth)
+								perfecthealth += 1
+						else
+							deadamount += 1
+					else
+						lostamount += 1
+		else
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						deadamount += 1
+					else
+						lostamount += 1
+					// now pay them i guess
+	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	for(var/datum/mind/M in commandplayers)
+		if(istype(commandplayers[M], /obj/item/device/pda))
+			var/obj/item/device/pda/P=commandplayers[M]
+			var/completed = 0
+			var/msg = ""
+			var/pay = 0
+			var/basepay = 0
+			var/bonus = 0
+			if(lostamount>ticker.minds/3)
+				completed = 1
+				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+			else
+				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+			if(deadamount)
+				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
+			else
+				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
+			if(completed && perfecthealth)
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				
+				pay = jet.calculate_pay(perfecthealth, M)
+				basepay = jet.calculate_basepay(M)
+				bonus = pay - basepay
+			if(M.initial_account)
+				M.initial_account.money += pay
+				var/datum/transaction/T = new()
+				T.target_name = "[command_name()] Payroll"
+				T.purpose = "Payment"
+				T.amount = pay
+				T.date = current_date_string
+				T.time = worldtime2text()
+				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
+				M.initial_account.transaction_log.Add(T)
+				if(completed)
+					if(bonus)
+						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
+					else	
+						msg += "You have been sent $[pay] for fufilling your quota. "
+			else
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+
+			if(useMS && P)
+				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
+
+				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
+				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
+			break
+
+
+			
+			
+/datum/game_mode/proc/process_science_tasks() // all these should be called at the end of the round
+	var/deadamount = 0
+	var/escapedalive = 0
+	var/perfecthealth = 0
+	var/lostamount = 0
+	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/obj/machinery/message_server/useMS = null
+	if(message_servers)
+		for(var/obj/machinery/message_server/MS in message_servers)
+			if(MS.active)
+				useMS = MS
+				break
+				
+	for(var/datum/mind/employee in ticker.minds)
+		if(!istype(employee.current))
+			return 0
+		var/mob/living/carbon/human/I = employee.current
+		if(I && I.mind)
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				if(I.stat != DEAD)
+					escapedalive += 1
+					if(I.health >= I.maxHealth)
+						perfecthealth += 1
+				else
+					deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						if(I.stat != DEAD)
+							escapedalive += 1
+							if(I.health >= I.maxHealth)
+								perfecthealth += 1
+						else
+							deadamount += 1
+					else
+						lostamount += 1
+		else
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						deadamount += 1
+					else
+						lostamount += 1
+					// now pay them i guess
+	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	for(var/datum/mind/M in scienceplayers)
+		if(istype(scienceplayers[M], /obj/item/device/pda))
+			var/obj/item/device/pda/P=scienceplayers[M]
+			var/completed = 0
+			var/msg = ""
+			var/pay = 0
+			var/basepay = 0
+			var/bonus = 0
+			if(lostamount>ticker.minds/3)
+				completed = 1
+				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+			else
+				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+			if(deadamount)
+				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
+			else
+				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
+			if(completed && perfecthealth)
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				
+				pay = jet.calculate_pay(perfecthealth, M)
+				basepay = jet.calculate_basepay(M)
+				bonus = pay - basepay
+			if(M.initial_account)
+				M.initial_account.money += pay
+				var/datum/transaction/T = new()
+				T.target_name = "[command_name()] Payroll"
+				T.purpose = "Payment"
+				T.amount = pay
+				T.date = current_date_string
+				T.time = worldtime2text()
+				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
+				M.initial_account.transaction_log.Add(T)
+				if(completed)
+					if(bonus)
+						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
+					else	
+						msg += "You have been sent $[pay] for fufilling your quota. "
+			else
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+
+			if(useMS && P)
+				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
+
+				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
+				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
+			break
+
+			
+/datum/game_mode/proc/process_cargo_tasks() // all these should be called at the end of the round
+	var/deadamount = 0
+	var/escapedalive = 0
+	var/perfecthealth = 0
+	var/lostamount = 0
+	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/obj/machinery/message_server/useMS = null
+	if(message_servers)
+		for(var/obj/machinery/message_server/MS in message_servers)
+			if(MS.active)
+				useMS = MS
+				break
+				
+	for(var/datum/mind/employee in ticker.minds)
+		if(!istype(employee.current))
+			return 0
+		var/mob/living/carbon/human/I = employee.current
+		if(I && I.mind)
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				if(I.stat != DEAD)
+					escapedalive += 1
+					if(I.health >= I.maxHealth)
+						perfecthealth += 1
+				else
+					deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						if(I.stat != DEAD)
+							escapedalive += 1
+							if(I.health >= I.maxHealth)
+								perfecthealth += 1
+						else
+							deadamount += 1
+					else
+						lostamount += 1
+		else
+			var/turf/location = get_turf(I.loc)
+			if(!location)
+				lostamount += 1
+
+			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+				deadamount += 1
+
+			else
+				switch(location.loc.type)
+					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+						deadamount += 1
+					else
+						lostamount += 1
+					// now pay them i guess
+	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	for(var/datum/mind/M in cargoplayers)
+		if(istype(cargoplayers[M], /obj/item/device/pda))
+			var/obj/item/device/pda/P=cargoplayers[M]
+			var/completed = 0
+			var/msg = ""
+			var/pay = 0
+			var/basepay = 0
+			var/bonus = 0
+			if(lostamount>ticker.minds/3)
+				completed = 1
+				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+			else
+				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+			if(deadamount)
+				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
+			else
+				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
+			if(completed && perfecthealth)
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				
+				pay = jet.calculate_pay(perfecthealth, M)
+				basepay = jet.calculate_basepay(M)
+				bonus = pay - basepay
+			if(M.initial_account)
+				M.initial_account.money += pay
+				var/datum/transaction/T = new()
+				T.target_name = "[command_name()] Payroll"
+				T.purpose = "Payment"
+				T.amount = pay
+				T.date = current_date_string
+				T.time = worldtime2text()
+				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
+				M.initial_account.transaction_log.Add(T)
+				if(completed)
+					if(bonus)
+						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
+					else	
+						msg += "You have been sent $[pay] for fufilling your quota. "
+			else
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+
+			if(useMS && P)
+				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
+
+				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
+				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
+			break
+			
+
+	
 //THIS IS THE PERSISTANCE EDIT
 
 /datum/game_mode/proc/calculate_pay(var/amount, var/rank)
 														// each rank represents 20 percent of the pay the head of the department gets
 	
 
-
+/datum/game_mode/proc/process_all_tasks()
+	process_medical_tasks()
+	process_security_tasks()
+	process_cargo_tasks()
+	process_science_tasks()
+	process_command_tasks()
+	process_engineering_tasks()
 /datum/game_mode/proc/populate_department_lists()
 
 	medicalplayers = list()
@@ -250,9 +794,24 @@
 	cargoplayers = list()
 	scienceplayers = list()
 	commandplayers = list()
-	
+	engineeringplayers = list()
 	for(var/mob/M in player_list)
 		if(M.mind && M.mind.assigned_job)
+			var/mob/living/I = M
+			if(I && I.mind)
+				var/turf/location = get_turf(I.loc)
+				if(!location)
+					continue
+				if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
+					sleep(0)
+				else
+					switch(location.loc.type)
+						if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
+							sleep(0)
+						else
+							continue
+			else
+				continue
 			if(M.mind.assigned_job.department_flag == MEDICAL)		
 				var/obj/item/device/pda/P=null
 				for(var/obj/item/device/pda/check_pda in PDAs)
@@ -305,8 +864,18 @@
 					commandplayers[M.mind] = P
 				else
 					commandplayers += M.mind		
-					
-					
+			if(M.mind.assigned_job.department_flag == ENGINEERING)		
+				var/obj/item/device/pda/P=null
+				for(var/obj/item/device/pda/check_pda in PDAs)
+					if(check_pda.owner==M.name)
+						P=check_pda	
+						break
+				if(P)
+					engineeringplayers[M.mind] = P
+				else
+					engineeringplayers += M.mind		
+							
+				
 					
 		
 /datum/game_mode/proc/check_finished() //to be called by ticker

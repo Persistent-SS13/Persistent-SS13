@@ -415,11 +415,11 @@
 					M.cell.charge -= ((max(((10-relative)*3)-fort_helper*2, 0)))
 				else
 					var/mob/living/carbon/M = pulledby_helper
-					M.adjustStaminaLoss(max(((10-relative)/4)-fort_helper*0.20, 0))
+					M.use_stamina(10-relative, 1)
 				
 			else if(istype(pulledby_helper, /mob/living/silicon/robot))
 				var/mob/living/silicon/robot/M = pulledby_helper
-				M.cell.charge -= ((max(((10-relative)*3)-fort_helper*2, 0)))
+				M.use_stamina(10-relative, 1)
 				
 // Previously known as Crossed()
 // This is automatically called when something enters your square

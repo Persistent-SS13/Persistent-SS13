@@ -14,12 +14,12 @@
 	switch(stamina_type)
 		if(1)
 			var/fort = get_stat(2)
-			var/minus = max(stamina_amount-(fort*2),0)
+			var/minus = max(stamina_amount-(fort*(stamina_amount*0.05)),0)
 			staminaloss += minus
 			return minus
 		if(2)
 			var/foc = get_stat(5)
-			var/minus = max(stamina_amount-(foc*2),0)
+			var/minus = max(stamina_amount-(foc*(stamina_amount*0.05)),0)
 			focusloss += minus
 			return minus
 	return 0
@@ -61,8 +61,8 @@
 	if(reg_name && disguise_maintain)
 		return reg_name
 	return real_name
-	
-	
+
+
 //mob verbs are a lot faster than object verbs
 //for more info on why this is not atom/pull, see examinate() in mob.dm
 /mob/living/verb/pulled(atom/movable/AM as mob|obj in range(1, src.loc))
@@ -532,7 +532,7 @@
 		help_handle = 1
 		. = ..()
 	else
-		stop_pulling()	
+		stop_pulling()
 		. = ..()
 
 	if(s_active && !( s_active in contents ) && get_turf(s_active) != get_turf(src))	//check !( s_active in contents ) first so we hopefully don't have to call get_turf() so much.
@@ -542,7 +542,7 @@
 		if(help_handle)
 			if(pulling_helper && get_dist(src, pulling_helper) > 1)
 				stop_pulling()
-			
+
 		handle_footstep(loc)
 		step_count++
 

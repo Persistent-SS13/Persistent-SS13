@@ -117,7 +117,6 @@ var/list/science_positions = list(
 
 //BS12 EDIT
 var/list/support_positions = list(
-	"Head of Personnel",
 	"Bartender",
 	"Botanist",
 	"Chef",
@@ -156,7 +155,8 @@ var/list/security_positions = list(
 
 
 var/list/civilian_positions = list(
-	"Civilian"
+	"Civilian",
+	"Unassigned Intern"
 )
 
 var/list/nonhuman_positions = list(

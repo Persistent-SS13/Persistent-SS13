@@ -462,15 +462,18 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	containertype = /obj/machinery/portable_atmospherics/canister/oxygen
 	cost = 150
 	desc = "A canister filled with oxygen."
+	containername = "Canister (O2)"
 /datum/supply_item/atmospherics/nitrogen
 	name = "Canister (N2)"
 	containertype = /obj/machinery/portable_atmospherics/canister/nitrogen
 	cost = 150
 	desc = "A canister filled with nitrogen."
+	containername = "Canister (N2)"
 /datum/supply_item/atmospherics/carbondioxide
 	name = "Canister (CO2)"
 	containertype = /obj/machinery/portable_atmospherics/canister/carbon_dioxide
 	cost = 150
 	desc = "A canister filled with carbon dioxide."
+	containername = "Canister (CO2)"
 
 

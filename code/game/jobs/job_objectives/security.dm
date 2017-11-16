@@ -6,12 +6,8 @@
 	
 /datum/job_objective/department/security
 /datum/job_objective/department/New()
-
-
-/datum/job_objective/department/security/proc/calculate_pay()
-
-/datum/job_objective/department/security/proc/calculate_basepay()
-
+/datum/job_objective/department/proc/calculate_basepay()
+/datum/job_objective/department/proc/calculate_pay(var/perfecthealth, var/datum/mind/M)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // SECURITY
@@ -33,7 +29,7 @@
 /datum/job_objective/department/security/maintain_order/calculate_basepay(var/datum/mind/M)
 	var/pay = min(max(startingplayers * 25, 1500), 4000)
 	var/rank = M.ranks["medical"]
-	if (M.assigned_job.flag == CMO)
+	if (M.assigned_job.flag == HOS)
 		rank = 5
 	pay = round((pay / 6 - rank), 1)
 	return pay
@@ -42,7 +38,7 @@
 /datum/job_objective/department/security/maintain_order/calculate_pay(var/perfecthealth, var/datum/mind/M)
 	var/pay = min(max(startingplayers * 25, 1500), 4000)
 	var/rank = M.ranks["medical"]
-	if (M.assigned_job.flag == CMO)
+	if (M.assigned_job.flag == HOS)
 		rank = 5
 	pay += (perfecthealth * 10)	
 	pay = round((pay / 6 - rank), 1)
@@ -50,11 +46,6 @@
 	
 		
 /datum/job_objective/department/security/maintain_order/check_for_completion()
-	
-	//for(var/tech in shuttle_master.techLevels)
-	//	if(shuttle_master.techLevels[tech] > 0)
-	//		return 1
-	//return 0
 
 /////////////////////////////////////////////////////////////////////////////////////////
 	

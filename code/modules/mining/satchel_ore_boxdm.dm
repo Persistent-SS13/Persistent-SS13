@@ -102,7 +102,13 @@
 		new /obj/item/stack/sheet/metal(src.loc)
 		qdel(src)
 	return
-	
+/obj/structure/ore_box/proc/update()
+	var/total = conglo_amount+orichilum_amount
+	if(total >= maximum)
+		icon_state = "[initial(icon_state)]b"
+	else
+		icon_state = initial(icon_state)
+	return 1
 /obj/structure/ore_box/get_weight()
 	var/conglo_weight = (conglo_amount * 1)
 	var/orichilum_weight = (orichilum_amount * 1)

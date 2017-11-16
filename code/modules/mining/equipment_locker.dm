@@ -59,6 +59,7 @@
 							i++
 							linked_department.conglo_amount += 5
 							B.conglo_amount--
+							B.update()
 					if(i >= pickup_rate)
 						break
 					if(B.orichilum_amount)
@@ -69,6 +70,7 @@
 							i++
 							linked_department.orichilum_amount += 5
 							B.orichilum_amount--
+							B.update()
 				if(i >= pickup_rate)
 					if(found)
 						playsound(loc, "sound/machines/disposalflush.ogg", 75,1)

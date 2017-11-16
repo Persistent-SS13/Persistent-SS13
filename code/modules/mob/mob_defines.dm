@@ -54,7 +54,7 @@
 	var/reg_name = null // this is for persistance, antags can get a second identity?
 	var/disguise_maintain = 0
 	var/flavor_text = ""
-	var/datum/record
+	var/med_record = ""
 	var/sec_record = ""
 	var/gen_record = ""
 	var/blinded = null

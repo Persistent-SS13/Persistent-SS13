@@ -1,16 +1,8 @@
-/datum/job_objective/department
-	var/department_flag = 0
-	var/bonus_payment = 0
-	var/over_time = 0   				// Is it too late to complete the objective?
-	var/bonus_objective = 0				// some objectives need to track 2 objectives
 	
 /datum/job_objective/department/medical
 /datum/job_objective/department/New()
 
 
-/datum/job_objective/department/medical/proc/calculate_pay()
-
-/datum/job_objective/department/medical/proc/calculate_basepay()
 
 
 /////////////////////////////////////////////////////////////////////////////////////////

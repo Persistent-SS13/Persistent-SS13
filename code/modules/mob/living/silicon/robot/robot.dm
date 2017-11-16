@@ -773,7 +773,6 @@ var/list/robot_verbs_default = list(
 			return
 		if(!now_pushing)
 			now_pushing = 1
-
 			if(!AM.anchored)
 				var/t = get_dir(src, AM)
 				if(istype(AM, /obj/structure/window/full))
@@ -788,10 +787,9 @@ var/list/robot_verbs_default = list(
 					if(src.client)
 						client.move_delay = (world.time + AM.calculate_pushmovedelay(src))
 					AM.affect_pushstamina(src)
-					if(Adjacent(AM))
-						step(AM, t)
+					step(AM, t)
 			now_pushing = 0
-
+		now_pushing = 0
 /mob/living/silicon/robot/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
 	if(istype(W, /obj/item/weapon/restraints/handcuffs)) // fuck i don't even know why isrobot() in handcuff code isn't working so this will have to do
 		return

@@ -295,6 +295,34 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	contains = list(/obj/item/weapon/storage/belt/fannypack)
 	cost = 60
 	desc = "A brown fannypack."
+/datum/supply_item/clothing/blacktrenchcoat
+	name = "Black Trench Coat"
+	contains = list(/obj/item/clothing/suit/blacktrenchcoat)
+	cost = 200
+	desc = "Stylish black trench coat."
+/datum/supply_item/clothing/browntrenchcoat
+	name = "Brown Trench Coat"
+	contains = list(/obj/item/clothing/suit/browntrenchcoat)
+	cost = 200
+	desc = "Stylish brown trench coat."
+/datum/supply_item/clothing/firstaidkit
+	name = "First-Aid Kit"
+	contains = list(/obj/item/weapon/storage/firstaid/regular)
+	cost = 100
+	desc = "Regular first-aid kit."
+/datum/supply_item/clothing/bulkfirstaid
+	name = "Bulk Medkit Crate"
+	contains = list(/obj/item/weapon/storage/firstaid/fire,
+					/obj/item/weapon/storage/firstaid/toxin,
+					/obj/item/weapon/storage/firstaid/brute,
+					/obj/item/weapon/storage/firstaid/o2)
+	cost = 500
+	containertype = /obj/structure/closet/crate/secure/plasma
+	containername = "Bulk Medkit Crate"
+	desc = "Contains a burn, toxin, brute, and oxygen medkit."
+	authentication = list("cmo", "captain", "hop")
+
+
 
 
 /datum/supply_item/robotics

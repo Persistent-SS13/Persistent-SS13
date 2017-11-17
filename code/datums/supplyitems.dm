@@ -20,7 +20,8 @@ var/const/supply_profession = 1
 var/const/supply_clothing = 2
 var/const/supply_robotics = 3
 var/const/supply_atmos = 4
-var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robotics, supply_atmos)
+var/const/supply_medical = 5
+var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robotics, supply_atmos, supply_medical)
 
 /proc/get_supply_lists_name(var/cat)
 	switch(cat)
@@ -33,7 +34,7 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 		if(4)
 			return "Atmospherics"
 		if(5)
-			return "Science"
+			return "Medical Supplies"
 		if(6)
 			return "Food and Livestock"
 		if(7)
@@ -295,7 +296,16 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	contains = list(/obj/item/weapon/storage/belt/fannypack)
 	cost = 60
 	desc = "A brown fannypack."
-
+/datum/supply_item/clothing/blacktrenchcoat
+	name = "Black Trench Coat"
+	contains = list(/obj/item/clothing/suit/blacktrenchcoat)
+	cost = 200
+	desc = "Stylish black trench coat."
+/datum/supply_item/clothing/browntrenchcoat
+	name = "Brown Trench Coat"
+	contains = list(/obj/item/clothing/suit/browntrenchcoat)
+	cost = 200
+	desc = "Stylish brown trench coat."
 
 /datum/supply_item/robotics
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
@@ -476,4 +486,24 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	desc = "A canister filled with carbon dioxide."
 	containername = "Canister (CO2)"
 
-
+/datum/supply_item/medical
+	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
+	containertype = /obj/structure/closet/crate/secure/plasma
+	group = 5
+	containername = "Medical Supplies"
+/datum/supply_item/medical/firstaidkit
+	name = "First-Aid Kit"
+	contains = list(/obj/item/weapon/storage/firstaid/regular)
+	cost = 100
+	desc = "Regular first-aid kit."
+/datum/supply_item/medical/bulkfirstaid
+	name = "Bulk Medkit Crate"
+	contains = list(/obj/item/weapon/storage/firstaid/fire,
+					/obj/item/weapon/storage/firstaid/toxin,
+					/obj/item/weapon/storage/firstaid/brute,
+					/obj/item/weapon/storage/firstaid/o2)
+	cost = 500
+	containertype = /obj/structure/closet/crate/secure/plasma
+	containername = "Bulk Medkit Crate"
+	desc = "Contains a burn, toxin, brute, and oxygen medkit."
+	authentication = list("cmo", "captain", "hop")

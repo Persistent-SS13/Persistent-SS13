@@ -781,19 +781,27 @@
 
 	src << sound(null, repeat = 0, wait = 0, volume = 85, channel = 1)// MAD JAMS cant last forever yo
 
-	
+	var/map_storage/map_storage = new("SS13")
 	if(mind)
 		mind.active = 1
 		mind.current = src
 		mind.key = key
-		var/atom/movable/H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
+		var/atom/movable/H
+		spawn(0)
+			H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
+		while(!H)
+			sleep(20)
 		return H
 	else
 		mind = new()
 		mind.active = 1
 		mind.current = src
 		mind.key = key
-		var/atom/movable/H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
+		var/atom/movable/H
+		spawn(0)
+			H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
+		while(!H)
+			sleep(20)
 		return H
 	message_admins("create_character FAILED!!")
 	return 0

@@ -203,17 +203,17 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount>ticker.minds/3)
+			if(lostamount<startingplayers/3)
 				completed = 1
-				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
-				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
 			if(deadamount)
 				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
 			else
 				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
 			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
 				pay = jet.calculate_pay(perfecthealth, M)
 				basepay = jet.calculate_basepay(M)
 				bonus = pay - basepay
@@ -233,7 +233,7 @@
 					else	
 						msg += "You have been sent $[pay] for fufilling your quota. "
 			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
 
 			if(useMS && P)
 				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
@@ -247,7 +247,7 @@
 	var/escapedalive = 0
 	var/perfecthealth = 0
 	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/datum/department/medicaldep = get_department_datum(SECURITY)
 	var/obj/machinery/message_server/useMS = null
 	if(message_servers)
 		for(var/obj/machinery/message_server/MS in message_servers)
@@ -298,7 +298,7 @@
 					else
 						lostamount += 1
 					// now pay them i guess
-	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	var/datum/job_objective/department/jet = medicaldep.objectives[1]
 	for(var/datum/mind/M in securityplayers)
 		if(istype(securityplayers[M], /obj/item/device/pda))
 			var/obj/item/device/pda/P=securityplayers[M]
@@ -307,17 +307,17 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount>ticker.minds/3)
+			if(lostamount<startingplayers/3)
 				completed = 1
-				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
-				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
 			if(deadamount)
 				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
 			else
 				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
 			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
 				
 				pay = jet.calculate_pay(perfecthealth, M)
 				basepay = jet.calculate_basepay(M)
@@ -338,7 +338,7 @@
 					else	
 						msg += "You have been sent $[pay] for fufilling your quota. "
 			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
 
 			if(useMS && P)
 				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
@@ -352,7 +352,7 @@
 	var/escapedalive = 0
 	var/perfecthealth = 0
 	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/datum/department/medicaldep = get_department_datum(ENGINEERING)
 	var/obj/machinery/message_server/useMS = null
 	if(message_servers)
 		for(var/obj/machinery/message_server/MS in message_servers)
@@ -403,7 +403,7 @@
 					else
 						lostamount += 1
 					// now pay them i guess
-	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	var/datum/job_objective/department/jet = medicaldep.objectives[1]
 	for(var/datum/mind/M in engineeringplayers)
 		if(istype(engineeringplayers[M], /obj/item/device/pda))
 			var/obj/item/device/pda/P=engineeringplayers[M]
@@ -412,17 +412,17 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount>ticker.minds/3)
+			if(lostamount<startingplayers/3)
 				completed = 1
-				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
-				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
 			if(deadamount)
 				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
 			else
 				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
 			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
 				
 				pay = jet.calculate_pay(perfecthealth, M)
 				basepay = jet.calculate_basepay(M)
@@ -443,7 +443,7 @@
 					else	
 						msg += "You have been sent $[pay] for fufilling your quota. "
 			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
 
 			if(useMS && P)
 				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
@@ -458,7 +458,7 @@
 	var/escapedalive = 0
 	var/perfecthealth = 0
 	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/datum/department/medicaldep = get_department_datum(COMMAND)
 	var/obj/machinery/message_server/useMS = null
 	if(message_servers)
 		for(var/obj/machinery/message_server/MS in message_servers)
@@ -509,7 +509,7 @@
 					else
 						lostamount += 1
 					// now pay them i guess
-	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	var/datum/job_objective/department/jet = medicaldep.objectives[1]
 	for(var/datum/mind/M in commandplayers)
 		if(istype(commandplayers[M], /obj/item/device/pda))
 			var/obj/item/device/pda/P=commandplayers[M]
@@ -518,17 +518,17 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount>ticker.minds/3)
+			if(lostamount<startingplayers/3)
 				completed = 1
-				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
-				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
 			if(deadamount)
 				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
 			else
 				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
 			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
 				
 				pay = jet.calculate_pay(perfecthealth, M)
 				basepay = jet.calculate_basepay(M)
@@ -549,7 +549,7 @@
 					else	
 						msg += "You have been sent $[pay] for fufilling your quota. "
 			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
 
 			if(useMS && P)
 				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
@@ -566,7 +566,7 @@
 	var/escapedalive = 0
 	var/perfecthealth = 0
 	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/datum/department/medicaldep = get_department_datum(SCIENCE)
 	var/obj/machinery/message_server/useMS = null
 	if(message_servers)
 		for(var/obj/machinery/message_server/MS in message_servers)
@@ -617,7 +617,7 @@
 					else
 						lostamount += 1
 					// now pay them i guess
-	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	var/datum/job_objective/department/jet = medicaldep.objectives[1]
 	for(var/datum/mind/M in scienceplayers)
 		if(istype(scienceplayers[M], /obj/item/device/pda))
 			var/obj/item/device/pda/P=scienceplayers[M]
@@ -626,17 +626,17 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount>ticker.minds/3)
+			if(lostamount<startingplayers/3)
 				completed = 1
-				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
-				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
 			if(deadamount)
 				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
 			else
 				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
 			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
 				
 				pay = jet.calculate_pay(perfecthealth, M)
 				basepay = jet.calculate_basepay(M)
@@ -657,7 +657,7 @@
 					else	
 						msg += "You have been sent $[pay] for fufilling your quota. "
 			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
 
 			if(useMS && P)
 				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
@@ -672,7 +672,7 @@
 	var/escapedalive = 0
 	var/perfecthealth = 0
 	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(MEDICAL)
+	var/datum/department/medicaldep = get_department_datum(CARGO)
 	var/obj/machinery/message_server/useMS = null
 	if(message_servers)
 		for(var/obj/machinery/message_server/MS in message_servers)
@@ -723,7 +723,7 @@
 					else
 						lostamount += 1
 					// now pay them i guess
-	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
+	var/datum/job_objective/department/jet = medicaldep.objectives[1]
 	for(var/datum/mind/M in cargoplayers)
 		if(istype(cargoplayers[M], /obj/item/device/pda))
 			var/obj/item/device/pda/P=cargoplayers[M]
@@ -732,17 +732,17 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount>ticker.minds/3)
+			if(lostamount<startingplayers/3)
 				completed = 1
-				msg += "CENTCOMM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
+				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
-				msg += "CENTCOMM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
+				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
 			if(deadamount)
 				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
 			else
 				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
 			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOMM"
+				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
 				
 				pay = jet.calculate_pay(perfecthealth, M)
 				basepay = jet.calculate_basepay(M)
@@ -763,7 +763,7 @@
 					else	
 						msg += "You have been sent $[pay] for fufilling your quota. "
 			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOMM representitve about this as soon as possible about this. "
+				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
 
 			if(useMS && P)
 				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
@@ -795,8 +795,11 @@
 	scienceplayers = list()
 	commandplayers = list()
 	engineeringplayers = list()
+	startingplayers = 0
 	for(var/mob/M in player_list)
 		if(M.mind && M.mind.assigned_job)
+			if(M.client)
+				startingplayers++
 			var/mob/living/I = M
 			if(I && I.mind)
 				var/turf/location = get_turf(I.loc)
@@ -874,7 +877,7 @@
 					engineeringplayers[M.mind] = P
 				else
 					engineeringplayers += M.mind		
-							
+			
 				
 					
 		

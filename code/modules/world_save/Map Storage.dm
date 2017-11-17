@@ -73,9 +73,6 @@ datum
 atom
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;id"
 	load_contents = 1
-mob
-//	/obj/effect
-//		should_save = 1
 /*************************************************************************
 MAP STORAGE DATUM
 **************************************************************************/
@@ -373,6 +370,11 @@ map_storage
 		savefile["mind"] = mindind
 		savefile["loc"] = locind
 		return 1
+	proc/Load_Records(var/search)
+	
+	proc/Save_Records(var/mob/M)
+	
+
 	proc/Load_Char(var/ckey, var/slot, var/datum/mind/M, var/transfer = 0)
 		if(!ckey)
 			message_admins("Load_Char without ckey")

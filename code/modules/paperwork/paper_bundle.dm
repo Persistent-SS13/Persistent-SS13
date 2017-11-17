@@ -14,8 +14,7 @@
 	var/amount = 0 //Amount of items clipped to the paper
 	var/page = 1
 	var/screen = 0
-
-
+	map_storage_saved_vars = "density,icon_state;dir;name;pixel_x;pixel_y;amount"
 /obj/item/weapon/paper_bundle/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
 	..()
 	var/obj/item/weapon/paper/P

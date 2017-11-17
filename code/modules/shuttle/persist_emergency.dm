@@ -371,6 +371,7 @@
 				spawn(0)
 					for(var/datum/mind/employee in ticker.minds)
 						if(!employee.current) continue
+						var/map_storage/map_storage = new("SS13")
 						map_storage.Save_Char(null, employee, null, employee.char_slot)	
 						to_chat(employee.current, "<b>Your character has been saved.</b>")
 					ticker.savestation()

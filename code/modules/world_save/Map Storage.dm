@@ -177,6 +177,7 @@ map_storage
 					while(!finished)
 						finished = 1
 						for(var/obj/ob in object.contents)
+							if(ob.loc != object) continue
 							finished = 0
 							ob.forceMove(locate(200, 100, 2))
 							ob.Destroy()
@@ -357,6 +358,10 @@ map_storage
 		else if(Firstbod)
 			ckey = C.ckey
 			current = Firstbod
+		if(findtext(ckey, "@"))
+			var/list/nums = string_explode(ckey, "@")
+			ckey = nums[1]
+			message_admins("@ found, nums.len [nums.len]")
 		fdel("char_saves/[ckey]/[slot].sav")
 		var/savefile/savefile = new("char_saves/[ckey]/[slot].sav")
 		var/bodyind = BuildVarDirectory(savefile, current, 1)
@@ -423,6 +428,78 @@ map_storage
 			return loc
 		else
 			return mob
+		
+	proc/Load_Char_Fast(var/ckey, var/slot, var/datum/mind/M, var/transfer = 0, var/announce = 0)
+		if(!ckey)
+			message_admins("Load_Char without ckey")
+			return
+		if(!slot)
+			message_admins("Load_char without slot")
+			return
+		all_loaded = list()
+		existing_references = list()
+		all_loaded = list()
+		var/savefile/savefile = new("char_saves/[ckey]/[slot].sav")
+		savefile.cd = "/data"
+		var/bodyind = savefile["body"]
+		var/mindind = savefile["mind"]
+		var/locind = savefile["loc"]
+		savefile.cd = "/entries/[bodyind]"
+		var/type = savefile["type"]
+		var/mob/object = new type()
+		object.deleting = 1
+		var/atom/movable/object2
+		if(locind != "0" && locind != 0)
+			savefile.cd = "/entries/[locind]"
+			type = savefile["type"]
+			object2 = new type()
+		spawn(0)
+			var/loc = null
+			TICK_CHECK
+			if(locind != "0" && locind != 0)
+				loc = Load_Entry(savefile, locind, replacement = object2)
+			var/mob/living/mob = Load_Entry(savefile, bodyind, replacement = object, nocontents = !transfer, species_override = 1)
+			TICK_CHECK
+			if(!mob)
+				return
+			if(!M)
+				mob.mind = new()
+				M = mob.mind
+			var/datum/mind/mind = Load_Entry(savefile, mindind, null, null, M)
+			TICK_CHECK
+			for(var/datum/dat in all_loaded)
+				dat.after_load()
+			for(var/atom/movable/ob in all_loaded)
+				ob.initialize()
+				ob.after_load()
+				if(ob.load_datums)
+					if(ob.reagents)
+						ob.reagents.my_atom = ob
+				if(istype(ob, /turf/simulated))
+					var/turf/simulated/Te = ob
+					//Te.blocks_air = initial(Te.blocks_air)
+					Te.new_air()
+					
+			if(transfer)
+				M.transfer_to(mob)
+			if(loc)
+				mob.loc = loc
+			mob.deleting = 0
+			TICK_CHECK
+			if(mob.mind.primary_cert)
+				mob.mind.assigned_job = mob.mind.primary_cert
+				var/rank = mob.mind.primary_cert.uid
+				job_master.EquipRankPersistant(mob, rank, 1)
+				data_core.manifest_inject(mob)
+				ticker.minds |= mob.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
+				TICK_CHECK
+				spawn(10)
+					var/join_message = "has arrived on the station"
+					AnnounceArrival(mob, rank, join_message)
+		if(object2)
+			return object2
+		else
+			return object
 // Saves all of the turfs and objects within turfs to their own directories withn
 // the specifeid savefile name. If objects or turfs have variables to keep track
 // of, it will check to see if those variables have been modified and record the

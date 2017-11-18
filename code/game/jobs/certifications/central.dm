@@ -13,7 +13,7 @@
 	access = list()
 	minimal_access = list()
 	admin_only = 1
-
+	
 /datum/cert/ntnavyofficer/equip(var/mob/living/carbon/human/H)
 	if(!H)	return 0
 	H.equip_or_collect(new /obj/item/clothing/under/rank/centcom/officer(H), slot_w_uniform)

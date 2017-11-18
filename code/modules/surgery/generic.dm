@@ -237,7 +237,17 @@
 	)
 
 	time = 100
+/datum/surgery_step/generic/amputate
+	name = "amputate limb"
 
+	allowed_tools = list(
+	/obj/item/weapon/circular_saw = 100, \
+	/obj/item/weapon/melee/energy/sword/cyborg/saw = 100, \
+	/obj/item/weapon/hatchet = 90, \
+	/obj/item/weapon/melee/arm_blade = 75
+	)
+
+	time = 100
 /datum/surgery_step/generic/amputate/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
 	if(target_zone == "eyes")	//there are specific steps for eye surgery
 		return 0

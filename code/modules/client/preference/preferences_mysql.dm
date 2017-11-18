@@ -106,7 +106,7 @@
 	
 /datum/preferences/proc/load_mind(client/C, datum/mind/mind, var/firstTime = 0, var/nocontents = 0, var/transfer = 0)
 	var/map_storage/temp_storage = new("SS13")
-	return temp_storage.Load_Char(C.ckey, slot, mind, transfer)
+	return temp_storage.Load_Char_Fast(C.ckey, slot, mind, transfer)
 	if(!slot)	slot = default_slot
 	message_admins("load_mind ran [C.ckey] slot:[slot] nocontents:[firstTime]")
 	slot = sanitize_integer(slot, 1, max_save_slots, initial(default_slot))

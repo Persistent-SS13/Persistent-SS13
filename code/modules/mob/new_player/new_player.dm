@@ -93,7 +93,7 @@
 		return
 	if(!client.prefs.preview_icons || !client.prefs.preview_icons.len || !client.prefs.minds_list || !client.prefs.minds_list.len)
 		client.prefs.create_spawnicons(client)
-		sleep(20)
+		sleep(50)
 	for(var/i=1, i<=client.prefs.max_save_slots, i++)
 		ico = client.prefs.preview_icons[i]
 		var/datum/mind/tempmind = client.prefs.minds_list[i]
@@ -638,20 +638,20 @@
 				message_admins("NO PRIMARY CERT AFTER LOADING!!")
 				mobbie.mind.primary_cert = job_master.GetCert("intern")
 			if(mobbie && mobbie.mind && mobbie.mind.primary_cert)
-				rank = mobbie.mind.primary_cert.uid
-				job_master.EquipRankPersistant(mobbie, rank, 1)
-				data_core.manifest_inject(mobbie)
-				ticker.minds += mobbie.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
-				AnnounceArrival(mobbie, rank, join_message)
-				callHook("latespawn", list(mobbie))
-			qdel(src)
+			//	rank = mobbie.mind.primary_cert.uid
+			//	job_master.EquipRankPersistant(mobbie, rank, 1)
+			//	data_core.manifest_inject(mobbie)
+			//	ticker.minds |= mobbie.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
+			//	AnnounceArrival(mobbie, rank, join_message)
+			callHook("latespawn", list(mobbie))
+		//	qdel(src)
 
 	
 	
 	
 	
 
-/mob/new_player/proc/AnnounceArrival(var/mob/living/carbon/human/character, var/rank, var/join_message)
+/proc/AnnounceArrival(var/mob/living/carbon/human/character, var/rank, var/join_message)
 	if(ticker.current_state == GAME_STATE_PLAYING)
 		var/ailist[] = list()
 		for(var/mob/living/silicon/ai/A in living_mob_list)
@@ -786,22 +786,14 @@
 		mind.active = 1
 		mind.current = src
 		mind.key = key
-		var/atom/movable/H
-		spawn(0)
-			H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
-		while(!H)
-			sleep(20)
+		var/atom/movable/H = map_storage.Load_Char_Fast(ckey, client.prefs.slot, mind, 1)
 		return H
 	else
 		mind = new()
 		mind.active = 1
 		mind.current = src
 		mind.key = key
-		var/atom/movable/H
-		spawn(0)
-			H = map_storage.Load_Char(ckey, client.prefs.slot, mind, 1)
-		while(!H)
-			sleep(20)
+		var/atom/movable/H = map_storage.Load_Char_Fast(ckey, client.prefs.slot, mind, 1)
 		return H
 	message_admins("create_character FAILED!!")
 	return 0

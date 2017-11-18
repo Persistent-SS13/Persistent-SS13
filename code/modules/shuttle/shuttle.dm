@@ -434,7 +434,7 @@
 				if(istype(M, /mob/living/carbon))
 					if(!M.buckled)
 						M.Weaken(3)
-
+						M.fall(1)
 
 		if(rotation)
 			T1.shuttleRotate(rotation)

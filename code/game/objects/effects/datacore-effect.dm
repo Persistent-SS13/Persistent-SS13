@@ -10,8 +10,10 @@
 	var/security[] = list()
 	//This list tracks characters spawned in the world and cannot be modified in-game. Currently referenced by respawn_character().
 	var/locked[] = list()
-
-
+	var/list/gen_byname = list()
+	var/list/med_byname = list()
+	var/list/sec_byname = list()
+	var/list/manifest_recs = list()
 /obj/effect/datacore/proc/get_manifest(monochrome, OOC)
 	var/list/heads = new()
 	var/list/sec = new()

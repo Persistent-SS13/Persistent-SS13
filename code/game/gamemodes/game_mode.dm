@@ -203,7 +203,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/3)
+			if(lostamount<startingplayers/5)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -307,7 +307,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/3)
+			if(lostamount<startingplayers/5)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -412,7 +412,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/3)
+			if(lostamount<startingplayers/5)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -518,7 +518,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/3)
+			if(lostamount<startingplayers/5)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -626,7 +626,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/3)
+			if(lostamount<startingplayers/5)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -732,7 +732,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/3)
+			if(lostamount<startingplayers/5)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -798,7 +798,7 @@
 	startingplayers = 0
 	for(var/mob/M in player_list)
 		if(M.mind && M.mind.assigned_job)
-			if(M.client)
+			if(M.client )
 				startingplayers++
 			var/mob/living/I = M
 			if(I && I.mind)

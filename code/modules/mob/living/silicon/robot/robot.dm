@@ -331,7 +331,20 @@ var/list/robot_verbs_default = list(
 	if(mmi && mind)//Safety for when a cyborg gets dust()ed. Or there is no MMI inside.
 		var/turf/T = get_turf(loc)//To hopefully prevent run time errors.
 		if(T)	mmi.loc = T
+		if(!mmi.brainmob)
+			mmi.brainmob = new()
 		if(mmi.brainmob)
+			for(var/obj/item/weapon/implant/I in contents) // this should be in remove() so that even npcs transfer implants but it all needs to go into brainmob. hm....
+				if(I && I.implanted && I.implant_loc == "brain")
+					contents -= I
+					mmi.brainmob.contents += I
+					I.imp_in = mmi.brainmob
+					I.loc = mmi.brainmob
+					if(I.actions && !isemptylist(I.actions))
+						for(var/X in I.actions)
+							var/datum/action/A = X
+							A.Grant(src)	// i guess if u grant to someone who already has it it takes it away
+							A.Grant(mmi.brainmob)
 			mind.transfer_to(mmi.brainmob)
 			mmi.update_icon()
 		else

@@ -4,7 +4,7 @@
 	icon = 'icons/obj/radio.dmi'
 	icon_state = "radio"
 	origin_tech = "materials=2;magnets=4;programming=4;biotech=4;syndicate=8;bluespace=5"
-
+	implant_loc = "brain"
 /obj/item/weapon/implant/uplink/New()
 	hidden_uplink = new(src)
 	hidden_uplink.uses = 10

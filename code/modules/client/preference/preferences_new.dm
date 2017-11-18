@@ -1424,7 +1424,7 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 						age = max(min( round(text2num(new_age)), AGE_MAX),AGE_MIN)
 				if("species")
 
-					var/list/new_species = list("Human", "Tajaran", "Skrell", "Unathi", "Diona", "Vulpkanin")
+					var/list/new_species = list("Human", "Grey", "Skrell", "Unathi", "Diona", "Kidan")
 					var/prev_species = species
 //						var/whitelisted = 0
 

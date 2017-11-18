@@ -17,32 +17,36 @@
 //	var/const/supply_vend		= 9
 
 var/const/supply_profession = 1
-var/const/supply_clothing = 2
-var/const/supply_robotics = 3
-var/const/supply_atmos = 4
-var/const/supply_medical = 5
-var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robotics, supply_atmos, supply_medical)
+var/const/supply_headgear = 2
+var/const/supply_clothing = 3
+var/const/supply_accessories = 4
+var/const/supply_robotics = 5
+var/const/supply_medical = 6
+var/const/supply_materials = 7
+var/const/supply_engineering = 8
+var/const/supply_misc = 9
+var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clothing, supply_accessories, supply_robotics, supply_medical, supply_engineering, supply_materials, supply_misc)
 
 /proc/get_supply_lists_name(var/cat)
 	switch(cat)
 		if(1)
 			return "Job Equipment Packs"
 		if(2)
-			return "Clothing"
+			return "Headgear"
 		if(3)
-			return "Robotics"
+			return "Clothing"
 		if(4)
-			return "Atmospherics"
+			return "Shoes & Accessories"
 		if(5)
-			return "Medical Supplies"
+			return "Robotics"
 		if(6)
-			return "Food and Livestock"
+			return "Medical Supplies"
 		if(7)
-			return "Raw Materials"
+			return "Refined Materials"
 		if(8)
-			return "Miscellaneous"
+			return "Engineering"
 		if(9)
-			return "Vending"
+			return "Miscellaneous"
 
 /datum/supply_item // A REWORK OF SUPPLY PACKS THAT SPECALIZE IN HAVING VERY FEW ITEMS
 	var/name = null
@@ -150,10 +154,17 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	desc = "Everything a Science Intern needs."
 	authentication = list("rd", "captain", "hop")
 
+/datum/supply_item/headgear	// Section header - use these to set default supply group and crate type for sections
+	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
+	containertype = /obj/structure/closet/secure_closet
+	group = 2
+	containername = "Clothing Order"
+
+	
 /datum/supply_item/clothing	// Section header - use these to set default supply group and crate type for sections
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
-	containertype = /obj/structure/closet/crate/secure/plasma
-	group = 2
+	containertype = /obj/structure/closet/secure_closet
+	group = 3
 	containername = "Clothing Order"
 
 /datum/supply_item/clothing/tophat
@@ -307,10 +318,16 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	cost = 200
 	desc = "Stylish brown trench coat."
 
+/datum/supply_item/accessories	// Section header - use these to set default supply group and crate type for sections
+	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
+	containertype = /obj/structure/closet/secure_closet
+	group = 4
+	containername = "Clothing Order"
+
 /datum/supply_item/robotics
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
 	containertype = /obj/structure/closet/crate/secure/plasma
-	group = 3
+	group = 5
 	containername = "Robotics Order"
 
 /datum/supply_item/robotics/janitor_module
@@ -462,34 +479,10 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 	cost = 120
 	desc = "A chip to change the cyborgs appearance. This one can only be used with service modules."
 
-/datum/supply_item/atmospherics
-	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
-	containertype = /obj/structure/closet/crate/secure/plasma
-	group = 4
-	containername = "Atmospherics"
-/datum/supply_item/atmospherics/oxygen
-	name = "Canister (O2)"
-	containertype = /obj/machinery/portable_atmospherics/canister/oxygen
-	cost = 150
-	desc = "A canister filled with oxygen."
-	containername = "Canister (O2)"
-/datum/supply_item/atmospherics/nitrogen
-	name = "Canister (N2)"
-	containertype = /obj/machinery/portable_atmospherics/canister/nitrogen
-	cost = 150
-	desc = "A canister filled with nitrogen."
-	containername = "Canister (N2)"
-/datum/supply_item/atmospherics/carbondioxide
-	name = "Canister (CO2)"
-	containertype = /obj/machinery/portable_atmospherics/canister/carbon_dioxide
-	cost = 150
-	desc = "A canister filled with carbon dioxide."
-	containername = "Canister (CO2)"
-
 /datum/supply_item/medical
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
-	containertype = /obj/structure/closet/crate/secure/plasma
-	group = 5
+	containertype = /obj/structure/closet/crate/secure
+	group = 6
 	containername = "Medical Supplies"
 /datum/supply_item/medical/firstaidkit
 	name = "First-Aid Kit"
@@ -503,7 +496,140 @@ var/list/all_supply_lists = list(supply_profession, supply_clothing, supply_robo
 					/obj/item/weapon/storage/firstaid/brute,
 					/obj/item/weapon/storage/firstaid/o2)
 	cost = 500
-	containertype = /obj/structure/closet/crate/secure/plasma
+	containertype = /obj/structure/closet/crate/secure/large
 	containername = "Bulk Medkit Crate"
 	desc = "Contains a burn, toxin, brute, and oxygen medkit."
 	authentication = list("cmo", "captain", "hop")
+
+/datum/supply_item/materials
+	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
+	containertype = /obj/structure/closet/crate/secure/large/reinforced
+	group = 7
+/datum/supply_item/materials/metal
+	name = "Metal"
+	contains = list(/obj/item/stack/sheet/metal)
+	amount = 50
+	cost = 200
+	containertype = /obj/structure/closet/crate/secure/large
+	desc = "50 sheets of metal."
+/datum/supply_item/materials/glass
+	name = "Glass"
+	contains = list(/obj/item/stack/sheet/glass)
+	amount = 50
+	cost = 180
+	containertype = /obj/structure/closet/crate/secure/large
+	desc = "50 sheets of glass."
+/datum/supply_item/materials/plastic
+	name = "Plastic"
+	contains = list(/obj/item/stack/sheet/mineral/plastic)
+	amount = 50
+	cost = 120
+	containertype = /obj/structure/closet/crate/secure/large
+	desc = "50 sheets of plastic."
+/datum/supply_item/materials/plasteel
+	name = "Plasteel"
+	contains = list(/obj/item/stack/sheet/plasteel)
+	amount = 50
+	cost = 400
+	containertype = /obj/structure/closet/crate/secure/large/reinforced
+	desc = "50 sheets of plasteel."
+/datum/supply_item/materials/plasteel
+	name = "Plasma"
+	contains = list(/obj/item/stack/sheet/mineral/plasma)
+	amount = 50
+	cost = 500
+	containertype = /obj/structure/closet/crate/secure/large/reinforced
+	desc = "50 sheets of plasma."
+/datum/supply_item/materials/silver
+	name = "Silver"
+	contains = list(/obj/item/stack/sheet/mineral/silver)
+	amount = 50
+	cost = 1000
+	containertype = /obj/structure/closet/crate/secure/large/reinforced
+	desc = "50 sheets of silver."
+/datum/supply_item/materials/gold
+	name = "Gold"
+	contains = list(/obj/item/stack/sheet/mineral/gold)
+	amount = 50
+	cost = 3000
+	containertype = /obj/structure/closet/crate/secure/large/reinforced
+	desc = "50 sheets of gold."
+/datum/supply_item/materials/uranium
+	name = "Uranium"
+	contains = list(/obj/item/stack/sheet/mineral/uranium)
+	amount = 50
+	cost = 5000
+	containertype = /obj/structure/closet/crate/secure/large/reinforced
+	desc = "50 sheets of uranium."
+/datum/supply_item/materials/diamond
+	name = "Diamond"
+	contains = list(/obj/item/stack/sheet/mineral/diamond)
+	amount = 50
+	cost = 10000
+	containertype = /obj/structure/closet/crate/secure/large/reinforced
+	desc = "50 beautiful diamonds."
+
+/datum/supply_item/engineering
+	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
+	containertype = /obj/structure/closet/crate/secure/plasma
+	group = 8
+	containername = "Engineering Order"
+/datum/supply_item/engineering/solars
+	name = "Solar Panel Crate"
+	contains = list(/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly,
+					/obj/item/solar_assembly)
+	cost = 100
+	desc = "20 solar panels."
+/datum/supply_item/engineering/oxygen
+	name = "Canister (O2)"
+	containertype = /obj/machinery/portable_atmospherics/canister/oxygen
+	cost = 150
+	desc = "A canister filled with oxygen."
+	containername = "Canister (O2)"
+/datum/supply_item/engineering/nitrogen
+	name = "Canister (N2)"
+	containertype = /obj/machinery/portable_atmospherics/canister/nitrogen
+	cost = 150
+	desc = "A canister filled with nitrogen."
+	containername = "Canister (N2)"
+/datum/supply_item/engineering/carbondioxide
+	name = "Canister (CO2)"
+	containertype = /obj/machinery/portable_atmospherics/canister/carbon_dioxide
+	cost = 150
+	desc = "A canister filled with carbon dioxide."
+	containername = "Canister (CO2)"
+
+/datum/supply_item/misc
+	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
+	containertype = /obj/structure/closet/crate/secure
+	group = 9
+	containername = "Miscellaneous Crate"
+/datum/supply_item/misc/spacecleaner
+	name = "Space Cleaner"
+	contains = list(/obj/item/weapon/reagent_containers/spray/cleaner)
+	cost = 120
+	desc = "A bottle of Space Cleaner."
+/datum/supply_item/misc/janicart
+	name = "Janicart"
+	contains = list(/obj/vehicle/janicart,
+					/obj/item/key/janitor)
+	cost = 1000
+	desc = "A pimpin' ride. Key included."

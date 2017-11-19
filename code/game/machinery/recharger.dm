@@ -12,7 +12,7 @@
 	var/icon_state_charged = "recharger2"
 	var/icon_state_charging = "recharger1"
 	var/icon_state_idle = "recharger0"
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;charging" 
 /obj/machinery/recharger/attackby(obj/item/weapon/G as obj, mob/user as mob, params)
 	if(istype(user,/mob/living/silicon))
 		return

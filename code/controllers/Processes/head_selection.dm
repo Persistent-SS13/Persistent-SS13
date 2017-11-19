@@ -45,12 +45,22 @@
 	var/list/potential_engineering = list()
 	var/list/potential_science = list()
 	var/list/potential_security = list()
-	
+	data_core.manifest_recs = list()
 	for(var/datum/mind/M in ticker.minds)
 		if(!M.assigned_job)
 			continue
 		var/current_dep = M.assigned_job.department_flag
 		var/current_rank = text2num(M.ranks[to_strings(M.assigned_job.department_flag)])
+	
+		if(M.current)
+			var/datum/data/record/G = data_core.gen_byname[M.current.real_name]
+			if(!G)
+				message_admins("No record found for M.current.real_name")
+			else
+				if()
+				data_core.manifest_recs |= G
+				
+	
 	
 		if(M.assigned_job.uid == "captain")
 			if(!M.current || !istype(M.current, /mob/living/carbon/human) || M.current.stat == 2)

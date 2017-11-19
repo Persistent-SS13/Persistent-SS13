@@ -54,7 +54,7 @@
 					return
 				else
 					if(src.client)
-						client.move_delay += pulling.calculate_movedelay()
+						client.move_delay += AM.calculate_pushmovedelay(src)
 					AM.affect_pushstamina(src)
 					if(Adjacent(AM))
 						step(AM, t)

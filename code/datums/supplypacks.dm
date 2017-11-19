@@ -9,7 +9,7 @@
 var/const/supply_emergency 	= 1
 var/const/supply_security 	= 2
 var/const/supply_engineer	= 3
-var/const/supply_medical	= 4
+//var/const/supply_medical	= 4
 var/const/supply_science	= 5
 var/const/supply_organic	= 6
 var/const/supply_materials 	= 7

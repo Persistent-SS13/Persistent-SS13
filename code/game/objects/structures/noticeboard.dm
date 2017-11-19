@@ -6,7 +6,7 @@
 	density = 0
 	anchored = 1
 	var/notices = 0
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;notices"
 /obj/structure/noticeboard/initialize()
 	for(var/obj/item/I in loc)
 		if(notices > 4) break

@@ -712,7 +712,7 @@ var/global/nologevent = 0
 		
 	spawn(0)
 		var/datum/mind/mind = new()
-		var/mob/M = map_storage.Load_Char(usr.ckey, 1, mind, 1)
+		var/mob/M = map_storage.Load_Char_Fast(usr.ckey, 1, mind, 1)
 		M.loc = usr.loc
 /datum/admins/proc/savestation()
 	set category = "Server"

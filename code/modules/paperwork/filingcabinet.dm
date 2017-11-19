@@ -102,7 +102,7 @@
  * Security Record Cabinets
  */
 /obj/structure/filingcabinet/security
-	var/virgin = 1
+	var/virgin = 0
 
 
 /obj/structure/filingcabinet/security/proc/populate()

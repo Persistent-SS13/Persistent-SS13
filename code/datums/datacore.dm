@@ -10,26 +10,16 @@
 			manifest_inject(H)
 		return
 
-/obj/effect/datacore/proc/manifest_modify(var/name, var/assignment)
+/obj/effect/datacore/proc/manifest_modify(var/name, var/assignment, var/real_title = "broke")
 	if(PDA_Manifest.len)
 		PDA_Manifest.Cut()
 	var/datum/data/record/foundrecord
-	var/real_title = assignment
 
 	for(var/datum/data/record/t in data_core.general)
 		if(t)
 			if(t.fields["name"] == name)
 				foundrecord = t
 				break
-
-	var/list/all_jobs = get_job_datums()
-
-	for(var/datum/job/J in all_jobs)
-		var/list/alttitles = get_alternate_titles(J.title)
-		if(!J)	continue
-		if(assignment in alttitles)
-			real_title = J.title
-			break
 
 	if(foundrecord)
 		foundrecord.fields["rank"] = assignment
@@ -74,7 +64,7 @@
 		else
 			G.fields["notes"] = "No notes found."
 		general += G
-
+		gen_byname[H.real_name] = G
 		//Medical Record
 		var/datum/data/record/M = new()
 		M.fields["id"]			= id
@@ -94,7 +84,7 @@
 		else
 			M.fields["notes"] = "No notes found."
 		medical += M
-
+		med_byname[H.real_name] = M
 		//Security Record
 		var/datum/data/record/S = new()
 		S.fields["id"]			= id
@@ -110,7 +100,7 @@
 		else
 			S.fields["notes"] = "No notes."
 		security += S
-
+		sec_byname[H.real_name] = S
 		//Locked Record
 		var/datum/data/record/L = new()
 		L.fields["id"]			= md5("[H.real_name][H.mind.assigned_role]")

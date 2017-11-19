@@ -234,11 +234,22 @@
 				aisync = 0
 				lawsync = 0
 				O.laws = new /datum/ai_laws/syndicate_override
-
+			for(var/obj/item/weapon/implant/I in M.brainmob.contents) // this should be in remove() so that even npcs transfer implants but it all needs to go into brainmob. hm....
+				if(I && I.implanted && I.implant_loc == "brain")
+					M.brainmob.contents -= I
+					O.contents += I
+					I.imp_in = O
+					I.loc = O
+					if(I.actions && !isemptylist(I.actions))
+						for(var/X in I.actions)
+							var/datum/action/A = X
+							A.Grant(M.brainmob)	// i guess if u grant to someone who already has it it takes it away
+							A.Grant(O)
 			O.invisibility = 0
 			//Transfer debug settings to new mob
-			O.custom_name = created_name
-			O.rename_character(O.real_name, O.get_default_name())
+			O.custom_name = M.brainmob.real_name
+			O.real_name = M.brainmob.real_name
+			O.name = M.brainmob.real_name
 			O.locked = panel_locked
 			if(!aisync)
 				lawsync = 0

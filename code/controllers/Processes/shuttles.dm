@@ -15,7 +15,7 @@ var/const/CALL_SHUTTLE_REASON_LENGTH = 12
 	var/transferDelayTime = 50 // this is the delay between selecting launch and it launching, supposedly synced to the existing sound
 	var/transferWaitTime = 1200 // 2 MINS
 	var/transferCallTime = 3000 // 5 MINS
-	var/transferBoardTime = 600 // 1 min
+	var/transferBoardTime = 1200 // 1 min
 	var/transferFastTime = 100 // 10 seconds to be used for the travel time back to centcom the first time
 	
 	

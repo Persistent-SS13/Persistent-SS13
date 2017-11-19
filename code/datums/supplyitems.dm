@@ -159,6 +159,61 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containertype = /obj/structure/closet/secure_closet
 	group = 2
 	containername = "Clothing Order"
+/datum/supply_item/headgear/glasses
+	name = "Prescription Glasses"
+	contains = list(/obj/item/clothing/glasses/regular)
+	cost = 50
+	desc = "A pair of perscription glasses. The perscription is universal."
+/datum/supply_item/headgear/fakesunglasses
+	name = "Cheap sunglasses"
+	contains = list(/obj/item/clothing/glasses/sunglasses/fake)
+	cost = 50
+	desc = "Cheap plastic sunglasses."
+/datum/supply_item/headgear/sombrero
+	name = "Sombrero"
+	contains = list(/obj/item/clothing/head/sombrero)
+	cost = 75
+	desc = "An authentic mexican sombrero."
+/datum/supply_item/headgear/tophat
+	name = "Sturdy Top Hat"
+	contains = list(/obj/item/clothing/head/that)
+	cost = 75
+	desc = "It's an amish looking top hat."
+/datum/supply_item/headgear/fedora
+	name = "Fedora"
+	contains = list(/obj/item/clothing/head/fedora)
+	cost = 75
+	desc = "A black fedora, cool people only."
+/datum/supply_item/headgear/monocle
+	name = "Monocle"
+	contains = list(/obj/item/clothing/glasses/monocle)
+	cost = 50
+	desc = "Dapper!"
+/datum/supply_item/headgear/justice
+	name = "Justice Helmet"
+	contains = list(/obj/item/clothing/head/helmet/justice/escape)
+	cost = 75
+	desc = "Weee-ooo weee-ooo."
+/datum/supply_item/headgear/
+	name = ""
+	contains = list(/obj/item/clothing/)
+	cost = 100
+	desc = "."
+/datum/supply_item/headgear/
+	name = ""
+	contains = list(/obj/item/clothing/)
+	cost = 100
+	desc = "."
+/datum/supply_item/headgear/
+	name = ""
+	contains = list(/obj/item/clothing/)
+	cost = 100
+	desc = "."
+/datum/supply_item/headgear/
+	name = ""
+	contains = list(/obj/item/clothing/)
+	cost = 100
+	desc = "."
 
 	
 /datum/supply_item/clothing	// Section header - use these to set default supply group and crate type for sections
@@ -166,22 +221,6 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containertype = /obj/structure/closet/secure_closet
 	group = 3
 	containername = "Clothing Order"
-
-/datum/supply_item/clothing/tophat
-	name = "Sturdy Top Hat"
-	contains = list(/obj/item/clothing/head/that)
-	cost = 190
-	desc = "It's an amish looking top hat."
-/datum/supply_item/clothing/fedora
-	name = "Fedora"
-	contains = list(/obj/item/clothing/head/fedora)
-	cost = 150
-	desc = "A black fedora, cool people only."
-/datum/supply_item/clothing/monocle
-	name = "Monocle"
-	contains = list(/obj/item/clothing/glasses/monocle)
-	cost = 95
-	desc = "Dapper!"
 /datum/supply_item/clothing/navysuit
 	name = "Navy Suit"
 	contains = list(/obj/item/clothing/under/suit_jacket/navy)
@@ -207,26 +246,6 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	contains = list(/obj/item/clothing/suit/jacket/miljacket)
 	cost = 200
 	desc = "A canvas jacket styled after military garb."
-/datum/supply_item/clothing/redscarf
-	name = "Red Scarf"
-	contains = list(/obj/item/clothing/accessory/scarf/red)
-	cost = 90
-	desc = "A stylish scarf."
-/datum/supply_item/clothing/darkbluescarf
-	name = "Dark Blue Scarf"
-	contains = list(/obj/item/clothing/accessory/scarf/darkblue)
-	cost = 90
-	desc = "A stylish scarf."
-/datum/supply_item/clothing/stripedredscarf
-	name = "Striped Red Scarf"
-	contains = list(/obj/item/clothing/accessory/stripedredscarf)
-	cost = 100
-	desc = "A stylish scarf."
-/datum/supply_item/clothing/waistcoat
-	name = "Black Waistcoat"
-	contains = list(/obj/item/clothing/accessory/waistcoat)
-	cost = 100
-	desc = "A spiffy black waistcoat."
 /datum/supply_item/clothing/sundress
 	name = "Sundress"
 	contains = list(/obj/item/clothing/under/sundress)
@@ -257,26 +276,6 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	contains = list(/obj/item/clothing/under/blacktango)
 	cost = 230
 	desc = "A black dress filled with latin fire."
-/datum/supply_item/clothing/glasses
-	name = "Glasses (Perscription)"
-	contains = list(/obj/item/clothing/glasses/regular)
-	cost = 80
-	desc = "A pair of perscription glasses. The perscription is universal."
-/datum/supply_item/clothing/glasses
-	name = "Glasses (Perscription)"
-	contains = list(/obj/item/clothing/glasses/regular)
-	cost = 80
-	desc = "A pair of perscription glasses. The perscription is universal."
-/datum/supply_item/clothing/fakesunglasses
-	name = "Cheap sunglasses"
-	contains = list(/obj/item/clothing/glasses/sunglasses/fake)
-	cost = 80
-	desc = "Cheap plastic sunglasses."
-/datum/supply_item/clothing/sombrero
-	name = "Sombrero"
-	contains = list(/obj/item/clothing/head/sombrero)
-	cost = 150
-	desc = "An authentic mexican sombrero."
 /datum/supply_item/clothing/poncho
 	name = "Poncho"
 	contains = list(/obj/item/clothing/suit/poncho)
@@ -317,12 +316,103 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	contains = list(/obj/item/clothing/suit/browntrenchcoat)
 	cost = 200
 	desc = "Stylish brown trench coat."
+/datum/supply_item/clothing/pirateblack
+	name = "Black Pirate Coat"
+	contains = list(/obj/item/clothing/suit/pirate_black)
+	cost = 100
+	desc = "A black pirate coat, matey!"
+/datum/supply_item/clothing/piratebrown
+	name = "Brown Pirate Coat"
+	contains = list(/obj/item/clothing/suit/pirate_brown)
+	cost = 100
+	desc = "A brown pirate coat, matey!"
+/datum/supply_item/clothing/blue
+	name = "Blue Hoodie"
+	contains = list(/obj/item/clothing/suit/hooded/hoodie/blue)
+	cost = 100
+	desc = "A blue hoodie."
+/datum/supply_item/clothing/mit
+	name = "Martian Institute of Technology Hoodie"
+	contains = list(/obj/item/clothing/suit/hooded/hoodie/mit)
+	cost = 100
+	desc = "A black Martian Institute of Technology hoodie."
+/datum/supply_item/clothing/cut
+	name = "Caanan University of Technology Hoodie"
+	contains = list(/obj/item/clothing/suit/hooded/hoodie/cut)
+	cost = 100
+	desc = "A gray Caanan University of Technology Hoodie."
+/datum/supply_item/clothing/lam
+	name = "Lunar Academy of Medicine Hoodie"
+	contains = list(/obj/item/clothing/suit/hooded/hoodie/lam)
+	cost = 100
+	desc = "A gray Lunar Academy of Medicine hoodie."
+/datum/supply_item/clothing/nt
+	name = "Nanotrasen Hoodie"
+	contains = list(/obj/item/clothing/suit/hooded/hoodie/nt)
+	cost = 100
+	desc = "A blue Nanotrasen hoodie."
+/datum/supply_item/clothing/tp
+	name = "Tharsis Polytech Hoodie"
+	contains = list(/obj/item/clothing/suit/hooded/hoodie/tp)
+	cost = 100
+	desc = "A dark Tharsis Polytech hoodie."
+/datum/supply_item/clothing/wintercoat
+	name = "Winter Coat"
+	contains = list(/obj/item/clothing/suit/hooded/wintercoat)
+	cost = 100
+	desc = "Very warm."
+/datum/supply_item/clothing/justice
+	name = "Justice Suit"
+	contains = list(/obj/item/clothing/suit/justice)
+	cost = 100
+	desc = "Be a real law man."
+/datum/supply_item/clothing/
+	name = ""
+	contains = list(/obj/item/clothing/suit/)
+	cost = 100
+	desc = "."
+/datum/supply_item/clothing/
+	name = ""
+	contains = list(/obj/item/clothing/suit/)
+	cost = 100
+	desc = "."
+/datum/supply_item/clothing/
+	name = ""
+	contains = list(/obj/item/clothing/)
+	cost = 100
+	desc = "."
 
+	
 /datum/supply_item/accessories	// Section header - use these to set default supply group and crate type for sections
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
 	containertype = /obj/structure/closet/secure_closet
 	group = 4
 	containername = "Clothing Order"
+/datum/supply_item/clothing/redscarf
+	name = "Red Scarf"
+	contains = list(/obj/item/clothing/accessory/scarf/red)
+	cost = 75
+	desc = "A stylish red scarf."
+/datum/supply_item/clothing/greencarf
+	name = "Green Scarf"
+	contains = list(/obj/item/clothing/accessory/scarf/green)
+	cost = 75
+	desc = "A stylish green scarf."
+/datum/supply_item/clothing/darkbluescarf
+	name = "Dark Blue Scarf"
+	contains = list(/obj/item/clothing/accessory/scarf/darkblue)
+	cost = 75
+	desc = "A stylish blue scarf."
+/datum/supply_item/clothing/stripedredscarf
+	name = "Striped Red Scarf"
+	contains = list(/obj/item/clothing/accessory/stripedredscarf)
+	cost = 75
+	desc = "A stylish striped red scarf."
+/datum/supply_item/clothing/waistcoat
+	name = "Black Waistcoat"
+	contains = list(/obj/item/clothing/accessory/waistcoat)
+	cost = 75
+	desc = "A spiffy black waistcoat."
 
 /datum/supply_item/robotics
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
@@ -574,6 +664,11 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containertype = /obj/structure/closet/crate/secure/plasma
 	group = 8
 	containername = "Engineering Order"
+/datum/supply_item/clothing/
+	name = ""
+	contains = list(/obj/item/clothing/suit/)
+	cost = 100
+	desc = "."
 /datum/supply_item/engineering/solars
 	name = "Solar Panel Crate"
 	contains = list(/obj/item/solar_assembly,
@@ -596,7 +691,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/solar_assembly,
 					/obj/item/solar_assembly,
 					/obj/item/solar_assembly)
-	cost = 100
+	cost = 200
 	desc = "20 solar panels."
 /datum/supply_item/engineering/oxygen
 	name = "Canister (O2)"

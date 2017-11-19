@@ -792,8 +792,8 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	cost = 500
 	desc = "A beekeeper suit and queen bee. Buzz!"
 /datum/supply_item/misc/bedsheetpack
-    name = "Bedsheets Variety Pack"
-    contains = list(obj/item/weapon/bedsheet
+    name = "Bedsheet Variety Pack"
+    contains = list(obj/item/weapon/bedsheet,
 					obj/item/weapon/bedsheet/blue,
 					obj/item/weapon/bedsheet/green,
 					obj/item/weapon/bedsheet/orange,

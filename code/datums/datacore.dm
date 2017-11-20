@@ -30,6 +30,7 @@
 		PDA_Manifest.Cut()
 
 	if(H.mind && (H.mind.assigned_role != "MODE"))
+	
 		var/assignment
 		if(H.mind.assigned_job)
 			assignment = H.mind.assigned_job.title
@@ -39,68 +40,86 @@
 			assignment = "Unassigned"
 
 		var/id = add_zero(num2hex(rand(1, 1.6777215E7)), 6)	//this was the best they could come up with? A large random number? *sigh*
-
-
-		//General Record
-		var/datum/data/record/G = new()
-		G.fields["id"]			= id
-		G.fields["name"]		= H.real_name
-		if(H.mind.assigned_job)
-			G.fields["real_rank"]	= H.mind.assigned_job.title
-		else
-			G.fields["real_rank"] = "Unassigned (Contact NT)"
-		G.fields["rank"]		= assignment
-		G.fields["age"]			= H.age
-		G.fields["fingerprint"]	= md5(H.dna.uni_identity)
-		G.fields["p_stat"]		= "Active"
-		G.fields["m_stat"]		= "Stable"
-		G.fields["sex"]			= capitalize(H.gender)
-		G.fields["species"]		= H.get_species()
-		G.fields["photo"]		= get_id_photo(H)
-		G.fields["photo-south"] = "'data:image/png;base64,[icon2base64(icon(G.fields["photo"], dir = SOUTH))]'"
-		G.fields["photo-west"] = "'data:image/png;base64,[icon2base64(icon(G.fields["photo"], dir = WEST))]'"
-		if(H.gen_record && !jobban_isbanned(H, "Records"))
-			G.fields["notes"] = H.gen_record
-		else
-			G.fields["notes"] = "No notes found."
-		general += G
-		gen_byname[H.real_name] = G
-		//Medical Record
-		var/datum/data/record/M = new()
-		M.fields["id"]			= id
-		M.fields["name"]		= H.real_name
-		M.fields["b_type"]		= H.b_type
-		M.fields["b_dna"]		= H.dna.unique_enzymes
-		M.fields["mi_dis"]		= "None"
-		M.fields["mi_dis_d"]	= "No minor disabilities have been declared."
-		M.fields["ma_dis"]		= "None"
-		M.fields["ma_dis_d"]	= "No major disabilities have been diagnosed."
-		M.fields["alg"]			= "None"
-		M.fields["alg_d"]		= "No allergies have been detected in this patient."
-		M.fields["cdi"]			= "None"
-		M.fields["cdi_d"]		= "No diseases have been diagnosed at the moment."
-		if(H.med_record && !jobban_isbanned(H, "Records"))
-			M.fields["notes"] = H.med_record
-		else
-			M.fields["notes"] = "No notes found."
-		medical += M
-		med_byname[H.real_name] = M
-		//Security Record
-		var/datum/data/record/S = new()
-		S.fields["id"]			= id
-		S.fields["name"]		= H.real_name
-		S.fields["criminal"]	= "None"
-		S.fields["mi_crim"]		= "None"
-		S.fields["mi_crim_d"]	= "No minor crime convictions."
-		S.fields["ma_crim"]		= "None"
-		S.fields["ma_crim_d"]	= "No major crime convictions."
-		S.fields["notes"]		= "No notes."
-		if(H.sec_record && !jobban_isbanned(H, "Records"))
-			S.fields["notes"] = H.sec_record
-		else
-			S.fields["notes"] = "No notes."
-		security += S
-		sec_byname[H.real_name] = S
+		
+		var/map_storage/map_storage = new("SS13")
+		var/datum/data/record/genrec = map_storage.Load_Records(H.real_name, 1)
+		if(genrec)
+			general += genrec
+			gen_byname[H.real_name] = genrec
+		if(!genrec)
+			//General Record
+			var/datum/data/record/G = new()
+			G.fields["id"]			= id
+			G.fields["name"]		= H.real_name
+			if(H.mind.assigned_job)
+				G.fields["real_rank"]	= H.mind.assigned_job.title
+			else
+				G.fields["real_rank"] = "Unassigned (Contact NT)"
+			G.fields["rank"]		= assignment
+			G.fields["age"]			= H.age
+			G.fields["fingerprint"]	= md5(H.dna.uni_identity)
+			G.fields["p_stat"]		= "Active"
+			G.fields["m_stat"]		= "Stable"
+			G.fields["sex"]			= capitalize(H.gender)
+			G.fields["species"]		= H.get_species()
+			G.fields["photo"]		= get_id_photo(H)
+			G.fields["photo-south"] = "'data:image/png;base64,[icon2base64(icon(G.fields["photo"], dir = SOUTH))]'"
+			G.fields["photo-west"] = "'data:image/png;base64,[icon2base64(icon(G.fields["photo"], dir = WEST))]'"
+			if(H.gen_record && !jobban_isbanned(H, "Records"))
+				G.fields["notes"] = H.gen_record
+			else
+				G.fields["notes"] = "No notes found."
+			general += G
+			gen_byname[H.real_name] = G
+		var/datum/data/record/medrec = map_storage.Load_Records(H.real_name, 2)
+		if(medrec)
+			medical += medrec
+			med_byname[H.real_name] = medrec
+		if(!medrec)	
+			//Medical Record
+			var/datum/data/record/M = new()
+			M.fields["id"]			= id
+			M.fields["name"]		= H.real_name
+			M.fields["b_type"]		= H.b_type
+			M.fields["b_dna"]		= H.dna.unique_enzymes
+			M.fields["mi_dis"]		= "None"
+			M.fields["mi_dis_d"]	= "No minor disabilities have been declared."
+			M.fields["ma_dis"]		= "None"
+			M.fields["ma_dis_d"]	= "No major disabilities have been diagnosed."
+			M.fields["alg"]			= "None"
+			M.fields["alg_d"]		= "No allergies have been detected in this patient."
+			M.fields["cdi"]			= "None"
+			M.fields["cdi_d"]		= "No diseases have been diagnosed at the moment."
+			if(H.med_record && !jobban_isbanned(H, "Records"))
+				M.fields["notes"] = H.med_record
+			else
+				M.fields["notes"] = "No notes found."
+			medical += M
+			med_byname[H.real_name] = M
+		var/datum/data/record/secrec = map_storage.Load_Records(H.real_name, 3)
+		if(secrec)
+			security += secrec
+			sec_byname[H.real_name] = secrec	
+		if(!secrec)	
+			//Security Record
+			var/datum/data/record/S = new()
+			S.fields["id"]			= id
+			S.fields["name"]		= H.real_name
+			S.fields["criminal"]	= "None"
+			S.fields["mi_crim"]		= "None"
+			S.fields["mi_crim_d"]	= "No minor crime convictions."
+			S.fields["ma_crim"]		= "None"
+			S.fields["ma_crim_d"]	= "No major crime convictions."
+			S.fields["notes"]		= "No notes."
+			if(H.sec_record && !jobban_isbanned(H, "Records"))
+				S.fields["notes"] = H.sec_record
+			else
+				S.fields["notes"] = "No notes."
+			security += S
+			sec_byname[H.real_name] = S
+			
+			
+			
 		//Locked Record
 		var/datum/data/record/L = new()
 		L.fields["id"]			= md5("[H.real_name][H.mind.assigned_role]")
@@ -119,7 +138,7 @@
 
 
 proc/get_id_photo_new(var/mob/living/Hu) // PERSISTANT AND MARKED FOR CHANGE
-
+	return getFlatIcon(Hu)
 	return get_id_photo_old(Hu)
 		
 	var/H = Hu.client.prefs.load_mind(Hu.client, 0, 0, 1)
@@ -150,7 +169,7 @@ proc/get_id_photo_new(var/mob/living/Hu) // PERSISTANT AND MARKED FOR CHANGE
 
 	
 proc/get_id_photo(var/mob/living/Hu) // PERSISTANT AND MARKED FOR CHANGE
-
+	return getFlatIcon(Hu)
 	return get_id_photo_old(Hu)
 		
 	var/H = Hu.client.prefs.load_mind(Hu.client, 0, 0, 1)

@@ -360,7 +360,7 @@ map_storage
 			current = Firstbod
 		if(findtext(ckey, "@"))
 			var/list/nums = string_explode(ckey, "@")
-			ckey = nums[1]
+			ckey = nums[2]
 			message_admins("@ found, nums.len [nums.len]")
 		fdel("char_saves/[ckey]/[slot].sav")
 		var/savefile/savefile = new("char_saves/[ckey]/[slot].sav")
@@ -375,11 +375,48 @@ map_storage
 		savefile["mind"] = mindind
 		savefile["loc"] = locind
 		return 1
-	proc/Load_Records(var/search)
-	
-	proc/Save_Records(var/mob/M)
-	
-
+	proc/Load_Records(var/search, var/dir = 1) // gen = 1, med = 2, sec = 3
+		message_admins("Load_Records ran!")
+		if(!search)
+			return
+		var/front_dir
+		switch(dir)
+			if(1)
+				front_dir = "gen_records"
+			if(2)
+				front_dir = "med_records"
+			if(3)
+				front_dir = "sec_records"
+		if(fexists("[front_dir]/[search].sav"))
+			message_admins("FILE Found [front_dir]/[search].sav !")
+			var/savefile/savefile = new("[front_dir]/[search].sav")
+			var/recind = savefile["record"]
+			message_admins("Recind : [recind]")
+			var/datum/data/record/G = Load_Entry(savefile, recind)
+			return G
+		else
+			message_admins("FILE DID NOT EXIST [front_dir]/[search].sav !")
+			return 0
+	proc/Save_Records()
+		for(var/datum/data/record/G in data_core.general)
+			var/name = G.fields["name"]
+			var/fingerprint = G.fields["fingerprint"]
+			fdel("gen_records/[name].sav")
+			var/savefile/savefile = new("gen_records/[name].sav")
+			savefile["record"] = BuildVarDirectory(savefile, G, 1)
+			fcopy(savefile, "gen_records/[fingerprint].sav")
+		for(var/datum/data/record/G in data_core.medical)
+			var/name = G.fields["name"]
+			var/dna = G.fields["b_dna"]
+			fdel("med_records/[name].sav")
+			var/savefile/savefile = new("med_records/[name].sav")
+			savefile["record"] = BuildVarDirectory(savefile, G, 1)
+			fcopy(savefile, "med_records/[dna].sav")
+		for(var/datum/data/record/G in data_core.security)
+			var/name = G.fields["name"]
+			fdel("sec_records/[name].sav")
+			var/savefile/savefile = new("sec_records/[name].sav")
+			savefile["record"] = BuildVarDirectory(savefile, G, 1)
 	proc/Load_Char(var/ckey, var/slot, var/datum/mind/M, var/transfer = 0)
 		if(!ckey)
 			message_admins("Load_Char without ckey")

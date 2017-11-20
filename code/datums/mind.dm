@@ -72,8 +72,10 @@
 	var/datum/money_account/initial_account
 	
 
-	
-	
+/datum/mind/before_save()
+	if(current)
+		var/display_name = get_default_title(ranks[to_strings(primary_cert.department_flag)], primary_cert)
+		data_core.manifest_modify(current.real_name, display_name, primary_cert.title)
 /datum/mind/proc/transfer_to(mob/living/new_character)
 	if(!istype(new_character))
 		log_to_dd("## DEBUG: transfer_to(): Some idiot has tried to transfer_to() a non mob/living mob. Please inform Carn")

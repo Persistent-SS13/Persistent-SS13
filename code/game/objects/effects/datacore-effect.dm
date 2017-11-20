@@ -39,7 +39,7 @@
 	"}
 	var/even = 0
 	// sort mobs
-	for(var/datum/data/record/t in data_core.general)
+	for(var/datum/data/record/t in data_core.manifest_recs)
 		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
 		var/real_rank = t.fields["real_rank"]
@@ -156,7 +156,7 @@ var/global/list/PDA_Manifest = list()
 	var/sup[0]
 	var/bot[0]
 	var/misc[0]
-	for(var/datum/data/record/t in data_core.general)
+	for(var/datum/data/record/t in data_core.manifest_recs)
 		var/name = sanitize(t.fields["name"])
 		var/rank = sanitize(t.fields["rank"])
 		var/real_rank = t.fields["real_rank"]

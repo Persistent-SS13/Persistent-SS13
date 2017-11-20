@@ -218,12 +218,13 @@
 				src.temp = text("Are you sure you wish to delete all records?<br>\n\t<A href='?src=\ref[];temp=1;del_all2=1'>Yes</A><br>\n\t<A href='?src=\ref[];temp=1'>No</A><br>", src, src)
 
 			if(href_list["del_all2"])
-				for(var/datum/data/record/R in data_core.medical)
+				/**
+				for(var/datum/data/record/R in data_core.medical) // REMOVED DUE TO HUGE DAMAGE POTENTIAL
 					//R = null
 					qdel(R)
 					//Foreach goto(494)
 				src.temp = "All records deleted."
-
+				**/
 			if(href_list["field"])
 				var/a1 = src.active1
 				var/a2 = src.active2

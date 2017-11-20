@@ -129,9 +129,52 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/industrial,
 					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
 	cost = 150
-	containertype = /obj/structure/closet/crate/secure/plasma
+	containertype = /obj/structure/closet/secure_closet/engineering_personal
 	containername = "Engineering Trainee Equipment"
-	desc = "Everything an Engineer Trainee needs."
+	desc = "Everything an Engineering Trainee needs."
+	authentication = list("chief", "captain", "hop")
+/datum/supply_item/profession/engineeringfemale
+	name = "Engineering Trainee Equipment - Female"
+	contains = list(/obj/item/clothing/head/hardhat,
+					/obj/item/clothing/under/rank/engineer/skirt,
+					/obj/item/clothing/shoes/workboots,
+					/obj/item/weapon/storage/belt/utility/full,
+					/obj/item/weapon/storage/backpack/industrial,
+					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
+	cost = 150
+	containertype = /obj/structure/closet/secure_closet/engineering_personal
+	containername = "Engineering Trainee Equipment"
+	desc = "Everything an Engineering Trainee needs."
+	authentication = list("chief", "captain", "hop")
+/datum/supply_item/profession/atmostech
+	name = "Atmospheric Technician Equipment"
+	contains = list(/obj/item/clothing/under/rank/atmospheric_technician,
+					/obj/item/clothing/shoes/workboots,
+					/obj/item/clothing/suit/hooded/wintercoat/engineering/atmos,
+					/obj/item/clothing/suit/fire/atmos,
+					/obj/item/clothing/head/hardhat/atmos,
+					/obj/item/weapon/storage/belt/utility/atmostech,
+					/obj/item/weapon/storage/backpack/industrial,
+					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
+	cost = 500
+	containertype = /obj/structure/closet/secure_closet/atmos_personal
+	containername = "Atmospheric Technician Equipment"
+	desc = "Everything an Atmos Tech needs."
+	authentication = list("chief", "captain", "hop")
+/datum/supply_item/profession/atmostechfemale
+	name = "Atmospheric Technician Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/atmospheric_technician/skirt,
+					/obj/item/clothing/shoes/workboots,
+					/obj/item/clothing/suit/hooded/wintercoat/engineering/atmos,
+					/obj/item/clothing/suit/fire/atmos,
+					/obj/item/clothing/head/hardhat/atmos,
+					/obj/item/weapon/storage/belt/utility/atmostech,
+					/obj/item/weapon/storage/backpack/industrial,
+					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
+	cost = 500
+	containertype = /obj/structure/closet/secure_closet/atmos_personal
+	containername = "Atmospheric Technician Equipment"
+	desc = "Everything an Atmos Tech needs."
 	authentication = list("chief", "captain", "hop")
 /datum/supply_item/profession/cargo
 	name = "Cargo Rookie Equipment"
@@ -171,24 +214,166 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 /datum/supply_item/profession/medical
 	name = "Medical Intern Equipment"
 	contains = list(/obj/item/clothing/under/rank/medical,
-					/obj/item/clothing/mask/surgical,
 					/obj/item/weapon/storage/backpack/medic,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
-	cost = 125
-	containertype = /obj/structure/closet/crate/secure/plasma
+	cost = 100
+	containertype = /obj/structure/closet/secure_closet/medical3
 	containername = "Medical Intern Equipment"
 	desc = "Everything a Medical Intern needs."
 	authentication = list("cmo", "captain", "hop")
-/datum/supply_item/profession/science
+/datum/supply_item/profession/medicalfemale
+	name = "Medical Intern Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/medical/skirt,
+					/obj/item/weapon/storage/backpack/medic,
+					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
+	cost = 100
+	containertype = /obj/structure/closet/secure_closet/medical3
+	containername = "Medical Intern Equipment"
+	desc = "Everything a Medical Intern needs."
+	authentication = list("cmo", "captain", "hop")
+/datum/supply_item/profession/nurse
+	name = "Nurse Equipment"
+	contains = list(/obj/item/clothing/under/rank/nurse,
+					/obj/item/clothing/under/rank/nursesuit,
+					/obj/item/clothing/head/nursehat,
+					/obj/item/weapon/storage/backpack/medic,
+					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
+	cost = 100
+	containertype = /obj/structure/closet/secure_closet/medical3
+	containername = "Nurse Equipment"
+	desc = "Everything a Nurse needs. A mostly male-dominated profession."
+	authentication = list("cmo", "captain", "hop")
+/datum/supply_item/profession/doctor
+	name = "Doctor Equipment"
+	contains = list(/obj/item/clothing/under/rank/medical,
+					/obj/item/clothing/suit/storage/labcoat,
+					/obj/item/clothing/shoes/white,
+					/obj/item/clothing/suit/hooded/wintercoat/medical,
+					/obj/item/clothing/gloves/color/latex,
+					/obj/item/clothing/mask/breath/medical,
+					/obj/item/weapon/storage/firstaid/regular,
+					/obj/item/weapon/storage/backpack/satchel_med,
+					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
+	cost = 500
+	containertype = /obj/structure/closet/secure_closet/medical3
+	containername = "Doctor Equipment"
+	desc = "Everything a Doctor needs."
+	authentication = list("cmo", "captain", "hop")
+/datum/supply_item/profession/doctorfemale
+	name = "Doctor Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/medical/skirt,
+					/obj/item/clothing/suit/storage/labcoat,
+					/obj/item/clothing/shoes/white,
+					/obj/item/clothing/suit/hooded/wintercoat/medical,
+					/obj/item/clothing/gloves/color/latex,
+					/obj/item/clothing/mask/breath/medical,
+					/obj/item/weapon/storage/firstaid/regular,
+					/obj/item/weapon/storage/backpack/satchel_med,
+					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
+	cost = 500
+	containertype = /obj/structure/closet/secure_closet/medical3
+	containername = "Doctor Equipment"
+	desc = "Everything a Doctor needs."
+	authentication = list("cmo", "captain", "hop")
+/datum/supply_item/profession/chemist
+	name = "Chemist Equipment"
+	contains = list(/obj/item/clothing/under/rank/medical,
+					/obj/item/clothing/suit/storage/labcoat/chemist,
+					/obj/item/clothing/glasses/science,
+					/obj/item/weapon/storage/bag/chemistry,
+					/obj/item/weapon/storage/backpack/satchel_chem,
+					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
+	cost = 300
+	containertype = /obj/structure/closet/secure_closet/medical3
+	containername = "Chemist Equipment"
+	desc = "Everything a Chemist needs."
+	authentication = list("cmo", "captain", "hop")
+/datum/supply_item/profession/chemistfemale
+	name = "Chemist Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/medical/skirt,
+					/obj/item/clothing/suit/storage/labcoat/chemist,
+					/obj/item/clothing/glasses/science,
+					/obj/item/weapon/storage/bag/chemistry,
+					/obj/item/weapon/storage/backpack/satchel_chem,
+					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
+	cost = 300
+	containertype = /obj/structure/closet/secure_closet/medical3
+	containername = "Chemist Equipment"
+	desc = "Everything a Chemist needs."
+	authentication = list("cmo", "captain", "hop")
+/datum/supply_item/profession/scienceintern
 	name = "Science Intern Equipment"
 	contains = list(/obj/item/clothing/under/rank/scientist,
 					/obj/item/weapon/storage/backpack/science,
 					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
 	cost = 100
-	containertype = /obj/structure/closet/crate/secure/plasma
+	containertype = /obj/structure/closet/secure_closet/scientist
 	containername = "Science Intern Equipment"
 	desc = "Everything a Science Intern needs."
 	authentication = list("rd", "captain", "hop")
+/datum/supply_item/profession/scienceinternfemale
+	name = "Science Intern Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/scientist/skirt,
+					/obj/item/weapon/storage/backpack/science,
+					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
+	cost = 100
+	containertype = /obj/structure/closet/secure_closet/scientist
+	containername = "Science Intern Equipment"
+	desc = "Everything a Science Intern needs."
+	authentication = list("rd", "captain", "hop")
+/datum/supply_item/profession/scientist
+	name = "Scientist Equipment"
+	contains = list(/obj/item/clothing/under/rank/scientist,
+					/obj/item/clothing/suit/storage/labcoat/science,
+					/obj/item/clothing/suit/hooded/wintercoat/science,
+					/obj/item/clothing/glasses/science,
+					/obj/item/weapon/storage/backpack/satchel_tox,
+					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
+	cost = 400
+	containertype = /obj/structure/closet/secure_closet/scientist
+	containername = "Scientist Equipment"
+	desc = "Everything a Scientist needs."
+	authentication = list("rd", "captain", "hop")
+/datum/supply_item/profession/scientistfemale
+	name = "Scientist Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/scientist/skirt,
+					/obj/item/clothing/suit/storage/labcoat/science,
+					/obj/item/clothing/suit/hooded/wintercoat/science,
+					/obj/item/clothing/glasses/science,
+					/obj/item/weapon/storage/backpack/satchel_tox,
+					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
+	cost = 400
+	containertype = /obj/structure/closet/secure_closet/scientist
+	containername = "Scientist Equipment"
+	desc = "Everything a Scientist needs."
+	authentication = list("rd", "captain", "hop")
+/datum/supply_item/profession/roboticist
+	name = "Roboticist Equipment"
+	contains = list(/obj/item/clothing/under/rank/roboticist,
+					/obj/item/clothing/suit/storage/labcoat/fluff/aeneas_rinil,
+					/obj/item/weapon/storage/belt/utility/full/multitool,
+					/obj/item/clothing/glasses/hud/diagnostic,
+					/obj/item/weapon/storage/backpack/satchel_tox,
+					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
+	cost = 400
+	containertype = /obj/structure/closet/secure_closet/scientist
+	containername = "Roboticist Equipment"
+	desc = "Everything a Roboticist needs."
+	authentication = list("rd", "captain", "hop")
+/datum/supply_item/profession/roboticistfemale
+	name = "Roboticist Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/roboticist/skirt,
+					/obj/item/clothing/suit/storage/labcoat/fluff/aeneas_rinil,
+					/obj/item/weapon/storage/belt/utility/full/multitool,
+					/obj/item/clothing/glasses/hud/diagnostic,
+					/obj/item/weapon/storage/backpack/satchel_tox,
+					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
+	cost = 400
+	containertype = /obj/structure/closet/secure_closet/scientist
+	containername = "Roboticist Equipment"
+	desc = "Everything a Roboticist needs."
+	authentication = list("rd", "captain", "hop")
+
 
 /datum/supply_item/headgear	// Section header - use these to set default supply group and crate type for sections
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
@@ -396,6 +581,11 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	contains = list(/obj/item/clothing/suit/justice)
 	cost = 100
 	desc = "Be a real law man."
+/datum/supply_item/clothing/psysuit
+	name = "Psysuit"
+	contains = list(/obj/item/clothing/under/psysuit)
+	cost = 100
+	desc = "A gray, mysterious undersuit."
 /datum/supply_item/clothing/pilot
 	name = "Pilot Jacket"
 	contains = list(/obj/item/clothing/suit/jacket/pilot)
@@ -744,6 +934,68 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containername = "Solar Panel Crate"
 	cost = 800
 	desc = "20 solar panels."
+/datum/supply_item/engineering/radiationsuit
+	name = "Radiation Suit"
+	contains = list(/obj/item/clothing/suit/radiation,
+					/obj/item/clothing/head/radiation)
+	containername = "Radiation Suit"
+	cost = 500
+	desc = "Set of protective gear for irradiated environments."
+/datum/supply_item/engineering/engihardsuits
+	name = "Bulk Engineering Hardsuit Order"
+	contains = list(/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/suit/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering,
+					/obj/item/clothing/head/helmet/space/rig/engineering)
+	containername = "Engineering Hardsuits - Bulk Order"
+	cost = 10000
+	desc = "10 engineering hardsuits with helmets."
+/datum/supply_item/engineering/atmoshardsuits
+	name = "Bulk Atmospheric Hardsuit Order"
+	contains = list(/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/suit/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos,
+					/obj/item/clothing/head/helmet/space/rig/atmos)
+	containername = "Atmospheric Hardsuits - Bulk Order"
+	cost = 10000
+	desc = "10 atmospheric hardsuits with helmets."
+/datum/supply_item/engineering/fueltank
+	name = "Fuel Tank"
+	contains = list(/obj/structure/reagent_dispensers/fueltank)
+	cost = 400
+	desc = "Good old fashioned fossil fuels."
 /datum/supply_item/engineering/oxygen
 	name = "Canister (O2)"
 	containertype = /obj/machinery/portable_atmospherics/canister/oxygen
@@ -773,6 +1025,11 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	contains = list(/obj/item/weapon/reagent_containers/spray/cleaner)
 	cost = 120
 	desc = "A bottle of Space Cleaner."
+/datum/supply_item/misc/noslip
+	name = "High Traction Tiles"
+	contains = list(/obj/item/stack/tile/noslip/loaded)
+	cost = 700
+	desc = "20 high-traction tiles."
 /datum/supply_item/misc/janicart
 	name = "Janicart"
 	contains = list(/obj/vehicle/janicart,
@@ -813,9 +1070,9 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 /datum/supply_item/misc/witchpack
     name = "Witch Pack"
     contains = list(/obj/item/clothing/suit/wizrobe/marisa/fake,
-					/obj/item/clothing/head/wizard/marisa/fake)
+					/obj/item/clothing/head/wizard/marisa/fake,
+					/obj/item/weapon/twohanded/staff/broom)
     cost = 300											// Cheaper because there is less stuff.
     desc = "A witch can be just as good as a wizard in the arcane arts!"
-
 
 

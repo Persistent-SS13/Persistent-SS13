@@ -697,6 +697,7 @@ var/round_start_time = 0
 /datum/controller/gameticker/proc/savestation()
 	var/watch = start_watch()
 	to_chat(world, "<FONT color='blue'><B>SAVING THE STATION! THIS USUALLY TAKES UNDER 10 SECONDS</B></FONT>")
+	map_storage.Save_Records()
 	sleep(20)
 	var/started = 0
 	if(processScheduler.isRunning)

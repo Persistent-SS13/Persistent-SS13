@@ -101,7 +101,7 @@ var/list/robot_verbs_default = list(
 /mob/living/silicon/robot/before_save()
 	components_save = list()
 	for(var/i in 1 to components.len)
-		components_save += components[components[i]]
+		components_save += components[i]
 /mob/living/silicon/robot/after_load()
 	for(var/i in 1 to components.len)
 		components[components[i]] = components_save[i]
@@ -183,7 +183,7 @@ var/list/robot_verbs_default = list(
 	else
 		lawupdate = 0
 
-	playsound(loc, 'sound/voice/liveagain.ogg', 75, 1)
+	// playsound(loc, 'sound/voice/liveagain.ogg', 75, 1)
 
 /mob/living/silicon/robot/rename_character(oldname, newname)
 	if(!..(oldname, newname))

@@ -396,11 +396,6 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	contains = list(/obj/item/clothing/suit/justice)
 	cost = 100
 	desc = "Be a real law man."
-/datum/supply_item/clothing/psysuit
-	name = "Psysuit"
-	contains = list(/obj/item/clothing/suit/under/psysuit)
-	cost = 100
-	desc = "A gray, mysterious undersuit."
 /datum/supply_item/clothing/pilot
 	name = "Pilot Jacket"
 	contains = list(/obj/item/clothing/suit/jacket/pilot)
@@ -708,7 +703,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	amount = 50
 	cost = 10000
 	containertype = /obj/structure/closet/crate/secure/large/reinforced
-	containermane = "Shipment of Uranium"
+	containername = "Shipment of Uranium"
 	desc = "50 sheets of uranium."
 /datum/supply_item/materials/diamond
 	name = "Diamond"
@@ -786,40 +781,39 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	desc = "A pimpin' ride. Key included."
 /datum/supply_item/misc/beekeeper
 	name = "Bee Keeping Kit"
-	contains = list(obj/item/clothing/head/beekeeper_head,
-					obj/item/clothing/suit/beekeeper_suit,
-					obj/item/queen_bee)
+	contains = list(/obj/item/clothing/head/beekeeper_head,
+					/obj/item/clothing/suit/beekeeper_suit,
+					/obj/item/queen_bee)
 	cost = 500
 	desc = "A beekeeper suit and queen bee. Buzz!"
 /datum/supply_item/misc/bedsheetpack
     name = "Bedsheet Variety Pack"
-    contains = list(obj/item/weapon/bedsheet,
-					obj/item/weapon/bedsheet/blue,
-					obj/item/weapon/bedsheet/green,
-					obj/item/weapon/bedsheet/orange,
-					obj/item/weapon/bedsheet/purple,
-					obj/item/weapon/bedsheet/red,
-					obj/item/weapon/bedsheet/yellow,
-					obj/item/weapon/bedsheet/brown,
-					obj/item/weapon/bedsheet/rainbow)
+    contains = list(/obj/item/weapon/bedsheet,
+					/obj/item/weapon/bedsheet/blue,
+					/obj/item/weapon/bedsheet/green,
+					/obj/item/weapon/bedsheet/orange,
+					/obj/item/weapon/bedsheet/purple,
+					/obj/item/weapon/bedsheet/red,
+					/obj/item/weapon/bedsheet/yellow,
+					/obj/item/weapon/bedsheet/brown,
+					/obj/item/weapon/bedsheet/rainbow)
     cost = 300
     desc = "A variety of bedsheets."
 /datum/supply_item/misc/wizardpack
     name = "Wizard Pack"
-    contains = list(obj/item/clothing/suit/wizrobe/fake
-					obj/item/clothing/head/wizard/fake,
-					obj/item/weapon/twohanded/staff,
-					obj/item/toy/character/wizard,
-					obj/item/toy/figure/wizard,
-					obj/item/flag/wiz,
-					obj/item/weapon/bedsheet/wiz)
+    contains = list(/obj/item/clothing/suit/wizrobe/fake,
+					/obj/item/clothing/head/wizard/fake,
+					/obj/item/weapon/twohanded/staff,
+					/obj/item/toy/character/wizard,
+					/obj/item/toy/figure/wizard,
+					/obj/item/flag/wiz,
+					/obj/item/weapon/bedsheet/wiz)
     cost = 600
     desc = "Everything a LARP nerd needs."
 /datum/supply_item/misc/witchpack
     name = "Witch Pack"
-    contains = list(obj/item/clothing/suit/wizrobe/marisa/fake
-					obj/item/clothing/head/wizard/marisa/fake,
-					obj/item/weapon/twohanded/broom)
+    contains = list(/obj/item/clothing/suit/wizrobe/marisa/fake,
+					/obj/item/clothing/head/wizard/marisa/fake)
     cost = 300											// Cheaper because there is less stuff.
     desc = "A witch can be just as good as a wizard in the arcane arts!"
 

@@ -251,7 +251,7 @@
 	R.notify_ai(3, R.name, heldname)
 	R.name = heldname
 	R.custom_name = heldname
-	R.real_name = heldname
+	//	R.real_name = heldname
 
 	return 1
 

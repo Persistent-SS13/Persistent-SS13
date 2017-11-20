@@ -200,17 +200,125 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	authentication = list("quartermaster", "captain", "hop")
 /datum/supply_item/profession/security
 	name = "Security Cadet Equipment"
-	contains = list(/obj/item/weapon/melee/baton,
-					/obj/item/clothing/under/rank/security,
+	contains = list(/obj/item/clothing/under/rank/security,
 					/obj/item/clothing/shoes/jackboots,
-					/obj/item/weapon/storage/backpack/security,
+					/obj/item/weapon/melee/baton,
 					/obj/item/weapon/stock_parts/cell/crap,
+					/obj/item/weapon/restraints/handcuffs/cable/zipties,
+					/obj/item/taperoll/police,
+					/obj/item/weapon/book/manual/security_space_law,
+					/obj/item/weapon/storage/backpack/security,
 					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
-	cost = 300
-	containertype = /obj/structure/closet/crate/secure/plasma
+	cost = 350
+	containertype = /obj/structure/closet/secure_closet/security
 	containername = "Security Cadet Equipment"
 	desc = "Everything a Security Cadet needs."
 	authentication = list("hos", "captain", "hop")
+/datum/supply_item/profession/securityfemale
+	name = "Security Cadet Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/security/skirt,
+					/obj/item/clothing/shoes/jackboots,
+					/obj/item/weapon/melee/baton,
+					/obj/item/weapon/stock_parts/cell/crap,
+					/obj/item/weapon/restraints/handcuffs/cable/zipties,
+					/obj/item/taperoll/police,
+					/obj/item/weapon/book/manual/security_space_law,
+					/obj/item/weapon/storage/backpack/security,
+					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+	cost = 350
+	containertype = /obj/structure/closet/secure_closet/security
+	containername = "Security Cadet Equipment"
+	desc = "Everything a Security Cadet needs."
+	authentication = list("hos", "captain", "hop")
+/datum/supply_item/profession/securityofficer
+	name = "Security Officer Equipment"
+	contains = list(/obj/item/clothing/under/rank/security,
+					/obj/item/clothing/suit/armor/vest/security,
+					/obj/item/clothing/head/helmet,
+					/obj/item/clothing/glasses/hud/security,
+					/obj/item/clothing/shoes/jackboots,
+					/obj/item/weapon/storage/belt/security/sec,
+					/obj/item/weapon/gun/energy/advtaser,
+					/obj/item/weapon/melee/baton/loaded,
+					/obj/item/weapon/restraints/handcuffs,
+					/obj/item/device/flash,
+					/obj/item/weapon/reagent_containers/spray/pepper,
+					/obj/item/taperoll/police,
+					/obj/item/weapon/book/manual/security_space_law,
+					/obj/item/weapon/storage/backpack/security,
+					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+	cost = 700
+	containertype = /obj/structure/closet/secure_closet/security
+	containername = "Security Officer Equipment"
+	desc = "Everything a Security Officer needs."
+/datum/supply_item/profession/securityofficerfemale
+	name = "Security Officer Equipment - Female"
+	contains = list(/obj/item/clothing/under/rank/security/skirt,
+					/obj/item/clothing/suit/armor/vest/security,
+					/obj/item/clothing/head/helmet,
+					/obj/item/clothing/glasses/hud/security,
+					/obj/item/clothing/shoes/jackboots,
+					/obj/item/weapon/storage/belt/security/sec,
+					/obj/item/weapon/gun/energy/advtaser,
+					/obj/item/weapon/melee/baton/loaded,
+					/obj/item/weapon/restraints/handcuffs,
+					/obj/item/device/flash,
+					/obj/item/weapon/reagent_containers/spray/pepper,
+					/obj/item/taperoll/police,
+					/obj/item/weapon/book/manual/security_space_law,
+					/obj/item/weapon/storage/backpack/security,
+					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+	cost = 700
+	containertype = /obj/structure/closet/secure_closet/security
+	containername = "Security Officer Equipment"
+	desc = "Everything a Security Officer needs."
+/datum/supply_item/profession/securitycorporal
+	name = "Security Corporal Equipment"
+	contains = list(/obj/item/clothing/under/rank/security/corp,
+					/obj/item/clothing/suit/armor/vest/security,
+					/obj/item/clothing/head/helmet,
+					/obj/item/clothing/glasses/hud/security/sunglasses,
+					/obj/item/clothing/head/beret/sec,
+					/obj/item/clothing/shoes/jackboots,
+					/obj/item/weapon/storage/belt/security/sec,
+					/obj/item/clothing/suit/armor/secjacket,
+					/obj/item/clothing/hooded/wintercoat/security,
+					/obj/item/weapon/gun/energy/advtaser,
+					/obj/item/weapon/melee/baton/loaded,
+					/obj/item/weapon/stock_parts/cell,
+					/obj/item/weapon/restraints/handcuffs,
+					/obj/item/device/flash,
+					/obj/item/weapon/reagent_containers/spray/pepper,
+					/obj/item/taperoll/police,
+					/obj/item/weapon/book/manual/security_space_law/black,
+					/obj/item/weapon/storage/backpack/security,
+					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+	cost = 1000
+	containertype = /obj/structure/closet/secure_closet/security
+	containername = "Security Corporal Equipment"
+	desc = "Everything a Security Corporal needs."
+	authentication = list("hos", "captain", "hop")
+/datum/supply_item/profession/detective
+	name = "Detective Equipment"
+	contains = list(/obj/item/clothing/under/det,
+					/obj/item/clothing/suit/armor/vest/dest_suit,
+					/obj/item/clothing/suit/storage/det_suit,
+					/obj/item/clothing/head/det_hat,
+					/obj/item/clothing/shoes/brown,
+					/obj/item/clothing/accessory/black,
+					/obj/item/clothing/accessory/holster/armpit,
+					/obj/item/clothing/glasses/hud/security/sunglasses,
+					/obj/item/weapon/gun/projectile/revolver/detective,
+					/obj/item/weapon/restraints/handcuffs,
+					/obj/item/device/detective_scanner,
+					/obj/item/taperoll/police,
+					/obj/item/weapon/book/manual/security_space_law,
+					/obj/item/weapon/storage/backpack/security,
+					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+	cost = 700
+	containertype = /obj/structure/closet/secure_closet/security
+	containername = "Detective Equipment"
+	desc = "Everything a Detective needs."
 /datum/supply_item/profession/medical
 	name = "Medical Intern Equipment"
 	contains = list(/obj/item/clothing/under/rank/medical,

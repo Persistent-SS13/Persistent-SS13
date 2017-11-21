@@ -358,6 +358,7 @@ map_storage
 		else if(Firstbod)
 			ckey = C.ckey
 			current = Firstbod
+			
 		if(findtext(ckey, "@"))
 			var/list/nums = string_explode(ckey, "@")
 			ckey = nums[2]
@@ -377,6 +378,9 @@ map_storage
 		return 1
 	proc/Load_Records(var/search, var/dir = 1) // gen = 1, med = 2, sec = 3
 		message_admins("Load_Records ran!")
+		all_loaded = list()
+		existing_references = list()
+		all_loaded = list()
 		if(!search)
 			return
 		var/front_dir
@@ -392,20 +396,26 @@ map_storage
 			var/savefile/savefile = new("[front_dir]/[search].sav")
 			var/recind = savefile["record"]
 			message_admins("Recind : [recind]")
-			var/datum/data/record/G = Load_Entry(savefile, recind)
+			var/datum/data/record/G = Load_Entry(savefile, 1)
 			return G
 		else
 			message_admins("FILE DID NOT EXIST [front_dir]/[search].sav !")
 			return 0
 	proc/Save_Records()
+		
 		for(var/datum/data/record/G in data_core.general)
+			saving_references = list()
+			existing_references = list()
 			var/name = G.fields["name"]
 			var/fingerprint = G.fields["fingerprint"]
 			fdel("gen_records/[name].sav")
 			var/savefile/savefile = new("gen_records/[name].sav")
 			savefile["record"] = BuildVarDirectory(savefile, G, 1)
+			message_admins("savefile made! record: [savefile["record"]]")
 			fcopy(savefile, "gen_records/[fingerprint].sav")
 		for(var/datum/data/record/G in data_core.medical)
+			saving_references = list()
+			existing_references = list()
 			var/name = G.fields["name"]
 			var/dna = G.fields["b_dna"]
 			fdel("med_records/[name].sav")
@@ -413,6 +423,8 @@ map_storage
 			savefile["record"] = BuildVarDirectory(savefile, G, 1)
 			fcopy(savefile, "med_records/[dna].sav")
 		for(var/datum/data/record/G in data_core.security)
+			saving_references = list()
+			existing_references = list()
 			var/name = G.fields["name"]
 			fdel("sec_records/[name].sav")
 			var/savefile/savefile = new("sec_records/[name].sav")
@@ -521,7 +533,8 @@ map_storage
 				M.transfer_to(mob)
 			if(loc)
 				mob.loc = loc
-			mob.deleting = 0
+			spawn(600)
+				mob.deleting = 0
 			TICK_CHECK
 			if(mob.mind.primary_cert)
 				mob.mind.assigned_job = mob.mind.primary_cert

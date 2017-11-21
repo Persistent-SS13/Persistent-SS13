@@ -231,7 +231,7 @@
 
 //var/global/lawyer = 0//Checks for another lawyer //This changed clothes on 2nd lawyer, both IA get the same dreds.
 /datum/cert/lawyer
-	title = "Internal Affairs Agent"
+	title = "Lawyer"
 	flag = LAWYER
 	uid = "lawyer"
 	department_flag = SUPPORT

@@ -73,6 +73,7 @@
 </tr>"}
 					if(!isnull(data_core.general))
 						for(var/datum/data/record/R in sortRecord(data_core.general, sortBy, order))
+							if(!data_core.manifest_recs.Find(R)) continue
 							for(var/datum/data/record/E in data_core.security)
 							var/background
 							dat += text("<tr style=[]><td><A href='?src=\ref[];choice=Browse Record;d_rec=\ref[]'>[]</a></td>", background, src, R, R.fields["name"])
@@ -213,28 +214,22 @@ What a mess.*/
 						screen = 1
 //RECORD FUNCTIONS
 			if("Search Records")
-				var/t1 = input("Search String: (Partial Name or ID or Fingerprints or Rank)", "Secure. records", null, null)  as text
-				if((!( t1 ) || usr.stat || !( authenticated ) || usr.restrained() || !in_range(src, usr)))
+				var/t1 = input("Search String: (Name or Fingerprint)", "Gen. records", null, null)  as text
+				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained()))
 					return
-				Perp = new/list()
-				t1 = lowertext(t1)
-				var/list/components = splittext(t1, " ")
-				if(components.len > 5)
-					return //Lets not let them search too greedily.
-				for(var/datum/data/record/R in data_core.general)
-					var/temptext = R.fields["name"] + " " + R.fields["id"] + " " + R.fields["fingerprint"] + " " + R.fields["rank"]
-					for(var/i = 1, i<=components.len, i++)
-						if(findtext(temptext,components[i]))
-							var/prelist = new/list(2)
-							prelist[1] = R
-							Perp += prelist
-				for(var/i = 1, i<=Perp.len, i+=2)
-					for(var/datum/data/record/E in data_core.security)
-						var/datum/data/record/R = Perp[i]
-						if((E.fields["name"] == R.fields["name"] && E.fields["id"] == R.fields["id"]))
-							Perp[i+1] = E
-				tempname = t1
-				screen = 4
+				src.active1 = null
+				for(var/datum/data/record/E in data_core.general)
+					if((t1 == E.fields["name"] || t1 == E.fields["fingerprint"]))
+						src.active1 = E
+						break
+					else
+						//Foreach continue //goto(3334)
+				if(!active1)
+					active1 = map_storage.Load_Records(t1, 1)
+					if(active1)
+						data_core.general += active1
+				if(active1)		
+					src.screen = 3
 
 			if("Record Maintenance")
 				screen = 2

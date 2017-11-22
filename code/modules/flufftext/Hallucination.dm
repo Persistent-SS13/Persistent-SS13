@@ -618,7 +618,7 @@ var/list/non_fakeattack_weapons = list(/obj/item/weapon/gun/projectile, /obj/ite
 //			to_chat(src, "Strange Audio")
 			switch(rand(1,18))
 				if(1)
-					src << 'sound/machines/airlock.ogg'
+					src << 'sound/machines/airlock_open.ogg'
 				if(2)
 					if(prob(50))
 						src << 'sound/effects/Explosion1.ogg'

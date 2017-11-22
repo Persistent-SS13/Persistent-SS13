@@ -186,6 +186,7 @@
 			M.stop_pulling()
 			to_chat(M, "<span class='notice'>You slipped on the [name]!</span>")
 			playsound(src.loc, 'sound/misc/slip.ogg', 50, 1, -3)
+			M.fall(1)
 			M.Stun(8)
 			M.Weaken(5)
 			seed.thrown_at(src,M)

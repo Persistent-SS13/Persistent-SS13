@@ -19,7 +19,6 @@ var/time_last_changed_position = 0
 	//if set to 0: Not able to close "original" positions. You can only close positions that you have opened before
 	var/change_position_cooldown = 60
 	//Jobs you cannot open new positions for
-	var/datum/data/record/modify_record
 	var/list/blacklisted = list(
 		/datum/job/ai,
 		/datum/job/cyborg,
@@ -369,23 +368,7 @@ var/time_last_changed_position = 0
 					I.loc = src
 					modify = I
 		if("search")
-			var/t1 = input("Search Records: (Name or Fingerprint)", "Employee records", null, null)  as text
-				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained()))
-					return
-				var/te = t1
-				te = lowertext(t1)
-				modify_record = null
-				for(var/datum/data/record/R in data_core.general)
-					if((lowertext(R.fields["name"]) == t1 || t1 == lowertext(R.fields["id"]) || t1 == lowertext(R.fields["fingerprint"])))
-						modify_record = R
-						break
-					else
-						//Foreach continue //goto(3229)
-				if(!( modify_record ))
-					modify_record = map_storage.Load_Records(te, 2)
-					if(modify_record)
-						data_core.general += modify_record
-						
+			
 		if("scan")
 			if(scan)
 				if(ishuman(usr))

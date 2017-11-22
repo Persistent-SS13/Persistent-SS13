@@ -13,7 +13,7 @@
 	layer = OBJ_LAYER + 0.1
 	var/obj/machinery/field/generator/FG1 = null
 	var/obj/machinery/field/generator/FG2 = null
-
+	should_save = 0
 /obj/machinery/field/containment/Destroy()
 	FG1.fields -= src
 	FG2.fields -= src

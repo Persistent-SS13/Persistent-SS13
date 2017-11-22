@@ -171,7 +171,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	var/mob/M = src
 	var/warningmsg = null
 	var/obj/machinery/cryopod/P = istype(loc, /obj/machinery/cryopod) && loc
-
+	if(!is_admin(src))
+		to_chat(src, "Ghosting has been disabled")
+		return
 	if(P)
 		if(TOO_EARLY_TO_GHOST)
 			warningmsg = "It's too early in the shift to enter cryo"

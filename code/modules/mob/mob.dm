@@ -1224,7 +1224,7 @@ var/list/slot_equipment_priority = list( \
 	SetStunned(stunned + amount)
 
 /mob/proc/Weaken(amount)
-	fall(1)
+	//fall(1)
 	SetWeakened(max(weakened, amount))
 
 /mob/proc/SetWeakened(amount)

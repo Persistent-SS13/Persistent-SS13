@@ -43,10 +43,12 @@ var/list/robot_verbs_default = list(
 	var/obj/item/weapon/card/id/equip_id = null
 	// Components are basically robot organs.
 	var/list/components = list()
-
+	var/list/components_save = list()
 	var/obj/item/device/mmi/mmi = null
 
-
+	map_storage_saved_vars = "module;module_active;module_state_1;module_state_2;module_state_3;module_state_4;cell;mmi;opened;wiresexposed;locked;lamp_intensity;magpulse;ionpule_on;ionpulse;installed_module;chassis_mod;icon_state;components_save;oxyloss;toxloss;brainloss;cloneloss;real_name;name"
+	
+	
 	var/datum/wires/robot/wires = null
 
 	var/opened = 0
@@ -95,6 +97,14 @@ var/list/robot_verbs_default = list(
 	var/obj/item/borg/module_chip/installed_module = null
 	var/obj/item/borg/chassis_mod/chassis_mod = null
 	var/chassis_mod_toggled = 0
+	
+/mob/living/silicon/robot/before_save()
+	components_save = list()
+	for(var/i in 1 to components.len)
+		components_save += components[i]
+/mob/living/silicon/robot/after_load()
+	for(var/i in 1 to components.len)
+		components[components[i]] = components_save[i]
 /mob/living/silicon/robot/New(loc,var/syndie = 0,var/unfinished = 0, var/alien = 0, var/loaded = 0)
 
 
@@ -173,7 +183,7 @@ var/list/robot_verbs_default = list(
 	else
 		lawupdate = 0
 
-	playsound(loc, 'sound/voice/liveagain.ogg', 75, 1)
+	// playsound(loc, 'sound/voice/liveagain.ogg', 75, 1)
 
 /mob/living/silicon/robot/rename_character(oldname, newname)
 	if(!..(oldname, newname))
@@ -321,7 +331,20 @@ var/list/robot_verbs_default = list(
 	if(mmi && mind)//Safety for when a cyborg gets dust()ed. Or there is no MMI inside.
 		var/turf/T = get_turf(loc)//To hopefully prevent run time errors.
 		if(T)	mmi.loc = T
+		if(!mmi.brainmob)
+			mmi.brainmob = new()
 		if(mmi.brainmob)
+			for(var/obj/item/weapon/implant/I in contents) // this should be in remove() so that even npcs transfer implants but it all needs to go into brainmob. hm....
+				if(I && I.implanted && I.implant_loc == "brain")
+					contents -= I
+					mmi.brainmob.contents += I
+					I.imp_in = mmi.brainmob
+					I.loc = mmi.brainmob
+					if(I.actions && !isemptylist(I.actions))
+						for(var/X in I.actions)
+							var/datum/action/A = X
+							A.Grant(src)	// i guess if u grant to someone who already has it it takes it away
+							A.Grant(mmi.brainmob)
 			mind.transfer_to(mmi.brainmob)
 			mmi.update_icon()
 		else
@@ -763,7 +786,6 @@ var/list/robot_verbs_default = list(
 			return
 		if(!now_pushing)
 			now_pushing = 1
-
 			if(!AM.anchored)
 				var/t = get_dir(src, AM)
 				if(istype(AM, /obj/structure/window/full))
@@ -778,10 +800,9 @@ var/list/robot_verbs_default = list(
 					if(src.client)
 						client.move_delay = (world.time + AM.calculate_pushmovedelay(src))
 					AM.affect_pushstamina(src)
-					if(Adjacent(AM))
-						step(AM, t)
+					step(AM, t)
 			now_pushing = 0
-
+		now_pushing = 0
 /mob/living/silicon/robot/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
 	if(istype(W, /obj/item/weapon/restraints/handcuffs)) // fuck i don't even know why isrobot() in handcuff code isn't working so this will have to do
 		return

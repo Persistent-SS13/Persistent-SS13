@@ -59,6 +59,7 @@
 							i++
 							linked_department.conglo_amount += 5
 							B.conglo_amount--
+							B.update()
 					if(i >= pickup_rate)
 						break
 					if(B.orichilum_amount)
@@ -69,6 +70,7 @@
 							i++
 							linked_department.orichilum_amount += 5
 							B.orichilum_amount--
+							B.update()
 				if(i >= pickup_rate)
 					if(found)
 						playsound(loc, "sound/machines/disposalflush.ogg", 75,1)
@@ -1135,18 +1137,18 @@
 				var/eastmove = 0 // 1 = east 2 = west 0 = neither
 				var/vert = 0
 				var/hori = 0
-				if(oreturf.x > x)
+				if(oreturf.x > T.x)
 					eastmove = 1
-					hori = oreturf.x - x
-				else if(oreturf.x < x)
+					hori = oreturf.x - T.x
+				else if(oreturf.x < T.x)
 					eastmove = 2
-					hori = x - oreturf.x
-				if(oreturf.y > y)
+					hori = T.x - oreturf.x
+				if(oreturf.y > T.x)
 					northmove = 1
-					vert = oreturf.y - y
-				else if(oreturf.y < y)
+					vert = oreturf.y - T.y
+				else if(oreturf.y < T.y)
 					northmove = 2
-					vert = y - oreturf.y
+					vert = T.y - oreturf.y
 				to_chat(user,"The scan reveals there is [oreturf.resource_remaining] units of [oreturf.oretype] close by.")
 				if(northmove == 1)
 					to_chat(user,"It is [vert] to the north.")

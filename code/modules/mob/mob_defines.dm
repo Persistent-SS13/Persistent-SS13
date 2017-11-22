@@ -151,7 +151,7 @@
 
 	var/has_enabled_antagHUD = 0
 	var/antagHUD = 0
-
+	map_storage_saved_vars = "real_name;name"
 //Generic list for proc holders. Only way I can see to enable certain verbs/procs. Should be modified if needed.
 	var/proc_holder_list[] = list()
 

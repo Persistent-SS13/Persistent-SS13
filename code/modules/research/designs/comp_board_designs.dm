@@ -291,7 +291,15 @@
 	materials = list(MAT_GLASS = 1000, "sacid" = 20)
 	build_path = /obj/item/weapon/circuitboard/supplycomp
 	category = list("Computer Boards")
-
+/datum/design/minisupplycomp
+	name = "Console Board (Department Supply Console)"
+	desc = "Allows for the construction of circuit boards used to build a department supply console."
+	id = "minisupplycomp"
+	req_tech = list("programming" = 3)
+	build_type = IMPRINTER
+	materials = list(MAT_GLASS = 1000, "sacid" = 20)
+	build_path = /obj/item/weapon/circuitboard/minisupplycomp
+	category = list("Computer Boards")
 /datum/design/comm_monitor
 	name = "Console Board (Telecommunications Monitoring Console)"
 	desc = "Allows for the construction of circuit boards used to build a telecommunications monitor."

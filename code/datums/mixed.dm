@@ -22,7 +22,8 @@
 	name = "record"
 	size = 5.0
 	var/list/fields = list(  )
-
+	map_storage_saved_vars = "fields"
+	safe_list_vars = "fields"
 /datum/data/record/Destroy()
 	..()
 	return QDEL_HINT_HARDDEL_NOW

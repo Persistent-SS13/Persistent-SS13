@@ -117,7 +117,6 @@ var/list/science_positions = list(
 
 //BS12 EDIT
 var/list/support_positions = list(
-	"Head of Personnel",
 	"Bartender",
 	"Botanist",
 	"Chef",
@@ -156,7 +155,8 @@ var/list/security_positions = list(
 
 
 var/list/civilian_positions = list(
-	"Civilian"
+	"Civilian",
+	"Unassigned Intern"
 )
 
 var/list/nonhuman_positions = list(
@@ -344,7 +344,7 @@ var/list/whitelisted_positions = list(
 
 	var/datum/department/department = get_department_datum(J.department_flag)	
 	var/objcount = 1
-
+	data_core.manifest_modify(M.current.real_name, M.spawned_id.assignment, J.title)
 	for(var/datum/job_objective/department/jeb in department.objectives)
 		to_chat(M.current, "<b><LI><B>Task #[objcount]</B>: [jeb.get_description()]</LI>")
 		objcount += 1

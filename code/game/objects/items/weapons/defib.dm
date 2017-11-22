@@ -261,7 +261,7 @@
 	var/cooldown = 0
 	var/busy = 0
 	var/obj/item/weapon/defibrillator/defib
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;defib"
 /obj/item/weapon/twohanded/shockpaddles/New(mainunit)
 	..()
 	if(check_defib_exists(mainunit, src))
@@ -296,9 +296,9 @@
 
 /obj/item/weapon/twohanded/shockpaddles/proc/check_defib_exists(mainunit, var/mob/living/carbon/human/M, var/obj/O)
 	if(!mainunit || !istype(mainunit, /obj/item/weapon/defibrillator))	//To avoid weird issues from admin spawns
-		M.unEquip(O)
-		qdel(O)
-		return 0
+	//	M.unEquip(O)
+	//	qdel(O)
+	//	return 0
 	else
 		return 1
 

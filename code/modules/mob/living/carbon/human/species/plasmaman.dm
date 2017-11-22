@@ -15,6 +15,7 @@
 	butt_sprite = "plasma"
 
 	breath_type = "plasma"
+	poison_type = null 
 
 	heat_level_1 = 350  // Heat damage level 1 above this point.
 	heat_level_2 = 400  // Heat damage level 2 above this point.
@@ -123,6 +124,8 @@
 	H.equip_or_collect(new suit(H), slot_wear_suit)
 	H.equip_or_collect(new helm(H), slot_head)
 	H.equip_or_collect(new/obj/item/weapon/tank/plasma/plasmaman(H), tank_slot) // Bigger plasma tank from Raggy.
+	H.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(H), slot_in_backpack)
+	H.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(H), slot_in_backpack)
 	to_chat(H, "<span class='notice'>You are now running on plasma internals from the [H.s_store] in your [tank_slot_name].  You must breathe plasma in order to survive, and are extremely flammable.</span>")
 	H.internal = H.get_item_by_slot(tank_slot)
 	H.update_internals_hud_icon(1)
@@ -155,13 +158,14 @@
 		else
 			H.adjustOxyLoss(HUMAN_MAX_OXYLOSS)
 			H.failed_last_breath = 1
-		H.oxygen_alert = max(H.oxygen_alert, 1)
+		H.throw_alert("tox_in_air", /obj/screen/alert/not_enough_tox)
 
 	else								// We're in safe limits
+		H.clear_alert("oxy") //For some reason this pops up when in deep crit then never goes away.
+		H.clear_alert("tox_in_air")
 		H.failed_last_breath = 0
 		H.adjustOxyLoss(-5)
 		plasma_used = breath.toxins/6
-		H.oxygen_alert = 0
 
 	breath.toxins -= plasma_used
 	breath.nitrogen -= nitrogen_used
@@ -231,9 +235,27 @@
 				H.apply_damage(HEAT_GAS_DAMAGE_LEVEL_3, BURN, "head", used_weapon = "Excessive Heat")
 				H.fire_alert = max(H.fire_alert, 2)
 
+/datum/species/plasmaman/handle_life(var/mob/living/carbon/human/H)
 	if(!istype(H.wear_suit, /obj/item/clothing/suit/space/eva/plasmaman) || !istype(H.head, /obj/item/clothing/head/helmet/space/eva/plasmaman))
-		to_chat(H, "<span class='warning'>Your body reacts with the atmosphere and bursts into flame!</span>")
-		H.adjust_fire_stacks(0.5)
-		H.IgniteMob()
+		var/datum/gas_mixture/environment = H.loc.return_air()
+		if(environment && environment.oxygen && environment.oxygen >= OXYCONCEN_PLASMEN_IGNITION) //Plasmamen so long as there's enough oxygen (0.5 moles, same as it takes to burn gaseous plasma).
+			H.adjust_fire_stacks(0.5)
+			if(!H.on_fire && H.fire_stacks > 0)
+				H.visible_message("<span class='danger'>[H]'s body reacts with the atmosphere and bursts into flames!</span>","<span class='userdanger'>Your body reacts with the atmosphere and bursts into flame!</span>")
+			H.IgniteMob()
+	else
+		if(H.on_fire && H.fire_stacks > 0)
+			var/obj/item/clothing/suit/space/eva/plasmaman/P = H.wear_suit
+			if(istype(P))
+				P.Extinguish(H)
+	H.update_fire()
 
-	return 1
+/datum/species/plasmaman/handle_reagents(var/mob/living/carbon/human/H, var/datum/reagent/R)
+	if(R.id == "plasma" || R.id == "plasma_dust")
+		H.adjustBruteLoss(-0.5*REAGENTS_EFFECT_MULTIPLIER)
+		H.adjustFireLoss(-0.5*REAGENTS_EFFECT_MULTIPLIER)
+		H.adjustPlasma(20)
+		H.reagents.remove_reagent(R.id, REAGENTS_METABOLISM)
+		return 0 //Handling reagent removal on our own. Prevents plasma from dealing toxin damage to Plasmamen.
+
+	return ..()

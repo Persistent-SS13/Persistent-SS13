@@ -20,7 +20,8 @@
 
 /datum/job_objective/New(var/datum/mind/new_owner)
 	owner = new_owner
-	owner.job_objectives += src
+	if(owner)
+		owner.job_objectives += src
 
 
 /datum/job_objective/proc/get_description()

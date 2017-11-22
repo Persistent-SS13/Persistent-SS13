@@ -3,15 +3,8 @@
 	var/bonus_payment = 0
 	var/over_time = 0   				// Is it too late to complete the objective?
 	var/bonus_objective = 0				// some objectives need to track 2 objectives
-	
-/datum/job_objective/department/security
-/datum/job_objective/department/New()
-
-
-/datum/job_objective/department/security/proc/calculate_pay()
-
-/datum/job_objective/department/security/proc/calculate_basepay()
-
+/datum/job_objective/department/proc/calculate_basepay()
+/datum/job_objective/department/proc/calculate_pay(var/perfecthealth, var/datum/mind/M)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // SECURITY
@@ -23,7 +16,7 @@
 	department_flag = SECURITY
 	
 /datum/job_objective/department/security/maintain_order/get_description()
-	var/desc = "Prevent illegal activity from becoming excessive. Watch out for crime alerts and respond as appropriate."
+	var/desc = "Prevent illegal activity from becoming excessive. Watch out for crime alerts and respond as appropriate. Maintain spacelaw throughout NT property. Depart the station along with the majority of the crew, you will recieve a bonus for every crewmember that is extracted in perfect health."
 	if (completed)
 		desc += " (Station remained safe for the duration of the shift.)"
 	else if(over_time)
@@ -31,30 +24,25 @@
 	return desc
 	
 /datum/job_objective/department/security/maintain_order/calculate_basepay(var/datum/mind/M)
-	var/pay = min(max(startingplayers * 25, 1500), 4000)
-	var/rank = M.ranks["medical"]
-	if (M.assigned_job.flag == CMO)
+	var/pay = max(min(startingplayers * 25, 1500), 4000)
+	var/rank = M.ranks["security"]
+	if (M.assigned_job.flag == HOS)
 		rank = 5
-	pay = round((pay / 6 - rank), 1)
+	pay = round((pay / (6 - rank)), 1)
 	return pay
 	
 	
 /datum/job_objective/department/security/maintain_order/calculate_pay(var/perfecthealth, var/datum/mind/M)
-	var/pay = min(max(startingplayers * 25, 1500), 4000)
-	var/rank = M.ranks["medical"]
-	if (M.assigned_job.flag == CMO)
+	var/pay = max(min(startingplayers * 25, 1500), 4000)
+	var/rank = M.ranks["security"]
+	if (M.assigned_job.flag == HOS)
 		rank = 5
 	pay += (perfecthealth * 10)	
-	pay = round((pay / 6 - rank), 1)
+	pay = round((pay / (6 - rank)), 1)
 	return pay	
 	
 		
 /datum/job_objective/department/security/maintain_order/check_for_completion()
-	
-	//for(var/tech in shuttle_master.techLevels)
-	//	if(shuttle_master.techLevels[tech] > 0)
-	//		return 1
-	//return 0
 
 /////////////////////////////////////////////////////////////////////////////////////////
 	

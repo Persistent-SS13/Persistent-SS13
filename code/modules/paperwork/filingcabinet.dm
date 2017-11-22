@@ -102,7 +102,7 @@
  * Security Record Cabinets
  */
 /obj/structure/filingcabinet/security
-	var/virgin = 1
+	var/virgin = 0
 
 
 /obj/structure/filingcabinet/security/proc/populate()
@@ -139,7 +139,7 @@
  * Medical Record Cabinets
  */
 /obj/structure/filingcabinet/medical
-	var/virgin = 1
+	var/virgin = 0
 
 /obj/structure/filingcabinet/medical/proc/populate()
 	if(virgin)

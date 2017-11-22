@@ -10,8 +10,10 @@
 	var/security[] = list()
 	//This list tracks characters spawned in the world and cannot be modified in-game. Currently referenced by respawn_character().
 	var/locked[] = list()
-
-
+	var/list/gen_byname = list()
+	var/list/med_byname = list()
+	var/list/sec_byname = list()
+	var/list/manifest_recs = list()
 /obj/effect/datacore/proc/get_manifest(monochrome, OOC)
 	var/list/heads = new()
 	var/list/sec = new()
@@ -37,7 +39,7 @@
 	"}
 	var/even = 0
 	// sort mobs
-	for(var/datum/data/record/t in data_core.general)
+	for(var/datum/data/record/t in data_core.manifest_recs)
 		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
 		var/real_rank = t.fields["real_rank"]
@@ -154,7 +156,7 @@ var/global/list/PDA_Manifest = list()
 	var/sup[0]
 	var/bot[0]
 	var/misc[0]
-	for(var/datum/data/record/t in data_core.general)
+	for(var/datum/data/record/t in data_core.manifest_recs)
 		var/name = sanitize(t.fields["name"])
 		var/rank = sanitize(t.fields["rank"])
 		var/real_rank = t.fields["real_rank"]

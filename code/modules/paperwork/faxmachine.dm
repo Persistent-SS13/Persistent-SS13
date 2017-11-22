@@ -21,7 +21,7 @@ var/list/alldepartments = list()
 	var/department = "Unknown" // our department
 
 	var/destination = "Central Command" // the department we're sending to
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;department;destination"
 /obj/machinery/photocopier/faxmachine/New()
 	..()
 	allfaxes += src

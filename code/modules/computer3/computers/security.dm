@@ -94,6 +94,7 @@
 	</tr>"}
 						if(!isnull(data_core.general))
 							for(var/datum/data/record/R in sortRecord(data_core.general, sortBy, order))
+								if(!data_core.manifest_recs.Find(R)) continue
 								var/crimstat = ""
 								for(var/datum/data/record/E in data_core.security)
 									if((E.fields["name"] == R.fields["name"] && E.fields["id"] == R.fields["id"]))

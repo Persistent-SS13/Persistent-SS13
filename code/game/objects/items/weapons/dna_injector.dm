@@ -17,7 +17,7 @@
 	// USE ONLY IN PREMADE SYRINGES.  WILL NOT WORK OTHERWISE.
 	var/datatype = 0
 	var/value = 0
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;buf"
 /obj/item/weapon/dnainjector/New()
 	if(datatype && block)
 		buf=new

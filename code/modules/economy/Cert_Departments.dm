@@ -5,6 +5,9 @@
 // Whether this is a head position
 /datum/cert/var/head_position = 0
 
+/datum/cert/ntnavyofficer/head_position = 1
+/datum/cert/ntspecops/head_position = 1
+
 /datum/cert/captain/department = "Command"
 /datum/cert/captain/head_position = 1
 

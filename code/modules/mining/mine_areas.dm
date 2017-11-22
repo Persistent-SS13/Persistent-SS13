@@ -137,7 +137,7 @@ var/global/datum/mine_controller/mineController/New()
 			return rand(100, 200)
 		if(5)
 			if(prob(66))
-				var/spawns = 2
+				var/spawns = 1
 				for(var/mob/living/M in player_list)
 					if(M.z == 5)
 						switch(pick(1,2,3))
@@ -345,17 +345,14 @@ var/global/datum/mine_controller/mineController/New()
 /datum/mine_controller/proc/spawn_vindictagolem(var/turf/T)
 	var/spawnsize = 1
 	switch(current_state)
-		if(2)
-			spawnsize = rand(1,2)
-		if(3)
-			spawnsize = rand(2,3)
 		if(4)
-			spawnsize = rand(3,4)
+			spawnsize = rand(1,2)
 		if(5)
-			spawnsize = rand(4,5)
+			spawnsize = rand(1,2)
 	T.visible_message("<span class='userdanger'>You feel a cruel heat just before the vindictagolems materialize!</span>")
 	for(var/turf/simulated/floor/plating/airless/asteroid/asteroidturf in shuffle(orange(T, 4)))
-		new /mob/living/simple_animal/hostile/asteroid/vindictagolem(loc = T)
+		var/mob/vindicta = new /mob/living/simple_animal/hostile/asteroid/vindictagolem(T)
+		vindicta.loc = T
 		spawnsize--
 		if(!spawnsize)
 			return

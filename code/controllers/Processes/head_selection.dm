@@ -45,13 +45,14 @@
 	var/list/potential_engineering = list()
 	var/list/potential_science = list()
 	var/list/potential_security = list()
-	
+	data_core.manifest_recs = list()
 	for(var/datum/mind/M in ticker.minds)
 		if(!M.assigned_job)
 			continue
 		var/current_dep = M.assigned_job.department_flag
 		var/current_rank = text2num(M.ranks[to_strings(M.assigned_job.department_flag)])
 	
+		
 		if(M.assigned_job.uid == "captain")
 			if(!M.current || !istype(M.current, /mob/living/carbon/human) || M.current.stat == 2)
 				M.assigned_job = M.primary_cert
@@ -94,9 +95,29 @@
 				change_certification(M, M.primary_cert)
 			else
 				found_rd = 1
+		if(M.current)
+			var/datum/data/record/G = data_core.gen_byname[M.current.real_name]
+			if(!G)
+				message_admins("No record found for [M.current.real_name] xyz: [M.current.x],[M.current.y],[M.current.z]")
+			else
+				var/obj/item/weapon/implant/crewtracker/Imp
+				for(var/obj/item/weapon/implant/crewtracker/I in M.current.contents)
+					Imp = I
+					break
+				if(Imp && Imp.tracking)
+					data_core.manifest_recs |= G
+				else
+					clear_all_foundalerts(M)
+					if(M.assigned_job != M.primary_cert)
+						message_admins("disabiling cert")
+						M.assigned_job = M.primary_cert
+						change_certification(M, M.primary_cert)
+					continue
+					
 		if(!M.current || !istype(M.current, /mob/living/carbon/human) || M.current.stat == 2 || M.assigned_job.head_position)
 			clear_all_foundalerts(M)
 			continue
+					
 		if(!found_cap || !found_hop)
 			if(current_rank > highest_rank)
 				highest_rank = current_rank

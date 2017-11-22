@@ -22,29 +22,34 @@
 //LETS DO THIS
 /datum/department/medical
 	department_flag = MEDICAL
-	name = "Medical Department"
+	name = "Medical"
 	objectives = list(new /datum/job_objective/department/medical/extract_crewmembers)
 	account_name = "Medical"
 /datum/department/security
 	department_flag = SECURITY
 	name = "Station Security"
+	objectives = list(new /datum/job_objective/department/security/maintain_order)
 	account_name = "Security"
 /datum/department/cargo
 	department_flag = CARGO
-	name = "Cargo Department"
+	name = "Cargo"
 	account_name = "Cargo"
+	objectives = list(new /datum/job_objective/department/cargo/supply_station)
 /datum/department/science
 	department_flag = SCIENCE
-	name = "Science Department"
+	name = "Science"
 	account_name = "Science"
+	objectives = list(new /datum/job_objective/department/science/improve_research)
 /datum/department/engineering
 	department_flag = ENGINEERING
-	name = "Engineering Department"
+	name = "Engineering"
 	account_name = "Engineering"
+	objectives = list(new /datum/job_objective/department/engineering/power_station)
 /datum/department/command
 	department_flag = COMMAND
-	name = "Command Staff"
+	name = "Command"
 	account_name = "Command"
+	objectives = list(new /datum/job_objective/department/command/maintain_station)
 /datum/department/civilian
 	department_flag = SUPPORT
 	name = "Civilians"

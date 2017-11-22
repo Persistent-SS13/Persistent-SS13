@@ -608,7 +608,7 @@
 	invoice.payment_type = 2 // -- 1 = pay immidietley, 2 = pay on delivery (used for when ordering through the cargo shuttle) 
 	invoice.cost = content_pack.cost // set through creator
 	invoice.invoice_desc = content_pack.desc // set through creator
-	invoice.title = "NT CARGO DEPARTMENT INVOICE" // set through creater, format -- CENTCOM CARGO DEPARTMENT INVOICE
+	invoice.title = "NT SUPPLY INVOICE" // set through creater, format -- CENTCOM CARGO DEPARTMENT INVOICE
 	invoice.connected = src // -- set through creator, Passes to the connected machine when the invoice is paid for
 	invoice.authentication = list()
 	invoice.name = "[content_pack.name] ([body.name])"
@@ -890,7 +890,7 @@
 	invoice.payment_type = 2
 	invoice.cost = content_pack.cost // set through creator
 	invoice.invoice_desc = content_pack.desc // set through creator
-	invoice.title = "NT CARGO DEPARTMENT INVOICE" // set through creater, format -- CENTCOM CARGO DEPARTMENT INVOICE
+	invoice.title = "NT SUPPLY INVOICE" // set through creater, format -- CENTCOM CARGO DEPARTMENT INVOICE
 	invoice.connected = src // -- set through creator, Passes to the connected machine when the invoice is paid for
 	invoice.authentication = list()
 	invoice.name = "[content_pack.name] ([body.name])"
@@ -956,6 +956,249 @@
 
 	frequency.post_signal(src, status_signal)
 
+	
+// MINI DEPARTMENT SUPPLY COMP
+
+/obj/machinery/computer/minisupplycomp
+	name = "Department Supply Console"
+	desc = "Used to order supplies on department accounts.."
+	icon_screen = "supply"
+	req_access = list(access_cargo)
+	circuit = /obj/item/weapon/circuitboard/minisupplycomp
+	var/temp = null
+	var/reqtime = 0
+	var/hacked = 0
+	var/can_order_contraband = 0
+	var/last_viewed_group = "categories"
+	var/datum/supply_item/content_pack
+	var/list/pending = list() // used to store invoices when they call back to the computer. format pending[invoice_obj] = supply_item
+	var/datum/department/linked_department
+/obj/machinery/computer/minisupplycomp/New()
+	..()
+	var/area/A = src.myArea
+	if(istype(A, /area/quartermaster))
+		linked_department = get_department_datum(CARGO)
+		req_access = list(access_cargo)
+	if(istype(A, /area/toxins))
+		linked_department = get_department_datum(SCIENCE)
+		req_access = list(access_tox)
+	if(istype(A, /area/security))
+		linked_department = get_department_datum(SECURITY)
+		req_access = list(access_security)
+	if(istype(A, /area/medical))
+		linked_department = get_department_datum(MEDICAL)
+		req_access = list(access_medical)
+	if(istype(A, /area/engine))
+		linked_department = get_department_datum(ENGINEERING)
+		req_access = list(access_engine)
+	if(istype(A, /area/bridge))
+		linked_department = get_department_datum(COMMAND)
+		req_access = list(access_hop)	
+/obj/machinery/computer/minisupplycomp/attack_ai(var/mob/user as mob)
+	return attack_hand(user)
+
+/obj/machinery/computer/minisupplycomp/attack_hand(var/mob/user as mob)
+	if(!allowed(user) && !isobserver(user))
+		to_chat(user, "<span class='warning'>Access denied.</span>")
+		return 1
+	if(!linked_department)
+		to_chat(user, "<span class='warning'>No department found. Position terminal inside valid department.</span>")
+		return 1
+	post_signal("supply")
+	ui_interact(user)
+	return
+
+/obj/machinery/computer/minisupplycomp/emag_act(user as mob)
+	if(!hacked)
+		to_chat(user, "<span class='notice'>Special supplies unlocked.</span>")
+		hacked = 1
+		return
+
+/obj/machinery/computer/minisupplycomp/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null)
+	// data to send to ui
+	var/data[0]
+	data["last_viewed_group"] = last_viewed_group
+
+	var/category_list[0]
+	for(var/category in all_supply_lists)
+		category_list.Add(list(list("name" = get_supply_lists_name(category), "category" = category)))
+	data["categories"] = category_list
+
+	var/cat = text2num(last_viewed_group)
+	var/packs_list[0]
+	for(var/set_name in shuttle_master.supply_packs)
+		var/datum/supply_item/pack = shuttle_master.supply_packs[set_name]
+		if((pack.hidden && src.hacked) || (pack.contraband && src.can_order_contraband) || (!pack.contraband && !pack.hidden))
+			if(pack.group == cat)
+				// 0/1 after the pack name (set_name) is a boolean for ordering multiple crates
+				packs_list.Add(list(list("name" = pack.name, "amount" = pack.amount, "cost" = pack.cost, "command1" = list("doorder" = "[set_name]0"), "command2" = list("doorder" = "[set_name]1"), "command3" = list("contents" = set_name))))
+
+	data["supply_packs"] = packs_list
+	if(content_pack)
+		var/pack_name = sanitize(content_pack.name)
+		data["contents_name"] = pack_name
+		data["contents"] = content_pack.manifest
+		data["contents_access"] = content_pack.access ? get_access_desc(content_pack.access) : "None"
+		data["contents_desc"] = content_pack.desc
+
+	var/requests_list[0]
+	for(var/set_name in shuttle_master.requestlist)
+		var/datum/supply_order/SO = set_name
+		if(SO)
+			if(!SO.comment)
+				SO.comment = "No comment."
+			requests_list.Add(list(list("ordernum" = SO.ordernum, "supply_type" = SO.object.name, "orderedby" = SO.orderedby, "comment" = SO.comment, "command1" = list("confirmorder" = SO.ordernum), "command2" = list("rreq" = SO.ordernum))))
+	data["requests"] = requests_list
+
+	var/orders_list[0]
+	for(var/set_name in shuttle_master.shoppinglist)
+		var/datum/supply_order/SO = set_name
+		if(SO)
+			orders_list.Add(list(list("ordernum" = SO.ordernum, "supply_type" = SO.object.name, "orderedby" = SO.orderedby, "comment" = SO.comment)))
+	data["orders"] = orders_list
+
+	data["canapprove"] = (shuttle_master.supply.getDockedId() == "supply_away") && !(shuttle_master.supply.mode != SHUTTLE_IDLE)
+	var/datum/money_account/dep_acc = linked_department.account
+	if(dep_acc)
+		data["points"] = dep_acc.money
+		if(user.mind.assigned_job && user.mind.assigned_job.uid == "quartermaster")
+			data["allocated"] = dep_acc.money
+		else if(!user.mind.assigned_job || user.mind.assigned_job.department_flag != CARGO)
+			data["allocated"] = 0
+		else
+			data["allocated"] = user.mind.allocated
+	else
+		message_admins("department account not found: [src]")
+	data["send"] = list("send" = 1)
+	data["message"] = shuttle_master.centcom_message ? shuttle_master.centcom_message : "Remember to stamp and send back the supply manifests."
+		
+	data["moving"] = shuttle_master.supply.mode != SHUTTLE_IDLE
+	data["at_station"] = shuttle_master.supply.getDockedId() == "supply_home"
+	data["timeleft"] = shuttle_master.supply.timeLeft(600)
+	data["can_launch"] = !shuttle_master.supply.canMove()
+
+	
+	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data)
+	if(!ui)
+		ui = new(user, src, ui_key, "mini_supply_console.tmpl", name, SUPPLY_SCREEN_WIDTH, SUPPLY_SCREEN_HEIGHT)
+		ui.set_initial_data(data)
+		ui.open()
+
+/obj/machinery/computer/minisupplycomp/proc/is_authorized(user)
+	if(allowed(user))
+		return 1
+
+	if(isobserver(user) && check_rights(R_ADMIN, 0))
+		return 1
+
+	return 0
+
+/obj/machinery/computer/minisupplycomp/handle_invoice_confirm(var/obj/item/device/invoice/invoice, var/datum/money_account/account)
+	var/datum/supply_item/P = pending[invoice]
+	if(!P)
+		message_admins("No item found for invoice")
+		return
+	var/datum/supply_order/O = new()
+	O.ordernum = 1
+	O.object = P
+	O.orderedby = invoice.created_for.name
+	var/current_rank = invoice.created_for.ranks[to_strings(invoice.created_for.assigned_job.department_flag)]
+	if(invoice.created_for.assigned_job)
+		O.orderedbyRank = "[invoice.created_for.assigned_job.title] ([current_rank])"
+	else
+		O.orderedbyRank = "None."
+	if(invoice.department)
+		O.department = invoice.department
+	O.comment = "Ordered by [invoice.created_for.name]"
+	O.crates = 1
+	O.account = account
+	shuttle_master.shoppinglist += O
+	
+	return 1
+
+	
+/obj/machinery/computer/minisupplycomp/proc/create_invoice(var/datum/mind/user, var/swiped = 0)
+	if(!linked_department)
+		return 0
+	var/mob/body = user.current
+	if(!content_pack)
+		return
+	var/obj/item/device/invoice/invoice = new()
+	if(!swiped)
+		invoice.department = linked_department.department_flag
+		invoice.department_name = linked_department.name
+	invoice.created_for = user
+	invoice.payment_type = 2
+	invoice.cost = content_pack.cost // set through creator
+	invoice.invoice_desc = content_pack.desc // set through creator
+	invoice.title = "NT SUPPLY INVOICE" // set through creater, format -- CENTCOM CARGO DEPARTMENT INVOICE
+	invoice.connected = src // -- set through creator, Passes to the connected machine when the invoice is paid for
+	invoice.authentication = list()
+	invoice.name = "[content_pack.name] ([body.name])"
+	for(var/x in content_pack.authentication)
+		invoice.authentication += x
+	pending[invoice] = content_pack
+	playsound(loc, "sound/goonstation/machines/printer_thermal.ogg", 50, 1)
+	invoice.loc = loc
+	content_pack = null
+	last_viewed_group = "categories"
+	
+/obj/machinery/computer/minisupplycomp/Topic(href, href_list)
+	if(..())
+		return 1
+
+	if(!is_authorized(usr))
+		return 1
+
+	if(!shuttle_master)
+		log_to_dd("## ERROR: The shuttle_master controller datum is missing somehow.")
+		return 1
+
+	if(href_list["create_invoice"])
+		if(!content_pack)
+			message_admins("trying to create invoice without content_pack")
+			return 0
+		create_invoice(usr.mind)
+
+	else if(href_list["last_viewed_group"])
+		content_pack = null
+		last_viewed_group = text2num(href_list["last_viewed_group"])
+
+	else if(href_list["contents"])
+		var/topic = href_list["contents"]
+		if(topic == 1)
+			content_pack = null
+		else
+			var/datum/supply_item/P = shuttle_master.supply_packs[topic]
+			content_pack = P
+
+	add_fingerprint(usr)
+	nanomanager.update_uis(src)
+	return 1
+
+/obj/machinery/computer/minisupplycomp/proc/post_signal(var/command)
+	var/datum/radio_frequency/frequency = radio_controller.return_frequency(1435)
+
+	if(!frequency) return
+
+	var/datum/signal/status_signal = new
+	status_signal.source = src
+	status_signal.transmission_method = 1
+	status_signal.data["command"] = command
+
+	frequency.post_signal(src, status_signal)
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 /**********
     MISC
  **********/

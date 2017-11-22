@@ -58,7 +58,7 @@ Gunshots/explosions/opening doors/less rare audio (done)
 /obj/effect/hallucination
 	invisibility = INVISIBILITY_OBSERVER
 	var/mob/living/carbon/target = null
-
+	should_save = 0
 /obj/effect/hallucination/simple
 	var/image_icon = 'icons/mob/alien.dmi'
 	var/image_state = "alienh_pounce"

@@ -48,6 +48,7 @@
 					dat += "<B>Record List</B>:<HR>"
 					if(!isnull(data_core.general))
 						for(var/datum/data/record/R in sortRecord(data_core.general))
+							if(!data_core.manifest_recs.Find(R)) continue
 							dat += text("<A href='?src=\ref[];d_rec=\ref[]'>[]: []</A><BR>", src, R, R.fields["id"], R.fields["name"])
 							//Foreach goto(132)
 					dat += text("<HR><A href='?src=\ref[];screen=1'>Back</A>", src)
@@ -218,12 +219,13 @@
 				src.temp = text("Are you sure you wish to delete all records?<br>\n\t<A href='?src=\ref[];temp=1;del_all2=1'>Yes</A><br>\n\t<A href='?src=\ref[];temp=1'>No</A><br>", src, src)
 
 			if(href_list["del_all2"])
-				for(var/datum/data/record/R in data_core.medical)
+				/**
+				for(var/datum/data/record/R in data_core.medical) // REMOVED DUE TO HUGE DAMAGE POTENTIAL
 					//R = null
 					qdel(R)
 					//Foreach goto(494)
 				src.temp = "All records deleted."
-
+				**/
 			if(href_list["field"])
 				var/a1 = src.active1
 				var/a2 = src.active2
@@ -441,27 +443,39 @@
 					src.active2.fields[text("com_[]", href_list["del_c"])] = "<B>Deleted</B>"
 
 			if(href_list["search"])
-				var/t1 = input("Search String: (Name, DNA, or ID)", "Med. records", null, null)  as text
-				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained() || ((!in_range(src, usr)) && (!istype(usr, /mob/living/silicon)))))
+				var/t1 = input("Search String: (Name or DNA)", "Med. records", null, null)  as text
+				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained()))
 					return
 				src.active1 = null
 				src.active2 = null
+				var/te = t1
 				t1 = lowertext(t1)
 				for(var/datum/data/record/R in data_core.medical)
 					if((lowertext(R.fields["name"]) == t1 || t1 == lowertext(R.fields["id"]) || t1 == lowertext(R.fields["b_dna"])))
 						src.active2 = R
+						break
 					else
 						//Foreach continue //goto(3229)
+				if(!( src.active2 ))
+					active2 = map_storage.Load_Records(te, 2)
+					if(active2)
+						data_core.medical += active2
 				if(!( src.active2 ))
 					src.temp = text("Could not locate record [].", t1)
 				else
 					for(var/datum/data/record/E in data_core.general)
 						if((E.fields["name"] == src.active2.fields["name"] || E.fields["id"] == src.active2.fields["id"]))
 							src.active1 = E
+							break
 						else
 							//Foreach continue //goto(3334)
+					if(!active1)
+						active1 = map_storage.Load_Records(src.active2.fields["name"], 1)
+						if(active1)
+							data_core.general += active1
+							
+				if(active2)
 					src.screen = 4
-
 			if(href_list["print_p"])
 				if(!( src.printing ))
 					src.printing = 1

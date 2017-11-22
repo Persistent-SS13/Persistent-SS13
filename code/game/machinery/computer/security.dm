@@ -92,13 +92,14 @@
 
 					dat += {"
 <p style='text-align:center;'>"}
-					dat += text("<A href='?src=\ref[];choice=New Record (General)'>New Record</A><BR>", src)
+					dat += text("<A href='?src=\ref[];choice=search'>Search</A><BR>", src)
 					//search bar
 					dat += {"
 						<table width='560' align='center' cellspacing='0' cellpadding='5' id='maintable'>
 							<tr id='search_tr'>
 								<td align='center'>
-									<b>Search:</b> <input type='text' id='filter' value='' style='width:300px;'>
+									Active Crewmembers:<br>
+									<b>Filter:</b> <input type='text' id='filter' value='' style='width:300px;'>
 								</td>
 							</tr>
 						</table>
@@ -122,6 +123,7 @@
 </tr>"}
 					if(!isnull(data_core.general))
 						for(var/datum/data/record/R in sortRecord(data_core.general, sortBy, order))
+							if(!data_core.manifest_recs.Find(R)) continue
 							var/crimstat = ""
 							for(var/datum/data/record/E in data_core.security)
 								if((E.fields["name"] == R.fields["name"] && E.fields["id"] == R.fields["id"]))
@@ -403,21 +405,56 @@ What a mess.*/
 					active2 = R
 					screen = 3
 
-			if("New Record (General)")
-				var/datum/data/record/G = new /datum/data/record()
-				G.fields["name"] = "New Record"
-				G.fields["id"] = text("[]", add_zero(num2hex(rand(1, 1.6777215E7)), 6))
-				G.fields["rank"] = "Unassigned"
-				G.fields["real_rank"] = "Unassigned"
-				G.fields["sex"] = "Male"
-				G.fields["age"] = "Unknown"
-				G.fields["fingerprint"] = "Unknown"
-				G.fields["p_stat"] = "Active"
-				G.fields["m_stat"] = "Stable"
-				G.fields["species"] = "Human"
-				data_core.general += G
-				active1 = G
-				active2 = null
+			if("search")
+				var/t1 = input("Search String: (Name, Fingerprint or DNA)", "Sec. records", null, null)  as text
+				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained()))
+					return
+				src.active1 = null
+				src.active2 = null
+				var/te = t1
+				t1 = lowertext(t1)
+				for(var/datum/data/record/R in data_core.general)
+					if((lowertext(R.fields["name"]) == t1 || t1 == lowertext(R.fields["id"]) || t1 == lowertext(R.fields["fingerprint"])))
+						src.active1 = R
+					else
+						//Foreach continue //goto(3229)
+				if(!active1)
+					for(var/datum/data/record/R in data_core.medical)
+						if((lowertext(R.fields["name"]) == t1 || t1 == lowertext(R.fields["id"]) || t1 == lowertext(R.fields["b_dna"])))
+							for(var/datum/data/record/E in data_core.general)
+								if((lowertext(E.fields["name"]) == lowertext(R.fields["name"])))
+									src.active1 = E
+									break
+							break		
+						else
+							//Foreach continue //goto(3229)
+				if(!( src.active1 ))
+					active1 = map_storage.Load_Records(te, 1)
+					if(!active1)
+						var/datum/data/record/R = map_storage.Load_Records(te, 2)
+						if(R)
+							active1 = map_storage.Load_Records(R.fields["name"], 1)
+							if(active1)
+								data_core.general += active1
+							data_core.medical += R
+					else
+						data_core.general |= active1
+				
+				if(!( src.active1 ))
+					src.temp = text("Could not locate record [].", t1)
+				else
+					for(var/datum/data/record/E in data_core.security)
+						if((E.fields["name"] == src.active1.fields["name"] || E.fields["id"] == src.active1.fields["id"]))
+							src.active2 = E
+							break
+						else
+							//Foreach continue //goto(3334)
+					if(!active2)
+						active2 = map_storage.Load_Records(src.active1.fields["name"], 3)
+						if(active2)
+							data_core.security += active2
+				if(active1)
+					src.screen = 3
 
 //FIELD FUNCTIONS
 			if("Edit Field")

@@ -34,7 +34,16 @@
 	var/const/deffont = "Verdana"
 	var/const/signfont = "Times New Roman"
 	var/const/crayonfont = "Comic Sans MS"
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;info;info_links"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;info;info_links;stamped"
+	safe_list_vars = "stamped"
+	
+/obj/item/weapon/paper/after_load()
+	for(var/xa in 1 to stamped.len)
+		var/ya = stamped[xa]
+		var/obj/item/weapon/stamp/stamper = new ya()
+		stamped.Cut(xa,xa)
+		stamp(stamper)
+		qdel(stamper)
 //lipstick wiping is in code/game/objects/items/weapons/cosmetics.dm!
 
 /obj/item/weapon/paper/New()

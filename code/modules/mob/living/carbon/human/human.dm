@@ -161,21 +161,23 @@
 	..(new_loc, "Drask")
 
 /mob/living/carbon/human/monkey/New(var/new_loc)
-	if(..(new_loc, "Monkey"))
-		for(var/obj/item/organ/internal/brain/B in internal_organs)
-			B.deleting = 1
-			break
+	deleting = 1
+	..(new_loc, "Monkey")
 			
 /mob/living/carbon/human/farwa/New(var/new_loc)
+	deleting = 1
 	..(new_loc, "Farwa")
 
 /mob/living/carbon/human/wolpin/New(var/new_loc)
+	deleting = 1
 	..(new_loc, "Wolpin")
 
 /mob/living/carbon/human/neara/New(var/new_loc)
+	deleting = 1
 	..(new_loc, "Neara")
 
 /mob/living/carbon/human/stok/New(var/new_loc)
+	deleting = 1
 	..(new_loc, "Stok")
 
 /mob/living/carbon/human/Bump(atom/movable/AM, yes)

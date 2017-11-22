@@ -29,7 +29,17 @@
 
 	air1.volume = 200
 	air2.volume = 200
-
+/obj/machinery/atmospherics/binary/after_load()
+	..()
+	switch(dir)
+		if(NORTH)
+			initialize_directions = NORTH|SOUTH
+		if(SOUTH)
+			initialize_directions = NORTH|SOUTH
+		if(EAST)
+			initialize_directions = EAST|WEST
+		if(WEST)
+			initialize_directions = EAST|WEST
 /obj/machinery/atmospherics/binary/Destroy()
 	if(node1)
 		node1.disconnect(src)

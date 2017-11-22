@@ -648,7 +648,7 @@ var/global/nologevent = 0
 		alert("Unable to start the game as it is not set up.")
 		return
 	ticker.mode.populate_department_lists() // this is temporary	
-	ticker.mode.process_medical_tasks() // this is temporary
+	ticker.mode.process_all_tasks() // this is temporary
 	var/datum/preferences/prefs = new()
 	for(var/datum/mind/employee in ticker.minds)
 		if(!employee.current) continue
@@ -712,7 +712,7 @@ var/global/nologevent = 0
 		
 	spawn(0)
 		var/datum/mind/mind = new()
-		var/mob/M = map_storage.Load_Char(usr.ckey, 1, mind, 1)
+		var/mob/M = map_storage.Load_Char_Fast(usr.ckey, 1, mind, 1)
 		M.loc = usr.loc
 /datum/admins/proc/savestation()
 	set category = "Server"

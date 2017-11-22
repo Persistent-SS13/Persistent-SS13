@@ -81,7 +81,7 @@
 	anchored = 1 //it's sticky, no you cant move it
 
 	var/obj/item/weapon/stuck = null
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stuck"
 /obj/item/weapon/ducttape/New()
 	..()
 	flags |= NOBLUDGEON

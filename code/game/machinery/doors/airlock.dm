@@ -88,7 +88,8 @@
 	icon = 'icons/obj/doors/Doorext.dmi'
 	assembly_type = /obj/structure/door_assembly/door_assembly_ext
 	doorOpen = 'sound/machines/airlock_ext_open.ogg'
- 	doorClose = 'sound/machines/airlock_ext_close.ogg'
+	doorClose = 'sound/machines/airlock_ext_close.ogg'
+	
 /obj/machinery/door/airlock/glass
 	name = "Glass Airlock"
 	icon = 'icons/obj/doors/Doorglass.dmi'

@@ -1,4 +1,4 @@
-//This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:33
+
 
 var/list/preferences_datums = list()
 
@@ -131,7 +131,7 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 	var/r_skin = 0						//Skin color
 	var/g_skin = 0						//Skin color
 	var/b_skin = 0						//Skin color
-	var/r_eyes = 0						//Eye color
+	var/r_eyes = 0						//Eye color  
 	var/g_eyes = 0						//Eye color
 	var/b_eyes = 0						//Eye color
 	var/species = "Human"
@@ -989,7 +989,21 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 		Hu.dna.ResetUIFrom(Hu)
 		Hu.sync_organ_dna(assimilate=1)
 		var/datum/mind/mind = new()
-		
+		if (species=="Plasmaman")
+			// Unequip existing suits and hats.
+			Hu.unEquip(Hu.wear_suit)
+			Hu.unEquip(Hu.head)
+			Hu.unEquip(Hu.wear_mask)
+			Hu.equip_or_collect(new /obj/item/clothing/mask/breath(Hu), slot_wear_mask)
+			var/suit=/obj/item/clothing/suit/space/eva/plasmaman
+			var/helm=/obj/item/clothing/head/helmet/space/eva/plasmaman
+			var/tank_slot = slot_s_store
+			var/tank_slot_name = "suit storage"
+			Hu.equip_or_collect(new suit(Hu), slot_wear_suit)
+			Hu.equip_or_collect(new helm(Hu), slot_head)
+			Hu.equip_or_collect(new/obj/item/weapon/tank/plasma/plasmaman(Hu), tank_slot) // Bigger plasma tank from Raggy.
+			Hu.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(Hu), slot_in_backpack)
+			Hu.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(Hu), slot_in_backpack)
 		Hu.equip_or_collect(new /obj/item/device/radio/headset, slot_r_ear)
 		Hu.equip_or_collect(new /obj/item/device/pda, slot_wear_pda)
 		var/obj/item/weapon/implant/crewtracker/implant = new()

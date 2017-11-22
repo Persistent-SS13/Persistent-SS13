@@ -465,7 +465,7 @@
 					src.active2.fields[text("com_[]", href_list["del_c"])] = "<B>Deleted</B>"
 
 			if(href_list["search"])
-				var/t1 = input("Search String: (Name, DNA, or ID)", "Med. records", null, null)  as text
+				var/t1 = input("Search String: (Name or DNA)", "Med. records", null, null)  as text
 				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained() || ((!interactable()) && (!istype(usr, /mob/living/silicon)))))
 					return
 				src.active1 = null
@@ -477,6 +477,10 @@
 					else
 						//Foreach continue //goto(3229)
 				if(!( src.active2 ))
+					active2 = map_storage.Load_Records(t1, 2)
+					if(active2)
+						data_core.medical += active2
+				if(!( src.active2 ))
 					src.temp = text("Could not locate record [].", t1)
 				else
 					for(var/datum/data/record/E in data_core.general)
@@ -484,7 +488,12 @@
 							src.active1 = E
 						else
 							//Foreach continue //goto(3334)
-					src.screen = 4
+					if(!active1)
+						active1 = map_storage.Load_Records(src.active2.fields["name"], 1)
+						if(active1)
+							data_core.general += active1
+					if(active2)
+						src.screen = 4
 
 			if(href_list["print_p"])
 				if(!( src.printing ))

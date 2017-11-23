@@ -50,7 +50,8 @@
 //these are called by mind.transfer_to()
 /datum/mind/proc/transfer_antag_huds(var/datum/atom_hud/antag/newhud)
 	leave_all_huds()
-	ticker.mode.set_antag_hud(current, antag_hud_icon_state)
+	if(ticker.mode)
+		ticker.mode.set_antag_hud(current, antag_hud_icon_state)
 	if(newhud)
 		newhud.join_hud(current)
 

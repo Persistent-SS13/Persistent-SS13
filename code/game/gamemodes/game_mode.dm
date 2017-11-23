@@ -203,7 +203,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/2)
+			if(1)//lostamount<startingplayers/2)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -307,7 +307,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/2)
+			if(1)//lostamount<startingplayers/2)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -412,7 +412,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/2)
+			if(1)//lostamount<startingplayers/2)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -518,7 +518,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/2)
+			if(1)//lostamount<startingplayers/2)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -626,7 +626,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/2)
+			if(1)//lostamount<startingplayers/2)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else
@@ -732,7 +732,7 @@
 			var/pay = 0
 			var/basepay = 0
 			var/bonus = 0
-			if(lostamount<startingplayers/2)
+			if(1)//lostamount<startingplayers/2)
 				completed = 1
 				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
 			else

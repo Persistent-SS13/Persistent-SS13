@@ -430,11 +430,11 @@
 	if((istype(M,/mob/living/carbon/human/)) && (M.m_intent == "run")).
 		M.Stun(5)
 		M.Weaken(5)
-
+		M.fall(1)
 	else if(istype(M,/mob/living/carbon/human/))
 		M.Stun(2)
 		M.Weaken(2)
-
+		
 
 	to_chat(M, "Gravity!")
 

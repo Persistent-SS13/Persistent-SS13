@@ -185,6 +185,7 @@ proc/_SoundEngine(sound, atom/location, range=1, channel=-1, volume=100, repeat=
 
 
 proc/_MusicEngine(sound, client/client, channel=MUSIC_CHANNEL_1, pause=0, repeat=0, wait=0, volume=15, instant = 0, time = 20, increments = 10)
+	TICK_CHECK
     if(!client)
         return null
     if(!sound)
@@ -222,6 +223,7 @@ proc/_MusicEngine(sound, client/client, channel=MUSIC_CHANNEL_1, pause=0, repeat
 
         spawn(0)
             for(var/i = 0; i < increments; i++)
+				TICK_CHECK
                 _fade.volume -= d
                 if(!S.volume)
                     S.status = 0
@@ -232,7 +234,7 @@ proc/_MusicEngine(sound, client/client, channel=MUSIC_CHANNEL_1, pause=0, repeat
                 client << _fade
                 client << S
                 sleep(time)
-
+			TICK_CHECK
             S.volume = volume
             S.status |= SOUND_UPDATE
             client << S

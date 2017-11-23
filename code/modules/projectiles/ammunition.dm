@@ -96,7 +96,7 @@
 	var/multiple_sprites = 0
 	var/caliber
 	var/multiload = 1
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stored_ammo" 
 /obj/item/ammo_box/New()
 	for(var/i in 1 to max_ammo)
 		stored_ammo += new ammo_type(src)

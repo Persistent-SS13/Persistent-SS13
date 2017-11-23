@@ -7,7 +7,6 @@
 	cant_hold = list(/obj/item/weapon/disk/nuclear)
 	silent = 1
 
-
 /obj/item/weapon/implant/storage
 	name = "storage implant"
 	desc = "Stores up to two big items in a bluespace pocket."
@@ -15,7 +14,7 @@
 	origin_tech = "materials=2;magnets=4;bluespace=4;syndicate=4"
 	item_color = "r"
 	var/obj/item/weapon/storage/hidden/implant/storage
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;storage"
 /obj/item/weapon/implant/storage/New()
 	..()
 	storage = new /obj/item/weapon/storage/hidden/implant(src)

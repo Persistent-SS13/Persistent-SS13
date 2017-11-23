@@ -38,12 +38,14 @@
 	safe_list_vars = "stamped"
 	
 /obj/item/weapon/paper/after_load()
-	for(var/xa in 1 to stamped.len)
-		var/ya = stamped[xa]
-		var/obj/item/weapon/stamp/stamper = new ya()
-		stamped.Cut(xa,xa)
-		stamp(stamper)
-		qdel(stamper)
+	if(stamped)
+		var/list/stamp_list = stamped.Copy()
+		stamped.Cut()
+		for(var/xa in 1 to stamp_list.len)
+			var/ya = stamp_list[xa]
+			var/obj/item/weapon/stamp/stamper = new ya()
+			stamp(stamper)
+			qdel(stamper)
 //lipstick wiping is in code/game/objects/items/weapons/cosmetics.dm!
 
 /obj/item/weapon/paper/New()

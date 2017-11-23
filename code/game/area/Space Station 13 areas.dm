@@ -2594,6 +2594,7 @@ var/list/centcom_areas = list (
 //SPACE STATION 13
 var/list/the_station_areas = list (
 	/area/admin/persistent,
+	/area/centcom/specops,
 	/area/atmos,
 	/area/maintenance,
 	/area/hallway,

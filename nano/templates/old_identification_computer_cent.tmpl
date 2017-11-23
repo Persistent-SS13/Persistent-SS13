@@ -1,0 +1,318 @@
+{{if data.printing}}
+	<h5 class='average'>The computer is currently busy.</h5>
+	<div class='notice'>
+		<center><span class='bad'>Printing...</span></center>
+	</div>
+	<p>
+		Thank you for your patience!
+	</p>
+{{else}}
+	{{:helper.link('Access Modification', 'home', {'choice' : 'mode', 'mode_target' : 0}, !data.mode ? 'disabled' : null)}}
+	{{:helper.link('Account Management', 'gear', {'choice' : 'mode', 'mode_target' : 1}, data.mode == 1 ? 'disabled' : null)}}
+	{{:helper.link('Crew Manifest', 'folder-open', {'choice' : 'mode', 'mode_target' : 2}, data.mode == 2 ? 'disabled' : null)}}
+	{{:helper.link('Print', 'print', {'choice' : 'print'}, (data.mode == 2 || data.has_modify && !data.mode) ? null : 'disabled')}}
+
+	{{if data.mode == 1}}
+	<div class='item'>
+      <h2>Account Management</h2>
+    </div>
+
+    {{if !data.authenticated}}
+      <span class='exclamation-triangle'><i>Please insert a valid Command ID</i></span><br>
+    {{/if}}
+
+    <div class='item'>
+      <div class='itemLabel'>
+        Account:
+      </div>
+      <div class='itemContent'>
+        {{:helper.link(data.search_name, '', {'choice' : 'search'})}} or {{:helper.link('Scan from card', '', {'choice' : 'search_card'})}} {{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
+      </div>
+    </div>
+    <div class='item'>
+      <div class='itemLabel'>
+        Authorized Identity:
+      </div>
+      <div class='itemContent'>
+        {{:helper.link(data.scan_name, 'eject', {'choice' : 'scan'})}}
+      </div>
+    </div>
+    <hr>
+
+    {{if data.authenticated}}
+      <script type="text/javascript">
+        function markRed(){
+          var nameField = document.getElementById('namefield');
+          nameField.style.backgroundColor = "#FFDDDD";
+        }
+        function markGreen(){
+          var nameField = document.getElementById('namefield');
+          nameField.style.backgroundColor = "#DDFFDD";
+        }
+        function markAccountGreen(){
+          var nameField = document.getElementById('accountfield');
+          nameField.style.backgroundColor = "#DDFFDD";
+        }
+        function markAccountRed(){
+          var nameField = document.getElementById('accountfield');
+          nameField.style.backgroundColor = "#FFDDDD";
+        }
+        function showAll(){
+          var allJobsSlot = document.getElementById('allvalue.jobsslot');
+          allJobsSlot.innerHTML = "<a href='#' onclick='hideAll()'>Hide</a><br>";
+          var allJobs = document.getElementById('all-value.jobs');
+          allJobs.style.display = 'block';
+        }
+        function hideAll(){
+          var allJobsSlot = document.getElementById('allvalue.jobsslot');
+          allJobsSlot.innerHTML = "<a href='#' onclick='showAll()'>{{:data.target_rank}}</a>";
+          var allJobs = document.getElementById('all-value.jobs');
+          allJobs.style.display = 'none';
+        }
+      </script>
+	  {{if data.is_command}}
+	  
+		<span class='exclamation-triangle'><i>You cannot edit a Command ID</i></span><br>
+	  
+	  
+	  {{else data.record}}	
+		  {{if data.has_record}}
+			<div class='item'>
+			  <h2>Details</h2>
+			</div>
+			<table><tr><td>
+				<form name='cardcomp' action='?src={{:data.src}}' method='get'>
+				  <div class='item'>
+					<div class='itemLabel'>
+					  <input type='hidden' name='src' value='{{:data.src}}'>
+					  <input type='hidden' name='choice' value='reg'>
+					  Registered Name: '{{:data.target_owner}}'
+					</div>
+
+				  </div>
+				</form>
+			</td><td align = center valign = top>
+			<br><img src='{{:data.photo}}' height=64 width=64 border=5></td></tr></table>
+			<div class='item'>
+			  <h2>Function</h2>
+			</div>
+			
+			<div class='item'>
+				{{:helper.link('None', '', {'choice' : 'function', 'func_choice' : 0}, null,(data.current_function == 0) ? 'selected' : null )}}
+				{{:helper.link('Change Department', '', {'choice' : 'function', 'func_choice' : 1}, null,(data.current_function == 1) ? 'selected' : null )}}
+				{{:helper.link('Change Primary Assignment', '', {'choice' : 'function', 'func_choice' : 2}, null,(data.current_function == 2) ? 'selected' : null )}}
+				{{:helper.link('Award Promotion', '', {'choice' : 'function', 'func_choice' : 3}, null,(data.current_function == 3) ? 'selected' : null )}}
+				{{:helper.link('Award New Certification', '', {'choice' : 'function', 'func_choice' : 4}, null,(data.current_function == 4) ? 'selected' : null )}}
+				{{:helper.link('Demote', '', {'choice' : 'function', 'func_choice' : 5}, null,(data.current_function == 5) ? 'selected' : null )}}
+				{{:helper.link('Request Removal of Certification', '', {'choice' : 'function', 'func_choice' : 6}, null,(data.current_function == 6) ? 'selected' : null )}}
+			</div>
+			<hr>
+			{{if data.current_function == 1}}
+				<div class='item'>
+				  <h2>Change Department</h2>
+				</div>
+				<div class='item'>
+					{{:helper.link('Cargo', '', {'choice' : 'department', 'dept_choice' : 1}, null,(data.current_dept == 1) ? 'selected' : null )}}
+					{{:helper.link('Engineering', '', {'choice' : 'department', 'dept_choice' : 2}, null,(data.current_dept == 2) ? 'selected' : null )}}
+					{{:helper.link('Medical', '', {'choice' : 'department', 'dept_choice' : 3}, null,(data.current_dept == 3) ? 'selected' : null )}}
+					{{:helper.link('Security', '', {'choice' : 'department', 'dept_choice' : 4}, null,(data.current_dept == 4) ? 'selected' : null )}}
+					{{:helper.link('Science', '', {'choice' : 'department', 'dept_choice' : 5}, null,(data.current_dept == 5) ? 'selected' : null )}}
+					{{:helper.link('Civilian', '', {'choice' : 'department', 'dept_choice' : 0}, null,(data.current_dept == 0) ? 'selected' : null )}}
+				</div>	
+	
+				
+			{{/if}}
+			{{if data.current_function == 2}}
+				<div class='item'>
+				  <h2>Change Primary Assignment</h2>
+				</div>
+				<div class='item'>
+					{{for data.department_jobs}}
+						{{if value.has_cert}}
+							{{:helper.link(value.title, '', {'choice' : 'assign_cert', 'assign_target' : value.title}, value.is_primary == 1 ? 'selected' : null)}}
+						{{/if}}	
+					{{/for}}
+				</div>	
+			
+			{{/if}}
+			{{if data.current_function == 3}}
+				<div class='item'>
+				  <h2>Award Promotion</h2>
+				</div>
+				<div class='item'>
+					{{for data.promotions}}
+						{{if value.can_promote == 1}}
+							{{:helper.link(value.name, '', {'choice' : 'assign_promotion', 'assign_target' : value.name}, null)}}
+						{{/if}}
+						{{if value.can_promote != 1}}
+							{{:helper.link(value.name, '', {'choice' : 'assign_unavailable', 'assign_target' : value.name}, value.is_same == 1 ? 'selected' : 'disabled')}}
+						{{/if}}
+					{{/for}}
+				</div>				
+			
+			
+			{{/if}}
+			{{if data.current_function == 4}}
+			
+				<div class='item'>
+				  <h2>Award New Certification</h2>
+				</div>
+				<div class='item'>
+					{{for data.department_jobs}}				
+						{{:helper.link(value.title, '', {'choice' : 'add_cert', 'assign_target' : value.title}, value.has_cert == 1 ? 'selected' : null)}}	
+					{{/for}}
+				</div>	
+			{{/if}}
+			{{if data.current_function == 5}}
+			
+				<div class='item'>
+				  <h2>Demote</h2>
+				</div>
+				<div class='item'>
+					{{for data.demotions}}
+						{{if value.can_demote == 1}}
+							{{:helper.link(value.name, '', {'choice' : 'assign_demotion', 'assign_target' : value.name}, null)}}
+						{{/if}}
+						{{if value.can_demote != 1}}
+							{{:helper.link(value.name, '', {'choice' : 'assign_unavailable', 'assign_target' : value.name}, value.is_same == 1 ? 'selected' : 'disabled')}}
+						{{/if}}
+					{{/for}}
+				</div>	
+			{{/if}}
+			{{if data.current_function == 6}}
+				<div class='item'>
+				  <h2>Request removal of Certification</h2>
+				</div>
+				<div class='item'>
+					{{for data.department_jobs}}
+						{{:helper.link(value.title, '', {'choice' : 'ask_remove', 'assign_target' : value.title}, value.has_cert == 1 ? null : 'disabled')}}
+					{{/for}}
+				</div>	
+			{{/if}}
+		  {{/if}}
+	   {{/if}}
+	 {{/if}}
+
+	{{else data.mode == 2}}
+		<div class='item'>
+			<h2>Crew Manifest</h2>
+		</div>
+		<div class='item'>
+			{{:data.manifest}}
+		</div>
+	{{else}}
+    <div class='item'>
+      <h2>Access Modification</h2>
+    </div>
+
+    {{if !data.authenticated}}
+      <span class='exclamation-triangle'><i>Please insert the IDs into the terminal to proceed.</i></span><br>
+    {{/if}}
+
+    <div class='item'>
+      <div class='itemLabel'>
+        Target Identity:
+      </div>
+      <div class='itemContent'>
+        {{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
+      </div>
+    </div>
+    <div class='item'>
+      <div class='itemLabel'>
+        Authorized Identity:
+      </div>
+      <div class='itemContent'>
+        {{:helper.link(data.scan_name, 'eject', {'choice' : 'scan'})}}
+      </div>
+    </div>
+    <hr>
+
+    {{if data.authenticated}}
+      <script type="text/javascript">
+        function markRed(){
+          var nameField = document.getElementById('namefield');
+          nameField.style.backgroundColor = "#FFDDDD";
+        }
+        function markGreen(){
+          var nameField = document.getElementById('namefield');
+          nameField.style.backgroundColor = "#DDFFDD";
+        }
+        function markAccountGreen(){
+          var nameField = document.getElementById('accountfield');
+          nameField.style.backgroundColor = "#DDFFDD";
+        }
+        function markAccountRed(){
+          var nameField = document.getElementById('accountfield');
+          nameField.style.backgroundColor = "#FFDDDD";
+        }
+        function showAll(){
+          var allJobsSlot = document.getElementById('allvalue.jobsslot');
+          allJobsSlot.innerHTML = "<a href='#' onclick='hideAll()'>Hide</a><br>";
+          var allJobs = document.getElementById('all-value.jobs');
+          allJobs.style.display = 'block';
+        }
+        function hideAll(){
+          var allJobsSlot = document.getElementById('allvalue.jobsslot');
+          allJobsSlot.innerHTML = "<a href='#' onclick='showAll()'>{{:data.target_rank}}</a>";
+          var allJobs = document.getElementById('all-value.jobs');
+          allJobs.style.display = 'none';
+        }
+      </script>
+
+      {{if data.has_modify}}
+        <div class='item'>
+          <h2>Details</h2>
+        </div>
+
+        <form name='cardcomp' action='?src={{:data.src}}' method='get'>
+          <div class='item'>
+            <div class='itemLabel'>
+              <input type='hidden' name='src' value='{{:data.src}}'>
+              <input type='hidden' name='choice' value='reg'>
+              Registered Name: '{{:data.target_owner}}'
+            </div>
+          </div>
+        </form>
+
+        {{if data.centcom_access}}
+          <div class='item'>
+            <h2>Central Command</h2>
+          </div>
+          <div class='item'>
+            {{for data.all_centcom_access}}
+              {{:helper.link(value.desc, '', {'choice' : 'access', 'access_target' : value.ref, 'allowed' : value.allowed}, null, value.allowed ? 'selected' : null)}}
+            {{/for}}
+			<div class="item">
+			<div class='average'><b>Card Skin</b></div>
+			{{for data.all_centcom_skins}}
+				{{:helper.link(value.display_name, '', {'choice' : 'skin', 'skin_target' : value.skin}, null,(data.current_skin == value.skin) ? 'selected' : null )}}
+			{{/for}}	
+			</div>
+          </div>
+        {{else}}
+          <div class='item'>
+            <h2>{{:data.station_name}}</h2>
+          </div>
+          <div class='item'>
+            {{for data.regions}}
+              <div style='float: left; width: 175px; min-height: 250px'>
+                <div class='average'><b>{{:value.name}}</b></div>
+                {{for value.accesses :accessValue:accessKey}}
+                  <div class='itemContentWide'>
+                    {{:helper.link(accessValue.desc, '', {'choice' : 'access', 'access_target' : accessValue.ref, 'allowed' : accessValue.allowed}, null, accessValue.allowed ? 'selected' : null)}}
+                  </div>
+                {{/for}}
+              </div>
+            {{/for}}
+            <div style='float: left;'>
+			<div class='average'><b>Card Skin</b></div>
+			  {{for data.card_skins}}
+				{{:helper.link(value.display_name, '', {'choice' : 'skin', 'skin_target' : value.skin}, null,(data.current_skin == value.skin) ? 'selected' : null )}}
+			  {{/for}}
+			</div>
+          </div>
+        {{/if}}
+      {{/if}}
+    {{/if}}
+  {{/if}}
+{{/if}}

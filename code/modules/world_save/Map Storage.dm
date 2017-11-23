@@ -133,7 +133,6 @@ map_storage
 		var/type = savefile["type"]
 		var/atom/movable/object
 		if(!type)
-			message_admins("no type found! ind: [ind] starting_loc: [starting_loc] ")
 			return
 		if(old_turf)
 		//	old_turf.blocks_air = 1
@@ -215,7 +214,7 @@ map_storage
 				object.vars[v] = list()
 			else
 				savefile.cd = "/entries/[ind]"
-				object.vars[v] = Numeric(savefile[v])
+				object.vars[v] = savefile[v]
 			savefile.cd = "/entries/[ind]"
 			TICK_CHECK
 		savefile.cd = ".."
@@ -395,7 +394,6 @@ map_storage
 			message_admins("FILE Found [front_dir]/[search].sav !")
 			var/savefile/savefile = new("[front_dir]/[search].sav")
 			var/recind = savefile["record"]
-			message_admins("Recind : [recind]")
 			var/datum/data/record/G = Load_Entry(savefile, 1)
 			return G
 		else
@@ -533,7 +531,13 @@ map_storage
 					var/turf/simulated/Te = ob
 					//Te.blocks_air = initial(Te.blocks_air)
 					Te.new_air()
-					
+			message_admins("Char loaded!!! [all_loaded..len] instances")
+			if(!mind.initial_account)
+				message_admins("OMG! CHAR LOADED WITHOUT ACCOUNT!! [mob.real_name]")
+				mind.initial_account = create_account(mob.real_name, 500)
+			if(!mind.primary_cert)
+				message_admins("OMG! CHAR LOADED WITHOUT PRIMARY CERT! [mob.real_name]")
+				mind.primary_cert = job_master.GetCert("intern")
 			if(transfer)
 				M.transfer_to(mob)
 			if(loc)
@@ -601,43 +605,45 @@ map_storage
 	proc/Load_World(list/areas)
 		
 		for(var/A in areas)
-			var/watch = start_watch()
-			existing_references = list()
-			all_loaded = list()
-			var/B = replacetext("[A]", "/", "-")
-			if(!fexists("map_saves/[B].sav"))
-				continue
-			var/savefile/savefile = new("map_saves/[B].sav")
-			savefile.cd = "/map"
-			TICK_CHECK
-			for(var/z in savefile.dir)
-				savefile.cd = "/map/[z]"
-				for(var/y in savefile.dir)
-					savefile.cd = "/map/[z]/[y]"
-					for(var/x in savefile.dir)
-						var/turf_ref = savefile["[x]"]
-						if(!turf_ref)
-							message_admins("turf_ref not found, x: [x]")
-							continue
-						var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
-						Load_Entry(savefile, turf_ref, old_turf)
+			try
+				var/watch = start_watch()
+				existing_references = list()
+				all_loaded = list()
+				var/B = replacetext("[A]", "/", "-")
+				if(!fexists("map_saves/[B].sav"))
+					continue
+				var/savefile/savefile = new("map_saves/[B].sav")
+				savefile.cd = "/map"
+				TICK_CHECK
+				for(var/z in savefile.dir)
+					savefile.cd = "/map/[z]"
+					for(var/y in savefile.dir)
 						savefile.cd = "/map/[z]/[y]"
-						TICK_CHECK
-			for(var/i in 1 to all_loaded.len)
-				var/datum/ob = all_loaded[i]
-				ob.after_load()
-				if(istype(ob, /obj))
-					var/obj/obbie = ob
-					if(obbie.load_datums)
-						if(obbie.reagents)
-							obbie.reagents.my_atom = ob
-				if(istype(ob, /turf/simulated))
-					var/turf/simulated/Te = ob
-					//Te.blocks_air = initial(Te.blocks_air)
-					Te.new_air()
-			sleep(1)
-			log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
-			
+						for(var/x in savefile.dir)
+							var/turf_ref = savefile["[x]"]
+							if(!turf_ref)
+								message_admins("turf_ref not found, x: [x]")
+								continue
+							var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
+							Load_Entry(savefile, turf_ref, old_turf)
+							savefile.cd = "/map/[z]/[y]"
+							TICK_CHECK
+				for(var/i in 1 to all_loaded.len)
+					var/datum/ob = all_loaded[i]
+					ob.after_load()
+					if(istype(ob, /obj))
+						var/obj/obbie = ob
+						if(obbie.load_datums)
+							if(obbie.reagents)
+								obbie.reagents.my_atom = ob
+					if(istype(ob, /turf/simulated))
+						var/turf/simulated/Te = ob
+						//Te.blocks_air = initial(Te.blocks_air)
+						Te.new_air()
+				sleep(1)
+				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
+			catch(var/exception/e)
+				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
 // Loading a file is pretty straightforward - you specify the savefile to load from
 // (make sure its an actual savefile, not just a file name), and if necessary you
 // include the savefile's password as an argument. This will automatically check to

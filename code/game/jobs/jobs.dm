@@ -86,14 +86,11 @@ var/list/assistant_occupations = list(
 var/list/command_positions = list(
 	"Captain",
 	"Head of Personnel",
-	"Head of Security",
-	"Chief Engineer",
-	"Research Director",
-	"Chief Medical Officer"
 )
 
 // 	"Chief Engineer",
 var/list/engineering_positions = list(
+	"Chief Engineer",
 	"Station Engineer",
 	"Life Support Specialist",
 	"Mechanic"
@@ -101,6 +98,7 @@ var/list/engineering_positions = list(
 
 // 	"Chief Medical Officer",
 var/list/medical_positions = list(
+	"Chief Medical Officer",
 	"Medical Doctor",
 	"Geneticist",
 	"Psychiatrist",
@@ -110,9 +108,10 @@ var/list/medical_positions = list(
 )
 // 	"Chief Medical Officer",
 var/list/science_positions = list(
+	"Research Director",
 	"Scientist",
 	"Geneticist",	//Part of both medical and science
-	"Roboticist",
+	"Roboticist"
 )
 
 //BS12 EDIT
@@ -122,9 +121,6 @@ var/list/support_positions = list(
 	"Chef",
 	"Janitor",
 	"Librarian",
-	"Quartermaster",
-	"Cargo Technician",
-	"Shaft Miner",
 	"Internal Affairs Agent",
 	"Chaplain",
 	"Clown",
@@ -134,18 +130,31 @@ var/list/support_positions = list(
 	"Nanotrasen Representative",
 	"Blueshield"
 )
-//	"Head of Personnel",
-//	"Quartermaster",
-
 var/list/supply_positions = list(
+	"Quartermaster",
 	"Cargo Technician",
 	"Shaft Miner"
 )
 
-var/list/service_positions = support_positions - supply_positions + list("Head of Personnel")
+var/list/service_positions= list(
+	"Bartender",
+	"Botanist",
+	"Chef",
+	"Janitor",
+	"Librarian",
+	"Lawyer",
+	"Chaplain",
+	"Clown",
+	"Mime",
+	"Barber",
+	"Magistrate",
+	"Nanotrasen Representative",
+	"Blueshield"
+)
 
 // 	"Head of Security",
 var/list/security_positions = list(
+	"Head of Security",
 	"Warden",
 	"Detective",
 	"Security Officer",

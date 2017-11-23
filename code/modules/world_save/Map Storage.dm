@@ -107,7 +107,7 @@ map_storage
 		list/all_loaded = list()
 		list/datum_reference = list()
 		list/dtm_references = list()
-		
+
 	New(game_id, backdoor, ignore)
 		..()
 		if(game_id)
@@ -117,7 +117,7 @@ map_storage
 		if(ignore)
 			src.ignore_types = ignore
 		return
-	
+
 
 	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0, var/species_override = 0)
 		TICK_CHECK
@@ -164,7 +164,7 @@ map_storage
 						var/datum/species/S = Load_Entry(savefile, x)
 						savefile.cd = "/entries/[ind]"
 						hum.set_species(S.name)
-			
+
 		for(var/v in savefile.dir)
 			savefile.cd = "/entries/[ind]"
 			if(v == "type")
@@ -246,7 +246,7 @@ map_storage
 			var/final_params = list2params(content_refs)
 			savefile.cd = "/entries/[ref]"
 			savefile["content"] = final_params
-		
+
 		// Add any variables changed and their associated values to a list called changed_vars.
 		var/list/changed_vars = list()
 		var/list/changing_vars = params2list(A.map_storage_saved_vars)
@@ -265,14 +265,14 @@ map_storage
 					if(!conparams)
 						continue
 					savefile.cd = "/entries/[ref]"
-					savefile["[v]"] = "**entry[conparams]"  
+					savefile["[v]"] = "**entry[conparams]"
 				else if(istype(A.vars[v], /datum))
 					var/atom/movable/varob = A.vars[v]
 					var/conparams = BuildVarDirectory(savefile, varob, 1)
 					if(!conparams)
 						continue
 					savefile.cd = "/entries/[ref]"
-					savefile["[v]"] = "**entry[conparams]"  
+					savefile["[v]"] = "**entry[conparams]"
 				else if(istype(A.vars[v], /list))
 					if(safe_lists.Find(v))
 						savefile["[v]"] << A.vars[v]
@@ -304,7 +304,7 @@ map_storage
 					savefile["[v]"] = A.vars[v]
 		savefile.cd = ".."
 		return ref
-			
+
 
 
 // Returns true if the value is purely numeric, return false if there are non-numeric
@@ -357,7 +357,7 @@ map_storage
 		else if(Firstbod)
 			ckey = C.ckey
 			current = Firstbod
-			
+
 		if(findtext(ckey, "@"))
 			var/list/nums = string_explode(ckey, "@")
 			ckey = nums[2]
@@ -400,7 +400,7 @@ map_storage
 			message_admins("FILE DID NOT EXIST [front_dir]/[search].sav !")
 			return 0
 	proc/Save_Records()
-		
+
 		for(var/datum/data/record/G in data_core.general)
 			saving_references = list()
 			existing_references = list()
@@ -467,7 +467,7 @@ map_storage
 				var/turf/simulated/Te = ob
 				//Te.blocks_air = initial(Te.blocks_air)
 				Te.new_air()
-				
+
 		if(transfer)
 			M.transfer_to(mob)
 		if(loc)
@@ -475,7 +475,7 @@ map_storage
 			return loc
 		else
 			return mob
-		
+
 	proc/Load_Char_Fast(var/ckey, var/slot, var/datum/mind/M, var/transfer = 0, var/announce = 0)
 		if(!ckey)
 			message_admins("Load_Char without ckey")
@@ -531,7 +531,7 @@ map_storage
 					var/turf/simulated/Te = ob
 					//Te.blocks_air = initial(Te.blocks_air)
 					Te.new_air()
-			message_admins("Char loaded!!! [all_loaded..len] instances")
+			message_admins("Char loaded!!! [all_loaded.len] instances")
 			if(!mind.initial_account)
 				message_admins("OMG! CHAR LOADED WITHOUT ACCOUNT!! [mob.real_name]")
 				mind.initial_account = create_account(mob.real_name, 500)
@@ -555,7 +555,7 @@ map_storage
 				spawn(10)
 					var/join_message = "has arrived on the station"
 					AnnounceArrival(mob, rank, join_message)
-					
+
 		if(object2)
 			return object2
 		else
@@ -583,7 +583,7 @@ map_storage
 					message_admins("[turf] failed to return a ref!")
 				savefile.cd = "/map/[turf.z]/[turf.y]"
 				savefile["[turf.x]"] = ref
-				
+
 		return 1
 	proc/Save_World(list/areas)
 		// ***** MAP SECTION *****
@@ -603,7 +603,7 @@ map_storage
 				TICK_CHECK
 		return 1
 	proc/Load_World(list/areas)
-		
+
 		for(var/A in areas)
 			try
 				var/watch = start_watch()

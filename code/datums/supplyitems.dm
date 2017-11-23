@@ -208,7 +208,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/taperoll/police,
 					/obj/item/weapon/book/manual/security_space_law,
 					/obj/item/weapon/storage/backpack/security,
-					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 350
 	containertype = /obj/structure/closet/secure_closet/security
 	containername = "Security Cadet Equipment"
@@ -224,7 +224,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/taperoll/police,
 					/obj/item/weapon/book/manual/security_space_law,
 					/obj/item/weapon/storage/backpack/security,
-					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 350
 	containertype = /obj/structure/closet/secure_closet/security
 	containername = "Security Cadet Equipment"
@@ -246,11 +246,12 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/taperoll/police,
 					/obj/item/weapon/book/manual/security_space_law,
 					/obj/item/weapon/storage/backpack/security,
-					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 700
 	containertype = /obj/structure/closet/secure_closet/security
 	containername = "Security Officer Equipment"
 	desc = "Everything a Security Officer needs."
+	authentication = list("hos", "captain", "hop")
 /datum/supply_item/profession/securityofficerfemale
 	name = "Security Officer Equipment - Female"
 	contains = list(/obj/item/clothing/under/rank/security/skirt,
@@ -267,11 +268,12 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/taperoll/police,
 					/obj/item/weapon/book/manual/security_space_law,
 					/obj/item/weapon/storage/backpack/security,
-					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 700
 	containertype = /obj/structure/closet/secure_closet/security
 	containername = "Security Officer Equipment"
 	desc = "Everything a Security Officer needs."
+	authentication = list("hos", "captain", "hop")
 /datum/supply_item/profession/securitycorporal
 	name = "Security Corporal Equipment"
 	contains = list(/obj/item/clothing/under/rank/security/corp,
@@ -282,7 +284,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/clothing/shoes/jackboots,
 					/obj/item/weapon/storage/belt/security/sec,
 					/obj/item/clothing/suit/armor/secjacket,
-		//			/obj/item/clothing/hooded/wintercoat/security,
+					/obj/item/clothing/suit/hooded/wintercoat/security,
 					/obj/item/weapon/gun/energy/gun/advtaser,
 					/obj/item/weapon/melee/baton/loaded,
 					/obj/item/weapon/stock_parts/cell,
@@ -314,11 +316,12 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/taperoll/police,
 					/obj/item/weapon/book/manual/security_space_law,
 					/obj/item/weapon/storage/backpack/security,
-					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
+					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 700
 	containertype = /obj/structure/closet/secure_closet/security
 	containername = "Detective Equipment"
 	desc = "Everything a Detective needs."
+	authentication = list("hos", "captain", "hop")
 /datum/supply_item/profession/medical
 	name = "Medical Intern Equipment"
 	contains = list(/obj/item/clothing/under/rank/medical,
@@ -711,72 +714,72 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containertype = /obj/structure/closet/secure_closet
 	group = 4
 	containername = "Clothing Order"
-/datum/supply_item/clothing/redscarf
+/datum/supply_item/accessories/redscarf
 	name = "Red Scarf"
 	contains = list(/obj/item/clothing/accessory/scarf/red)
 	cost = 75
 	desc = "A stylish red scarf."
-/datum/supply_item/clothing/greenscarf
+/datum/supply_item/accessories/greenscarf
 	name = "Green Scarf"
 	contains = list(/obj/item/clothing/accessory/scarf/green)
 	cost = 75
 	desc = "A stylish green scarf."
-/datum/supply_item/clothing/darkbluescarf
+/datum/supply_item/accessories/darkbluescarf
 	name = "Dark Blue Scarf"
 	contains = list(/obj/item/clothing/accessory/scarf/darkblue)
 	cost = 75
 	desc = "A stylish blue scarf."
-/datum/supply_item/clothing/purplescarf
+/datum/supply_item/accessories/purplescarf
 	name = "Purple Scarf"
 	contains = list(/obj/item/clothing/accessory/scarf/purple)
 	cost = 75
 	desc = "A stylish purple scarf."
-/datum/supply_item/clothing/yellowscarf
+/datum/supply_item/accessories/yellowscarf
 	name = "Yellow Scarf"
 	contains = list(/obj/item/clothing/accessory/scarf/yellow)
 	cost = 75
 	desc = "A stylish yellow scarf."
-/datum/supply_item/clothing/orangescarf
+/datum/supply_item/accessories/orangescarf
 	name = "Orange Scarf"
 	contains = list(/obj/item/clothing/accessory/scarf/orange)
 	cost = 75
 	desc = "A stylish orange scarf."
-/datum/supply_item/clothing/lightbluescarf
+/datum/supply_item/accessories/lightbluescarf
 	name = "Light Blue Scarf"
 	contains = list(/obj/item/clothing/accessory/scarf/lightblue)
 	cost = 75
 	desc = "A stylish light blue scarf."
-/datum/supply_item/clothing/stripedredscarf
+/datum/supply_item/accessories/stripedredscarf
 	name = "Striped Red Scarf"
 	contains = list(/obj/item/clothing/accessory/stripedredscarf)
 	cost = 75
 	desc = "A stylish striped red scarf."
-/datum/supply_item/clothing/waistcoat
+/datum/supply_item/accessories/waistcoat
 	name = "Black Waistcoat"
 	contains = list(/obj/item/clothing/accessory/waistcoat)
 	cost = 75
 	desc = "A spiffy black waistcoat."
-/datum/supply_item/clothing/laceup
+/datum/supply_item/accessories/laceup
 	name = "Laceup Shoes"
 	contains = list(/obj/item/clothing/shoes/laceup)
 	cost = 75
 	desc = "A freshly polished pair of laceup shoes."
-/datum/supply_item/clothing/blackshoes
+/datum/supply_item/accessories/blackshoes
 	name = "Black Shoes"
 	contains = list(/obj/item/clothing/shoes/black)
 	cost = 75
 	desc = "A simple pair of black shoes."
-/datum/supply_item/clothing/sandals
+/datum/supply_item/accessories/sandals
 	name = "Sandals"
 	contains = list(/obj/item/clothing/shoes/sandal)
 	cost = 75
 	desc = "A pair of simple wooden sandals."
-/datum/supply_item/clothing/fingerlessgloves
+/datum/supply_item/accessories/fingerlessgloves
 	name = "Fingerless Gloves"
 	contains = list(/obj/item/clothing/gloves/fingerless)
 	cost = 50
 	desc = "A pair of gloves cut off at the fingertips."
-/datum/supply_item/clothing/fannypack
+/datum/supply_item/accessories/fannypack
 	name = "Fannypack"
 	contains = list(/obj/item/weapon/storage/belt/fannypack)
 	cost = 100

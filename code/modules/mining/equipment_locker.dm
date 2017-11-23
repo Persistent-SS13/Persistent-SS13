@@ -1117,7 +1117,7 @@
 
 /obj/item/device/mineral_scanner/proc/scan(var/mob/user, var/turf/T)
 	user.visible_message("<span class='notice'>[user] begins scanning [T] for mineable materials.</span>")
-	switch(do_after_stat(user, delay = 70, needhand = 1, target = T, progress = 1, action_name = "take mineral readings", auto_emote = 1, stat_used = 5, minimum = 2, maximum =10, maxed_delay = 30, progressive_failure = 1, minimum_probability = 50, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 5, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1, sound_file = 'sound/machines/signal.ogg'))
+	switch(do_after_stat(user, delay = 70, needhand = 1, target = T, progress = 1, action_name = "take mineral readings", auto_emote = 1, stat_used = 5, minimum = 2, maximum =10, maxed_delay = 30, progressive_failure = 1, minimum_probability = 50, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 2, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1, sound_file = 'sound/machines/signal.ogg'))
 		if(1)
 			if(istype(T, /turf/simulated/floor/plating/airless/asteroid/ore))
 				var/turf/simulated/floor/plating/airless/asteroid/ore/oreturf = T

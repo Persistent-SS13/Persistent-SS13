@@ -145,11 +145,12 @@
 	var/light_type = /obj/item/weapon/light/tube		// the type of light item
 	var/fitting = "tube"
 	var/switchcount = 0			// count of number of times switched on/off
-	map_storage_saved_vars = "status;switchcount;rigged;brightness_range;brightness_power;brightness_color;density;icon_state;dir;name;pixel_x;pixel_y"
+	map_storage_saved_vars = "on;status;switchcount;rigged;brightness_range;brightness_power;brightness_color;density;icon_state;dir;name;pixel_x;pixel_y"
 		// this is used to calc the probability the light burns out
 
 	var/rigged = 0				// true if rigged to explode
-
+/obj/machinery/light/after_load()
+	update(0)
 // the smaller bulb light fixture
 
 /obj/machinery/light/small
@@ -168,16 +169,13 @@
 	light_type = /obj/item/weapon/light/tube/large
 	brightness_range = 12
 	brightness_power = 4
-
-/obj/machinery/light/built/New()
+	
+/obj/machinery/light/built
 	status = LIGHT_EMPTY
-	update(0)
-	..()
 
-/obj/machinery/light/small/built/New()
+
+/obj/machinery/light/small/built
 	status = LIGHT_EMPTY
-	update(0)
-	..()
 
 // create a new lighting fixture
 /obj/machinery/light/New()

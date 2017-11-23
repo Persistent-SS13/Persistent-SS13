@@ -28,7 +28,7 @@
 	var/prod_coeff
 	var/datum/wires/autolathe/wires = null
 
-	map_storage_saved_vars = "materials;files;density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;component_parts"
+	map_storage_saved_vars = "component_parts;materials;files;density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal"
 	
 	var/list/being_built = list()
 	var/datum/research/files

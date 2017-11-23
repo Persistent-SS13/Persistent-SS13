@@ -470,14 +470,16 @@
 					return
 				src.active1 = null
 				src.active2 = null
+				var/ta = t1
 				t1 = lowertext(t1)
+				
 				for(var/datum/data/record/R in data_core.medical)
 					if((lowertext(R.fields["name"]) == t1 || t1 == lowertext(R.fields["id"]) || t1 == lowertext(R.fields["b_dna"])))
 						src.active2 = R
 					else
 						//Foreach continue //goto(3229)
 				if(!( src.active2 ))
-					active2 = map_storage.Load_Records(t1, 2)
+					active2 = map_storage.Load_Records(ta, 2)
 					if(active2)
 						data_core.medical += active2
 				if(!( src.active2 ))

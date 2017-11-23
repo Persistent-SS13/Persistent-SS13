@@ -18,7 +18,7 @@
 	var/use_external_power = 0 //if set, the weapon will look for an external power source to draw from, otherwise it recharges magically
 	var/charge_tick = 0
 	var/charge_delay = 4
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;chambered;power_supply"
 /obj/item/weapon/gun/energy/emp_act(severity)
 	power_supply.use(round(power_supply.charge / severity))
 	update_icon()

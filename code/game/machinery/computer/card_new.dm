@@ -263,11 +263,7 @@ var/time_last_changed_position = 0
 	data["authenticated"] = is_authenticated(user)
 	data["has_modify"] = !!modify
 	data["current_function"] = current_function
-	data["search_name"] = found_record ? found_record.fields["name"] : "Search"
-	data["has_record"] = !!found_record
-	if(found_record)
-		data["photo"] = found_record.fields["photo-south"]
-	if(scan && modify && modify.assigned_mind && modify.assigned_mind.assigned_job)
+	if(modify && scan && modify.assigned_mind)
 		data["has_mind"] = istype(modify.assigned_mind)
 		data["promotions"] = format_promotions()
 		data["demotions"] = format_demotions()
@@ -356,7 +352,7 @@ var/time_last_changed_position = 0
 	switch(href_list["choice"])
 		if("modify")
 			if(modify)
-				
+				data_core.manifest_modify(modify.registered_name, modify.assignment)
 				modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
 				if(ishuman(usr))
 					modify.loc = usr.loc
@@ -388,7 +384,7 @@ var/time_last_changed_position = 0
 				not_found = 1
 		if("search_card")
 			found_record = null
-			var/t1 = modify.assigned_mind.current.real_name
+			var/t1 = modify.mind.current.real_name
 			for(var/datum/data/record/R in data_core.general)
 				if((R.fields["name"] == t1 || t1 == R.fields["id"] || t1 == R.fields["fingerprint"]))
 					found_record = R
@@ -500,7 +496,7 @@ var/time_last_changed_position = 0
 					modify.assigned_mind.assigned_job = job
 					modify.assigned_mind.primary_cert = job
 					change_certification(modify.assigned_mind, job)
-					data_core.manifest_modify(modify.registered_name, modify.assignment)
+					
 	
 			nanomanager.update_uis(src)	
 			
@@ -526,7 +522,7 @@ var/time_last_changed_position = 0
 						modify.assigned_mind.assigned_job = job
 						modify.assigned_mind.primary_cert = job
 						change_certification(modify.assigned_mind, job)						
-						data_core.manifest_modify(modify.registered_name, modify.assignment)
+
 						
 			nanomanager.update_uis(src)	
 			
@@ -543,7 +539,6 @@ var/time_last_changed_position = 0
 							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
 							modify.assigned_mind.assigned_job = job
 							modify.assigned_mind.primary_cert = job
-							data_core.manifest_modify(modify.registered_name, modify.assignment)
 						if(2)
 						
 							job = job_master.GetCert("engineer")

@@ -388,7 +388,7 @@ Class Procs:
 /obj/machinery/proc/default_deconstruction_crowbar(var/obj/item/weapon/crowbar/C, var/ignore_panel = 0)
 	if(istype(C) && (panel_open || ignore_panel))
 		. = 1
-		switch(do_after_stat(C.loc, 100, needhand = 1, target = src, progress = 1, action_name = "crowbar [src] apart", auto_emote = 1, stat_used = 1, minimum = 3, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 10, progressive_stamina = 1, attempt_cost = 10, stamina_use_fail = 0.5, sound_file = 'sound/items/Crowbar.ogg'))
+		switch(do_after_stat(C.loc, 100, needhand = 1, target = src, progress = 1, action_name = "crowbar [src] apart", auto_emote = 1, stat_used = 1, minimum = 3, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 5, progressive_stamina = 1, attempt_cost = 10, stamina_use_fail = 0.5, sound_file = 'sound/items/Crowbar.ogg'))
 			if(2)
 				to_chat(C.loc, "You can't quite summon the strength to take [src] apart.")
 				return 1
@@ -408,7 +408,7 @@ Class Procs:
 /obj/machinery/proc/default_deconstruction_screwdriver(var/mob/user, var/icon_state_open, var/icon_state_closed, var/obj/item/weapon/screwdriver/S)
 	if(istype(S))
 		. = 1
-		switch(do_after_stat(user, 50, needhand = 1, target = src, progress = 1, action_name = "[!panel_open ? "un" : ""]screw the maintenance hatch to the [src]", auto_emote = 1, stat_used = 3, minimum = 2, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 5, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1.5, sound_file = 'sound/items/Screwdriver.ogg'))
+		switch(do_after_stat(user, 50, needhand = 1, target = src, progress = 1, action_name = "[!panel_open ? "un" : ""]screw the maintenance hatch to the [src]", auto_emote = 1, stat_used = 3, minimum = 2, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 2, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1.5, sound_file = 'sound/items/Screwdriver.ogg'))
 			if(2)
 				to_chat(user, "The screwdriver slips from a screw. You fail to [!panel_open ? "remove" : "attach"] the maintenance hatch.")
 				return 1
@@ -439,7 +439,7 @@ Class Procs:
 	if(istype(W))
 		. = 1
 		to_chat(user, "<span class='notice'>Now [anchored ? "un" : ""]securing [name].</span>")
-		switch(do_after_stat(user, 50, needhand = 1, target = src, progress = 1, action_name = "[anchored ? "un" : ""]wrench [src] to the floor", auto_emote = 1, stat_used = 3, minimum = 2, maximum = 8, maxed_delay = 20, progressive_failure = 0, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 5, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1.5, sound_file = 'sound/items/Ratchet.ogg'))
+		switch(do_after_stat(user, 50, needhand = 1, target = src, progress = 1, action_name = "[anchored ? "un" : ""]wrench [src] to the floor", auto_emote = 1, stat_used = 3, minimum = 2, maximum = 8, maxed_delay = 20, progressive_failure = 0, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 2, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1.5, sound_file = 'sound/items/Ratchet.ogg'))
 			if(1)
 				to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]secured [name].</span>")
 				anchored = !anchored

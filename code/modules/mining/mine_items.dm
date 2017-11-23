@@ -553,7 +553,7 @@
 				points_to_repair -= ((points_to_repair+health)-maxhealth)
 			switch(do_after_stat(user, delay = 50, needhand = 1, target = src, progress = 1, action_name = "repair the damages on [src]", 
 				auto_emote = 1, stat_used = 3, minimum = 2, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, 
-				help_ratio = 1, stamina_use = 2, stamina_used = 5, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1, sound_file = 'sound/items/Welder2.ogg'))
+				help_ratio = 1, stamina_use = 2, stamina_used = 2, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1, sound_file = 'sound/items/Welder2.ogg'))
 				if(1)
 					to_chat(user, "You fix [points_to_repair] points of damage on [src].")
 					health += points_to_repair

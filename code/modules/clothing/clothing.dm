@@ -601,7 +601,12 @@ BLIND     // can't see anything
 	var/rolled_down = 0
 	var/basecolor
 	var/easy_femme = 0 // PERSISTANT EDIT!
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;rolled_down;accessories"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;rolled_down"
+/obj/item/clothing/under/after_load()
+	..()
+	accessories = list()
+	for(var/obj/item/clothing/accessory/A in contents)
+		accessories |= A
 /obj/item/clothing/under/proc/can_attach_accessory(obj/item/clothing/accessory/A)
 	if(istype(A))
 		.=1

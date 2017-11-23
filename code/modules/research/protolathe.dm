@@ -13,7 +13,7 @@ Note: Must be placed west/left of and R&D console to function.
 	icon_state = "protolathe"
 	flags = OPENCONTAINER
 	
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;materials"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;materials;component_parts"
 	
 	var/datum/material_container/materials
 	var/efficiency_coeff

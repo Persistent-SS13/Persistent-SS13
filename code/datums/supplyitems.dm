@@ -57,11 +57,11 @@ var/const/supply_headgear = 2
 var/const/supply_clothing = 3
 var/const/supply_accessories = 4
 var/const/supply_robotics = 5
-var/const/supply_medical = 6
+var/const/supply_department = 6
 var/const/supply_materials = 7
 var/const/supply_engineering = 8
 var/const/supply_misc = 9
-var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clothing, supply_accessories, supply_robotics, supply_medical, supply_engineering, supply_materials, supply_misc)
+var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clothing, supply_accessories, supply_robotics, supply_department, supply_engineering, supply_materials, supply_misc)
 
 /proc/get_supply_lists_name(var/cat)
 	switch(cat)
@@ -76,7 +76,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 		if(5)
 			return "Robotics"
 		if(6)
-			return "Medical Supplies"
+			return "Department Supplies"
 		if(7)
 			return "Refined Materials"
 		if(8)
@@ -940,27 +940,71 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	cost = 120
 	desc = "A chip to change the cyborgs appearance. This one can only be used with service modules."
 
-/datum/supply_item/medical
+/datum/supply_item/department
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
 	containertype = /obj/structure/closet/crate/secure
 	group = 6
-	containername = "Medical Supplies"
-/datum/supply_item/medical/firstaidkit
-	name = "First-Aid Kit"
-	contains = list(/obj/item/weapon/storage/firstaid/regular)
-	cost = 100
-	desc = "Regular first-aid kit."
-/datum/supply_item/medical/bulkfirstaid
+/datum/supply_item/department/bulkfirstaid
 	name = "Bulk Medkit Crate"
 	contains = list(/obj/item/weapon/storage/firstaid/fire,
 					/obj/item/weapon/storage/firstaid/toxin,
 					/obj/item/weapon/storage/firstaid/brute,
+					/obj/item/weapon/storage/firstaid/o2,
+					/obj/item/weapon/storage/firstaid/fire,
+					/obj/item/weapon/storage/firstaid/toxin,
+					/obj/item/weapon/storage/firstaid/brute,
+					/obj/item/weapon/storage/firstaid/o2,
+					/obj/item/weapon/storage/firstaid/fire,
+					/obj/item/weapon/storage/firstaid/toxin,
+					/obj/item/weapon/storage/firstaid/brute,
+					/obj/item/weapon/storage/firstaid/o2,
+					/obj/item/weapon/storage/firstaid/fire,
+					/obj/item/weapon/storage/firstaid/toxin,
+					/obj/item/weapon/storage/firstaid/brute,
+					/obj/item/weapon/storage/firstaid/o2,
+					/obj/item/weapon/storage/firstaid/fire,
+					/obj/item/weapon/storage/firstaid/toxin,
+					/obj/item/weapon/storage/firstaid/brute,
 					/obj/item/weapon/storage/firstaid/o2)
-	cost = 500
+	cost = 2500
 	containertype = /obj/structure/closet/crate/secure/large
 	containername = "Bulk Medkit Crate"
-	desc = "Contains a burn, toxin, brute, and oxygen medkit."
+	desc = "Contains 5 burn, toxin, brute, and oxygen medkits."
 	authentication = list("cmo", "captain", "hop")
+/datum/supply_item/department/bulktaser
+	name = "Hybrid Tasers"
+	contains = list(/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser,
+					/obj/item/weapon/gun/energy/gun/advtaser)
+	cost = 10000
+	containertype = /obj/structure/closet/crate/secure/gear
+	containername = "Hybrid Taser Crate"
+	desc = "Shipment of 10 hybrid tasers."
+	authentication = list("hos", "captain", "hop")
+/datum/supply_item/department/bulkenergy
+	name = "Energy Weapons"
+	contains = list(/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun,
+					/obj/item/weapon/gun/energy/gun)
+	cost = 15000
+	containertype = /obj/structure/closet/crate/secure/gear
+	containername = "Energy Gun Crate"
+	desc = "Shipment of 10 energy guns."
+	authentication = list("hos", "captain", "hop")
 
 /datum/supply_item/materials
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
@@ -1131,6 +1175,11 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containertype = /obj/structure/closet/crate/secure
 	group = 9
 	containername = "Miscellaneous Crate"
+/datum/supply_item/misc/firstaidkit
+	name = "First-Aid Kit"
+	contains = list(/obj/item/weapon/storage/firstaid/regular)
+	cost = 100
+	desc = "Regular first-aid kit."
 /datum/supply_item/misc/spacecleaner
 	name = "Space Cleaner"
 	contains = list(/obj/item/weapon/reagent_containers/spray/cleaner)

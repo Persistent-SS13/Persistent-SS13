@@ -496,6 +496,7 @@ map_storage
 		savefile.cd = "/entries/[bodyind]"
 		var/type = savefile["type"]
 		var/mob/object = new type()
+		var/obj/old_brain
 		object.deleting = 1
 		var/atom/movable/object2
 		if(locind != "0" && locind != 0)
@@ -503,6 +504,10 @@ map_storage
 			type = savefile["type"]
 			object2 = new type()
 		spawn(0)
+			if(istype(object, /mob/living/carbon/human))
+				var/mob/living/carbon/human/organ_donor = object
+				for(var/obj/x in organ_donor.internal_organs)
+					old_brain = x
 			var/loc = null
 			TICK_CHECK
 			if(locind != "0" && locind != 0)
@@ -546,6 +551,7 @@ map_storage
 				spawn(10)
 					var/join_message = "has arrived on the station"
 					AnnounceArrival(mob, rank, join_message)
+					
 		if(object2)
 			return object2
 		else

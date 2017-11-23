@@ -1086,10 +1086,11 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/solar_assembly,
 					/obj/item/solar_assembly,
 					/obj/item/solar_assembly,
-					/obj/machinery/power/tracker)
+					/obj/item/solar_assembly,						// Extra solar panel to be used as a tracker
+					/obj/item/weapon/circuitboard/solar_control)
 	containername = "Solar Panel Crate"
 	cost = 800
-	desc = "20 solar panels. Tracker included."
+	desc = "21 solar panels. Tracker included."
 /datum/supply_item/engineering/radiationsuit
 	name = "Radiation Suit"
 	contains = list(/obj/item/clothing/suit/radiation,

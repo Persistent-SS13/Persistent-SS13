@@ -56,11 +56,10 @@
 	icon_state = "miniFE0"
 	item_state = "miniFE"
 	hitsound = null //Ultralight and
-	flags = null //non-conductive
 	force = 0
 	throwforce = 0
 	w_class = 1 //Fits in boxes.
-	materials = list()
+	materials = list(MAT_METAL = 70)
 	attack_verb = list("tapped")
 
 /obj/item/clothing/head/helmet/space/eva/plasmaman
@@ -342,3 +341,93 @@
 	icon_state = "plasmaman_Nukeops_helmet0"
 	base_state = "plasmaman_Nukeops_helmet"
 	armor = list(melee = 60, bullet = 50, laser = 30, energy = 15, bomb = 35, bio = 100, rad = 50)
+
+		
+/obj/item/device/plasmensuit_changer //Can be used to change the type of plasmaman suit.
+	name = "Plasmaman suit adapter kit"
+	desc = "A device used to recolor and adapt a Plasmaman containment suit to be more suited for the job they are assigned to."
+	icon_state = "modkit"
+	w_class = 2
+	force = 0
+	throwforce = 0
+
+
+
+/obj/item/device/plasmensuit_changer/afterattack(atom/target, mob/user, proximity)
+	if(!proximity || !ishuman(user) || user.lying)
+		return
+	var/mob/living/carbon/human/H = user
+	var/suit=/obj/item/clothing/suit/space/eva/plasmaman
+	var/helm=/obj/item/clothing/head/helmet/space/eva/plasmaman
+	switch(H.mind.assigned_job.uid)
+		if("scientist","roboticist")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/science
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/science
+		if("rd")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/science/rd
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/science/rd
+		if("engineer","mechanic")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/engineer/
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/engineer/
+		if("chief")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/engineer/ce
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/engineer/ce
+		if("atmostech")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/atmostech
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/atmostech
+		if("pilot","judge","brigdoc","warden","detective","officer")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/
+		if("hos")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/hos
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/hos
+		if("captain","nano","blueshield")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/captain
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/captain
+		if("hop")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/hop
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/hop
+		if("doctor")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/medical
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/medical
+		if("paramedic")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/medical/paramedic
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/medical/paramedic
+		if("chemist")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/medical/chemist
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/medical/chemist
+		if("cmo")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/medical/cmo
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/medical/cmo
+		if("chef","bartender")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/service
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/service
+		if("quartermaster","cargotech")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/cargo
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/cargo
+		if("miner")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/miner
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/miner
+		if("botanist")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/botanist
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/botanist
+		if("chaplain")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/chaplain
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/chaplain
+		if("janitor")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/janitor
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/janitor
+		if("civilian","lawyer")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/assistant
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/assistant
+	
+	if(istype(target, /obj/item/clothing/head/helmet/space/eva/plasmaman))
+		H.equip_to_slot(new helm(H), slot_head)		
+		qdel(target)
+		to_chat(H, "<span class='notice'>You use the kit on [target], adapting it to suit your current job.</span>")
+	if (istype(target, /obj/item/clothing/suit/space/eva/plasmaman))
+		H.equip_to_slot(new suit(H), slot_wear_suit)
+		qdel(target)
+		to_chat(H, "<span class='notice'>You use the kit on [target], adapting it to suit your current job.</span>")
+	return
+	to_chat(user, "<span class='warning'>You can't modify [target]!</span>")

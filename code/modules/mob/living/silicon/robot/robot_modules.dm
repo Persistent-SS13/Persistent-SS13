@@ -184,6 +184,7 @@
 	src.modules += new /obj/item/device/flash/cyborg(src)
 	src.modules += new /obj/item/borg/sight/meson(src)
 	src.modules += new /obj/item/weapon/rcd/borg(src)
+	src.modules += new /obj/item/weapon/rpd(src)
 	src.modules += new /obj/item/weapon/extinguisher(src)
 	src.modules += new /obj/item/weapon/weldingtool/largetank/cyborg(src)
 	src.modules += new /obj/item/weapon/screwdriver(src)
@@ -487,6 +488,7 @@
 	src.modules += new /obj/item/weapon/reagent_containers/spray/cleaner/drone(src)
 	src.modules += new /obj/item/weapon/soap(src)
 	src.modules += new /obj/item/device/t_scanner(src)
+	src.modules += new /obj/item/weapon/rpd(src)
 
 	src.emag = new /obj/item/weapon/pickaxe/drill/cyborg/diamond(src)
 

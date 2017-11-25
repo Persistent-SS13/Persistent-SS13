@@ -18,7 +18,7 @@
 /obj/item/weapon/wrench
 	name = "wrench"
 	desc = "A wrench with common uses. Can be found in your hand."
-	icon = 'icons/obj/items.dmi'
+	icon = 'icons/obj/tools.dmi'
 	icon_state = "wrench"
 	flags = CONDUCT
 	slot_flags = SLOT_BELT
@@ -36,7 +36,7 @@
 /obj/item/weapon/screwdriver
 	name = "screwdriver"
 	desc = "You can be totally screwy with this."
-	icon = 'icons/obj/items.dmi'
+	icon = 'icons/obj/tools.dmi'
 	icon_state = "screwdriver"
 	flags = CONDUCT
 	slot_flags = SLOT_BELT
@@ -97,7 +97,7 @@
 /obj/item/weapon/wirecutters
 	name = "wirecutters"
 	desc = "This cuts wires."
-	icon = 'icons/obj/items.dmi'
+	icon = 'icons/obj/tools.dmi'
 	icon_state = "cutters"
 	flags = CONDUCT
 	slot_flags = SLOT_BELT
@@ -137,7 +137,7 @@
  */
 /obj/item/weapon/weldingtool
 	name = "welding tool"
-	icon = 'icons/obj/items.dmi'
+	icon = 'icons/obj/tools.dmi'
 	icon_state = "welder"
 	item_state = "welder"
 	flags = CONDUCT
@@ -182,10 +182,10 @@
 /obj/item/weapon/weldingtool/proc/update_torch()
 	overlays.Cut()
 	if(welding)
+		item_state="[initial(item_state)]1"
 		overlays += "[initial(icon_state)]-on"
-		item_state = "[initial(item_state)]1"
 	else
-		item_state = "[initial(item_state)]"
+		item_state="[initial(item_state)]"
 
 /obj/item/weapon/weldingtool/update_icon()
 	if(change_icons)
@@ -333,6 +333,7 @@
 	if(welding)
 		if(get_fuel() >= 1)
 			to_chat(user, "<span class='notice'>You switch [src] on.</span>")
+			playsound(src.loc, 'sound/items/WelderActivate.ogg', 50, 1)
 			force = 15
 			damtype = "fire"
 			hitsound = 'sound/items/welder.ogg'
@@ -346,6 +347,7 @@
 			to_chat(user, "<span class='notice'>You switch [src] off.</span>")
 		else
 			visible_message("<span class='warning'>[src] shuts off!</span>")
+		playsound(src.loc, 'sound/items/WelderDeactivate.ogg', 50, 1)
 		force = 3
 		damtype = "brute"
 		hitsound = "swing_hit"
@@ -405,11 +407,11 @@
 
 /obj/item/weapon/weldingtool/hugetank
 	name = "Upgraded Welding Tool"
-	desc = "An upgraded welder based of the industrial welder."
+	desc = "An upgraded welder based off the industrial welder."
 	icon_state = "upindwelder"
 	item_state = "upindwelder"
 	max_fuel = 80
-	w_class = 3
+	w_class = 2
 	materials = list(MAT_METAL=70, MAT_GLASS=120)
 	origin_tech = "engineering=3"
 
@@ -417,7 +419,6 @@
 	name = "Experimental Welding Tool"
 	desc = "An experimental welder capable of self-fuel generation and less harmful to the eyes."
 	icon_state = "exwelder"
-	item_state = "exwelder"
 	max_fuel = 40
 	w_class = 3
 	materials = list(MAT_METAL=70, MAT_GLASS=120)
@@ -446,7 +447,7 @@
 /obj/item/weapon/crowbar
 	name = "pocket crowbar"
 	desc = "A small crowbar. This handy tool is useful for lots of things, such as prying floor tiles or opening unpowered doors."
-	icon = 'icons/obj/items.dmi'
+	icon = 'icons/obj/tools.dmi'
 	icon_state = "crowbar"
 	flags = CONDUCT
 	slot_flags = SLOT_BELT
@@ -459,7 +460,6 @@
 	attack_verb = list("attacked", "bashed", "battered", "bludgeoned", "whacked")
 
 /obj/item/weapon/crowbar/red
-	icon = 'icons/obj/items.dmi'
 	icon_state = "red_crowbar"
 	item_state = "crowbar_red"
 

@@ -85,8 +85,8 @@
 	var/max_equip = 3
 	var/datum/events/events
 	var/turf/crashing = null
-
-	var/stepsound = 'sound/mecha/mechturn.ogg'
+	var/turnsound = 'sound/mecha/mechturn.ogg'
+	var/stepsound = 'sound/mecha/mechstep.ogg'
 
 	var/melee_cooldown = 10
 	var/melee_can_hit = 1
@@ -381,8 +381,8 @@
 
 /obj/mecha/proc/mechturn(direction)
 	dir = direction
-	if(stepsound)
-		playsound(src,stepsound,40,1)
+	if(turnsound)
+		playsound(src,turnsound,40,1)
 	return 1
 
 /obj/mecha/proc/mechstep(direction)

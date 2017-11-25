@@ -275,6 +275,14 @@
 	build_path = /obj/item/device/taperecorder/empty
 	category = list("initial", "Miscellaneous")
 
+/datum/design/plasuitcart
+	name = "Autoextinguisher Cartridge"
+	id = "plasuitcart"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 70)
+	build_path = /obj/item/weapon/plasmensuit_cartridge
+	category = list("initial", "Miscellaneous")
+
 /datum/design/tape
 	name = "Tape"
 	id = "tape"
@@ -290,7 +298,7 @@
 	materials = list(MAT_METAL = 500, MAT_GLASS = 50)
 	build_path = /obj/item/device/assembly/voice
 	category = list("initial", "Miscellaneous")
-
+	
 /datum/design/videocam
 	name = "Video Camera"
 	id = "videocam"

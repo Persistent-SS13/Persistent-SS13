@@ -77,6 +77,13 @@
 	set_picture("ai_bsod")
 	..(severity)
 
+/obj/machinery/status_display/attackby(obj/item/weapon/W, mob/user, params)
+	if(istype(W, /obj/item/weapon/wrench))
+		to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]anchored [name].</span>")
+		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+		anchored = !anchored
+		return
+
 // set what is displayed
 /obj/machinery/status_display/proc/update()
 	if(friendc && !ignore_friendc)

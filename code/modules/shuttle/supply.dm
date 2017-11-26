@@ -325,7 +325,7 @@
 			return
 	// send a portion to the cargo budget
 		var/cut = round(object.cost / 3)
-		station_account.charge(cut, department_accounts["Cargo"], "Supply Order", "Cargo Department", 0, "Station Cargo Division")	
+		station_account.charge(cut, department_accounts["Cargo"], "Supply Order", "Cargo Department", 0, "Station Cargo Division")
 	//create the crate
 	var/obj/Crate = new object.containertype(_loc)
 	var/department_str = ""
@@ -338,7 +338,7 @@
 			if(CARGO)
 				department_str = "Cargo"
 				Crate.name = "[object.containername] (Cargo Department)"
-				Crate.req_access += access_cargo 
+				Crate.req_access += access_cargo
 			if(SECURITY)
 				department_str = "Security"
 				Crate.name = "[object.containername] (Security Department)"
@@ -367,7 +367,7 @@
 	slip.erroneous = errors
 	slip.points = object.cost
 	slip.ordernumber = ordernum
-	
+
 	var/stationName = (errors & MANIFEST_ERROR_NAME) ? new_station_name() : station_name()
 	var/packagesAmt = shuttle_master.shoppinglist.len + ((errors & MANIFEST_ERROR_COUNT) ? rand(1,2) : 0)
 
@@ -502,7 +502,7 @@
 		LC.update_icon()
 
 	return Crate
-	
+
 /***************************
     ORDER/REQUESTS CONSOLE
  **************************/
@@ -540,7 +540,7 @@
 /obj/machinery/computer/ordercomp/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null)
 	var/data[0]
 	data["last_viewed_group"] = last_viewed_group
-	
+
 	var/category_list[0]
 	for(var/category in all_supply_lists)
 		category_list.Add(list(list("name" = get_supply_lists_name(category), "category" = category)))
@@ -593,7 +593,7 @@
 		ui = new(user, src, ui_key, "order_console.tmpl", name, ORDER_SCREEN_WIDTH, ORDER_SCREEN_HEIGHT)
 		ui.set_initial_data(data)
 		ui.open()
-		
+
 /obj/machinery/computer/ordercomp/proc/create_invoice(var/datum/mind/user)
 	var/mob/body = user.current
 	if(!content_pack)
@@ -605,7 +605,7 @@
 	recent[user.name] = world.time + 150
 	var/obj/item/device/invoice/invoice = new()
 	invoice.created_for = user
-	invoice.payment_type = 2 // -- 1 = pay immidietley, 2 = pay on delivery (used for when ordering through the cargo shuttle) 
+	invoice.payment_type = 2 // -- 1 = pay immidietley, 2 = pay on delivery (used for when ordering through the cargo shuttle)
 	invoice.cost = content_pack.cost // set through creator
 	invoice.invoice_desc = content_pack.desc // set through creator
 	invoice.title = "NT SUPPLY INVOICE" // set through creater, format -- CENTCOM CARGO DEPARTMENT INVOICE
@@ -638,7 +638,7 @@
 	O.crates = 1
 	O.account = account
 	shuttle_master.shoppinglist += O
-	
+
 	return 1
 
 /obj/machinery/computer/ordercomp/Topic(href, href_list)
@@ -729,10 +729,10 @@
 		if(!pda.id || !pda.id.assigned_mind)
 			to_chat(user, "There is no valid ID in the PDA.")
 			return
-		return create_invoice(pda.id.assigned_mind, 1)	
+		return create_invoice(pda.id.assigned_mind, 1)
 	else
 		..()
-		
+
 /obj/machinery/computer/ordercomp/attackby(obj/W, mob/user, params)
 	if(istype(W, /obj/item/weapon/card/id))
 		if(!content_pack)
@@ -753,10 +753,10 @@
 		if(!pda.id || !pda.id.assigned_mind)
 			to_chat(user, "There is no valid ID in the PDA.")
 			return
-		return create_invoice(pda.id.assigned_mind)	
+		return create_invoice(pda.id.assigned_mind)
 	else
 		..()
-	
+
 /obj/machinery/computer/supplycomp/attack_ai(var/mob/user as mob)
 	return attack_hand(user)
 
@@ -832,13 +832,13 @@
 		message_admins("department account not found: cargo")
 	data["send"] = list("send" = 1)
 	data["message"] = shuttle_master.centcom_message ? shuttle_master.centcom_message : "Remember to stamp and send back the supply manifests."
-		
+
 	data["moving"] = shuttle_master.supply.mode != SHUTTLE_IDLE
 	data["at_station"] = shuttle_master.supply.getDockedId() == "supply_home"
 	data["timeleft"] = shuttle_master.supply.timeLeft(600)
 	data["can_launch"] = !shuttle_master.supply.canMove()
 
-	
+
 	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data)
 	if(!ui)
 		ui = new(user, src, ui_key, "supply_console.tmpl", name, SUPPLY_SCREEN_WIDTH, SUPPLY_SCREEN_HEIGHT)
@@ -874,10 +874,10 @@
 	O.crates = 1
 	O.account = account
 	shuttle_master.shoppinglist += O
-	
+
 	return 1
 
-	
+
 /obj/machinery/computer/supplycomp/proc/create_invoice(var/datum/mind/user, var/swiped = 0)
 	var/mob/body = user.current
 	if(!content_pack)
@@ -901,7 +901,7 @@
 	invoice.loc = loc
 	content_pack = null
 	last_viewed_group = "categories"
-	
+
 /obj/machinery/computer/supplycomp/Topic(href, href_list)
 	if(..())
 		return 1
@@ -921,7 +921,7 @@
 			investigate_log("[key_name(usr)] has sent the supply shuttle away. Remaining points: [shuttle_master.points]. Shuttle contents: [shuttle_master.sold_atoms]", "cargo")
 		else if(!shuttle_master.supply.request(shuttle_master.getDock("supply_home")))
 			post_signal("supply")
-			
+
 	else if(href_list["create_invoice"])
 		if(!content_pack)
 			message_admins("trying to create invoice without content_pack")
@@ -956,7 +956,7 @@
 
 	frequency.post_signal(src, status_signal)
 
-	
+
 // MINI DEPARTMENT SUPPLY COMP
 
 /obj/machinery/computer/minisupplycomp
@@ -993,7 +993,7 @@
 		req_access = list(access_engine)
 	if(istype(A, /area/bridge))
 		linked_department = get_department_datum(COMMAND)
-		req_access = list(access_hop)	
+		req_access = list(access_hop)
 /obj/machinery/computer/minisupplycomp/attack_ai(var/mob/user as mob)
 	return attack_hand(user)
 
@@ -1071,13 +1071,13 @@
 		message_admins("department account not found: [src]")
 	data["send"] = list("send" = 1)
 	data["message"] = shuttle_master.centcom_message ? shuttle_master.centcom_message : "Remember to stamp and send back the supply manifests."
-		
+
 	data["moving"] = shuttle_master.supply.mode != SHUTTLE_IDLE
 	data["at_station"] = shuttle_master.supply.getDockedId() == "supply_home"
 	data["timeleft"] = shuttle_master.supply.timeLeft(600)
 	data["can_launch"] = !shuttle_master.supply.canMove()
 
-	
+
 	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data)
 	if(!ui)
 		ui = new(user, src, ui_key, "mini_supply_console.tmpl", name, SUPPLY_SCREEN_WIDTH, SUPPLY_SCREEN_HEIGHT)
@@ -1113,10 +1113,10 @@
 	O.crates = 1
 	O.account = account
 	shuttle_master.shoppinglist += O
-	
+
 	return 1
 
-	
+
 /obj/machinery/computer/minisupplycomp/proc/create_invoice(var/datum/mind/user, var/swiped = 0)
 	if(!linked_department)
 		return 0
@@ -1142,7 +1142,7 @@
 	invoice.loc = loc
 	content_pack = null
 	last_viewed_group = "categories"
-	
+
 /obj/machinery/computer/minisupplycomp/Topic(href, href_list)
 	if(..())
 		return 1
@@ -1188,17 +1188,17 @@
 
 	frequency.post_signal(src, status_signal)
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
 /**********
     MISC
  **********/
@@ -1227,6 +1227,24 @@
 		/mob/living/simple_animal/bot/mulebot
 		)
 
+/obj/structure/plasticflaps/attackby(var/obj/item/weapon/W as obj, var/mob/user as mob, params)
+	if(istype(W, /obj/item/weapon/wrench))
+		to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]anchored [name].</span>")
+		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+		anchored = !anchored
+		return
+	else if(iswirecutter(W))
+		to_chat(user, "<span class='notice'>You deconstruct [name].")
+		playsound(get_turf(src), 'sound/items/Wirecutter.ogg', 50, 1)
+		new /obj/item/stack/sheet/mineral/plastic(src.loc)
+		new /obj/item/stack/sheet/mineral/plastic(src.loc)
+		new /obj/item/stack/sheet/mineral/plastic(src.loc)
+		new /obj/item/stack/sheet/mineral/plastic(src.loc)
+		new /obj/item/stack/sheet/mineral/plastic(src.loc)
+		qdel(src)
+		return
+	else
+		..()
 /obj/structure/plasticflaps/CanPass(atom/A, turf/T)
 	if(istype(A) && A.checkpass(PASSGLASS))
 		return prob(60)

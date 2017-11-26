@@ -430,6 +430,28 @@
 	if(busy)
 		to_chat(user, "<span class='warning'>Someone's already washing here!</span>")
 		return
+	if(istype(O, /obj/item/weapon/wrench))
+		if(!anchored)
+			switch(input(user, "Select direction.", "Direction", "South") in list( "South", "East", "West"))
+				if("South")
+					dir = 2
+					pixel_x = 0
+					pixel_y = 14
+				if("West")
+					dir = 8
+					pixel_x = -14
+					pixel_y = 0
+				if("East")
+					dir = 4
+					pixel_x = 14
+					pixel_y = 0
+		else
+			pixel_x = 0
+			pixel_y = 0
+		to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]anchored [name].</span>")
+		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+		anchored = !anchored
+		return
 
 	if(!(istype(O)))
 		return

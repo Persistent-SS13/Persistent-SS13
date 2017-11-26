@@ -65,7 +65,6 @@ var/list/ricochet = list('sound/weapons/effects/ric1.ogg', 'sound/weapons/effect
 		S.volume -= max(distance - world.view, 0) * 2 //multiplicative falloff to add on top of natural audio falloff.
 
 		
-		/**
 		//sound volume falloff with pressure
 		var/pressure_factor = 1.0
 		
@@ -84,7 +83,6 @@ var/list/ricochet = list('sound/weapons/effects/ric1.ogg', 'sound/weapons/effect
 			pressure_factor = max(pressure_factor, 0.15)	//hearing through contact
 
 		S.volume *= pressure_factor
-		**/
 		
 		
 		

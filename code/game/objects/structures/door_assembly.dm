@@ -17,6 +17,11 @@ obj/structure/door_assembly
 	New()
 		update_state()
 
+obj/structure/door_assembly/door_assembly_emerg
+	base_icon_state = "emerg"
+	base_name = "Emergency Door"
+	glass = -1
+
 obj/structure/door_assembly/door_assembly_com
 	base_icon_state = "com"
 	base_name = "Command Airlock"
@@ -271,7 +276,12 @@ obj/structure/door_assembly/multi_tile/Move()
 			if(!src) return
 			to_chat(user, "\blue You finish the airlock!")
 			var/path
-			if(istext(glass))
+			if(istype(src, /obj/structure/door_assembly/door_assembly_emerg))
+				var/obj/machinery/door/firedoor/d = new(src.loc)
+				d.dir = dir
+				qdel(src)
+				return
+			else if(istext(glass))
 				path = text2path("/obj/machinery/door/airlock/[glass]")
 			else if(glass == 1)
 				path = text2path("/obj/machinery/door/airlock[glass_type]")

@@ -11,6 +11,9 @@
 		return
 	else if(istype(O,/obj/item/weapon/crowbar))
 		return
+	else if(istype(O, /obj/item/weapon/shovel))
+		qdel(src)
+		return
 	else
 		..()
 

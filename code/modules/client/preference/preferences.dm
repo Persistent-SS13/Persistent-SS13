@@ -1013,9 +1013,6 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 				Hu.equip_or_collect(new /obj/item/weapon/tank/nitrogen(Hu), slot_l_hand)
 			else
 				Hu.equip_or_collect(new /obj/item/weapon/tank/emergency_oxygen/vox(Hu), slot_l_hand)
-			to_chat(Hu, "<span class='notice'>You are now running on nitrogen internals from the [Hu.l_hand] in your hand. Your species finds oxygen toxic, so you must breathe nitrogen only.</span>")
-			Hu.internal = Hu.l_hand
-			Hu.update_internals_hud_icon(1)
 		Hu.equip_or_collect(new /obj/item/device/radio/headset, slot_r_ear)
 		Hu.equip_or_collect(new /obj/item/device/pda, slot_wear_pda)
 		var/obj/item/weapon/implant/crewtracker/implant = new()

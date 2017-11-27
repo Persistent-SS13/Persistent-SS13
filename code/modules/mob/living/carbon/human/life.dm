@@ -15,6 +15,8 @@
 	var/tinttotal = 0				// Total level of visually impairing items
 
 /mob/living/carbon/human/Life()
+	if(disable_process)
+		return
 	fire_alert = 0 //Reset this here, because both breathe() and handle_environment() have a chance to set it.
 	tinttotal = tintcheck() //here as both hud updates and status updates call it
 	life_tick++

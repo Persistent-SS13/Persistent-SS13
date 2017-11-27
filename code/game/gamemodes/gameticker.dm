@@ -700,27 +700,16 @@ var/round_start_time = 0
 	map_storage.Save_Records()
 	sleep(20)
 	var/started = 0
-	if(processScheduler.isRunning)
-		started = 1
-		processScheduler.stop()
 	map_storage.Save_World(the_station_areas)
-	if(started)
-		processScheduler.start()
 	log_startup_progress("	Saved the station in [stop_watch(watch)]s.")
 	return 1
 	
 /datum/controller/gameticker/proc/loadstation()
 	var/watch = start_watch()
 	var/started = 0
-	if(processScheduler.isRunning)
-		started = 1
-		processScheduler.stop()
 	log_startup_progress("Starting station load...")
-	map_storage.Load_World(list(/area/admin/persistent))
-	sleep(5)
 	map_storage.Load_World(the_station_areas)
 	if(started)
-		processScheduler.start()
 	log_startup_progress("	Loaded the station in [stop_watch(watch)]s.")
 	return 1
 	

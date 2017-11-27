@@ -107,7 +107,7 @@
 
 /obj/item/device/mmi/proc/click_action(atom/target, mob/user, params)
 	if(!src.brainmob || src.brainmob != user ) return
-	if(user.stat || !user.canmove)
+	if(user.stat)
 		return
 	if(istype(target, /obj/machinery/id_dispenser))
 		var/obj/machinery/id_dispenser/blam = target

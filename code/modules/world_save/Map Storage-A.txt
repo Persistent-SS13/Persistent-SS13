@@ -609,7 +609,7 @@ map_storage
 			existing_references = list()
 			var/B = replacetext("[A]", "/", "-")
 			if(fexists("map_saves/[B].sav"))
-				var/savefile/sav = new("map_saves/[B].sav")
+				var/savefile/sav = ("map_saves/[B].sav")
 				if(!backup_dir)
 					var/i = 1
 					var/found = 0
@@ -632,12 +632,12 @@ map_storage
 				TICK_CHECK
 		return 1
 	proc/Load_World(list/areas)
-
+		existing_references = list()
+		all_loaded = list()
 		for(var/A in areas)
 			try
 				var/watch = start_watch()
-				existing_references = list()
-				all_loaded = list()
+				
 				var/B = replacetext("[A]", "/", "-")
 				if(!fexists("map_saves/[B].sav"))
 					continue
@@ -657,21 +657,23 @@ map_storage
 							Load_Entry(savefile, turf_ref, old_turf)
 							savefile.cd = "/map/[z]/[y]"
 							TICK_CHECK
-				for(var/i in 1 to all_loaded.len)
-					var/datum/ob = all_loaded[i]
-					ob.after_load()
-					if(istype(ob, /obj))
-						var/obj/obbie = ob
-						if(obbie.load_datums)
-							if(obbie.reagents)
-								obbie.reagents.my_atom = ob
-					if(istype(ob, /turf/simulated))
-						var/turf/simulated/Te = ob
-						//Te.blocks_air = initial(Te.blocks_air)
-						Te.new_air()
+				
+				sleep(1)
 				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
 			catch(var/exception/e)
 				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
+		for(var/i in 1 to all_loaded.len)
+			var/datum/ob = all_loaded[i]
+			ob.after_load()
+			if(istype(ob, /obj))
+				var/obj/obbie = ob
+				if(obbie.load_datums)
+					if(obbie.reagents)
+						obbie.reagents.my_atom = ob
+			if(istype(ob, /turf/simulated))
+				var/turf/simulated/Te = ob
+				//Te.blocks_air = initial(Te.blocks_air)
+				Te.new_air()
 // Loading a file is pretty straightforward - you specify the savefile to load from
 // (make sure its an actual savefile, not just a file name), and if necessary you
 // include the savefile's password as an argument. This will automatically check to

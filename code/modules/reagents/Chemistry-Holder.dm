@@ -12,7 +12,7 @@ var/const/INGEST = 2
 	var/atom/my_atom = null
 	var/chem_temp = 300
 	var/list/datum/reagent/addiction_list = new/list()
-	map_storage_saved_vars = "reagent_list;total_volume;chem_temp;maximum_volume"
+	map_storage_saved_vars = "reagent_list;total_volume;chem_temp;maximum_volume;my_atom"
 /datum/reagents/after_load()
 	for(var/datum/reagent/x in reagent_list)
 		x.holder = src
@@ -234,6 +234,9 @@ var/const/INGEST = 2
 	update_total()
 
 /datum/reagents/proc/handle_reactions()
+	if(!my_atom)
+		qdel(src)
+		return 0
 	if(my_atom.flags & NOREACT)
 		return //Yup, no reactions here. No siree.
 

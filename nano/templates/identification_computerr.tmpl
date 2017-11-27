@@ -26,7 +26,14 @@
         Account:
       </div>
       <div class='itemContent'>
-        {{:helper.link(data.search_name, '', {'choice' : 'search'})}} or {{:helper.link('Scan from card', '', {'choice' : 'search_card'})}} {{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
+        {{:helper.link(data.search_name, '', {'choice' : 'search'})}
+		{{if data.has_modify == 1}}
+			{{:helper.link('Scan from card', '', {'choice' : 'search_card'})}}
+		{{/if}}
+		{{if data.has_modify != 1}}
+			{{:helper.link('Scan from card', '', {'choice' : 'search_card_invalid'}, 'disabled')}}
+		{{/if}}
+		{{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
       </div>
     </div>
     <div class='item'>
@@ -80,19 +87,16 @@
 			<div class='item'>
 			  <h2>Details</h2>
 			</div>
-			<table><tr><td>
-				<form name='cardcomp' action='?src={{:data.src}}' method='get'>
-				  <div class='item'>
-					<div class='itemLabel'>
-					  <input type='hidden' name='src' value='{{:data.src}}'>
-					  <input type='hidden' name='choice' value='reg'>
-					  Registered Name: '{{:data.target_owner}}'
-					</div>
+			<form name='cardcomp' action='?src={{:data.src}}' method='get'>
+			  <div class='item'>
+				<div class='itemLabel'>
+				  <input type='hidden' name='src' value='{{:data.src}}'>
+				  <input type='hidden' name='choice' value='reg'>
+				  Registered Name: '{{:data.target_owner}}' <img src={{:data.photo}} height=64 width=64 border=5>
+				</div>
 
-				  </div>
-				</form>
-			</td><td align = center valign = top>
-			<br><img src='{{:data.photo}}' height=64 width=64 border=5></td></tr></table>
+			  </div>
+			</form>			
 			<div class='item'>
 			  <h2>Function</h2>
 			</div>

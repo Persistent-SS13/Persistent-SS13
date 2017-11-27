@@ -5,6 +5,7 @@ var/list/admin_verbs_default = list(
 	/client/proc/cmd_mentor_check_new_players
 	)
 var/list/admin_verbs_admin = list(
+	/datum/admins/proc/view_requests,
 	/client/proc/check_antagonists,		/*shows all antags*/
 	/datum/admins/proc/show_player_panel,
 	/client/proc/player_panel,			/*shows an interface for all players, with links to various panels (old style)*/

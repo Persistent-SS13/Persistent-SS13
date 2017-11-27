@@ -23,10 +23,23 @@
 
     <div class='item'>
       <div class='itemLabel'>
-        Target Identity:
+        Account:
       </div>
       <div class='itemContent'>
-        {{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
+        {{:helper.link(data.search_name, '', {'choice' : 'search'})}}
+		{{if data.has_modify == 1}}
+			{{:helper.link('Scan from card', '', {'choice' : 'search_card'})}}
+		{{/if}}
+		{{if data.has_modify != 1}}
+			{{:helper.link('Scan from card', '', {'choice' : 'search_card_invalid'}, 'disabled')}}
+		{{/if}}
+		{{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
+		{{if data.has_record == 1}}
+			{{:helper.link('Logout', '', {'choice' : 'record_logout'})}}
+		{{/if}}
+		{{if data.has_record != 1}}
+			{{:helper.link('Logout', '', {'choice' : 'record_logout'}, 'disabled')}}
+		{{/if}}
       </div>
     </div>
     <div class='item'>
@@ -75,35 +88,33 @@
 		<span class='exclamation-triangle'><i>You cannot edit a Command ID</i></span><br>
 	  
 	  
-	  {{else data.has_modify}}	
-		  {{if data.has_modify}}
+	  {{else data.has_record}}	
+		  {{if data.has_record}}
 			<div class='item'>
 			  <h2>Details</h2>
 			</div>
-
 			<form name='cardcomp' action='?src={{:data.src}}' method='get'>
 			  <div class='item'>
 				<div class='itemLabel'>
 				  <input type='hidden' name='src' value='{{:data.src}}'>
 				  <input type='hidden' name='choice' value='reg'>
-				  Registered Name: '{{:data.target_owner}}'
+				  Registered Name: '{{:data.search_name}}'
+				  <br>
+				  <img src={{:data.photo}} height=128 width=128 border=5>
 				</div>
 
 			  </div>
-			</form>
-
-			
+			</form>			
 			<div class='item'>
 			  <h2>Function</h2>
 			</div>
 			
 			<div class='item'>
-				{{:helper.link('None', '', {'choice' : 'function', 'func_choice' : 0}, null,(data.current_function == 0) ? 'selected' : null )}}
 				{{:helper.link('Change Department', '', {'choice' : 'function', 'func_choice' : 1}, null,(data.current_function == 1) ? 'selected' : null )}}
 				{{:helper.link('Change Primary Assignment', '', {'choice' : 'function', 'func_choice' : 2}, null,(data.current_function == 2) ? 'selected' : null )}}
-				{{:helper.link('Award Promotion', '', {'choice' : 'function', 'func_choice' : 3}, null,(data.current_function == 3) ? 'selected' : null )}}
-				{{:helper.link('Award New Certification', '', {'choice' : 'function', 'func_choice' : 4}, null,(data.current_function == 4) ? 'selected' : null )}}
-				{{:helper.link('Demote', '', {'choice' : 'function', 'func_choice' : 5}, null,(data.current_function == 5) ? 'selected' : null )}}
+				{{:helper.link('Request Promotion', '', {'choice' : 'function', 'func_choice' : 3}, null,(data.current_function == 3) ? 'selected' : null )}}
+				{{:helper.link('Request New Certification', '', {'choice' : 'function', 'func_choice' : 4}, null,(data.current_function == 4) ? 'selected' : null )}}
+				{{:helper.link('Request Demotion', '', {'choice' : 'function', 'func_choice' : 5}, null,(data.current_function == 5) ? 'selected' : null )}}
 				{{:helper.link('Request Removal of Certification', '', {'choice' : 'function', 'func_choice' : 6}, null,(data.current_function == 6) ? 'selected' : null )}}
 			</div>
 			<hr>
@@ -119,8 +130,6 @@
 					{{:helper.link('Science', '', {'choice' : 'department', 'dept_choice' : 5}, null,(data.current_dept == 5) ? 'selected' : null )}}
 					{{:helper.link('Civilian', '', {'choice' : 'department', 'dept_choice' : 0}, null,(data.current_dept == 0) ? 'selected' : null )}}
 				</div>	
-	
-				
 			{{/if}}
 			{{if data.current_function == 2}}
 				<div class='item'>
@@ -137,7 +146,7 @@
 			{{/if}}
 			{{if data.current_function == 3}}
 				<div class='item'>
-				  <h2>Award Promotion</h2>
+				  <h2>Request Promotion</h2>
 				</div>
 				<div class='item'>
 					{{for data.promotions}}
@@ -149,24 +158,36 @@
 						{{/if}}
 					{{/for}}
 				</div>				
-			
+				<hr>
+				<h3>Included Documents (Insert Documents Now):</h3>
+				{{for data.documents}}
+					<br>
+					{{:helper.link(value.title, '', {'choice' : 'eject_document', 'assign_target' : value.ind}, null)}}
+				{{/for}}
+				
 			
 			{{/if}}
 			{{if data.current_function == 4}}
 			
 				<div class='item'>
-				  <h2>Award New Certification</h2>
+				  <h2>Request New Certification</h2>
 				</div>
 				<div class='item'>
 					{{for data.department_jobs}}				
 						{{:helper.link(value.title, '', {'choice' : 'add_cert', 'assign_target' : value.title}, value.has_cert == 1 ? 'selected' : null)}}	
 					{{/for}}
 				</div>	
+				<hr>
+				<h3>Included Documents (Insert Documents Now):</h3>
+				{{for data.documents}}
+					<br>
+					{{:helper.link(value.title, '', {'choice' : 'eject_document', 'assign_target' : value.ind}, null)}}
+				{{/for}}
 			{{/if}}
 			{{if data.current_function == 5}}
 			
 				<div class='item'>
-				  <h2>Demote</h2>
+				  <h2>Request Demotion</h2>
 				</div>
 				<div class='item'>
 					{{for data.demotions}}
@@ -177,17 +198,29 @@
 							{{:helper.link(value.name, '', {'choice' : 'assign_unavailable', 'assign_target' : value.name}, value.is_same == 1 ? 'selected' : 'disabled')}}
 						{{/if}}
 					{{/for}}
-				</div>	
+				</div>
+				<hr>
+				<h3>Included Documents (Insert Documents Now):</h3>
+				{{for data.documents}}
+					<br><br>
+					{{:helper.link(value.title, '', {'choice' : 'eject_document', 'assign_target' : value.ind}, null)}}
+				{{/for}}
 			{{/if}}
 			{{if data.current_function == 6}}
 				<div class='item'>
-				  <h2>Request removal of Certification</h2>
+				  <h2>Request Removal of Certification</h2>
 				</div>
 				<div class='item'>
 					{{for data.department_jobs}}
 						{{:helper.link(value.title, '', {'choice' : 'ask_remove', 'assign_target' : value.title}, value.has_cert == 1 ? null : 'disabled')}}
 					{{/for}}
 				</div>	
+				<hr>
+				<h3>Included Documents (Insert Documents Now):</h3>
+				{{for data.documents}}
+					<br>
+					{{:helper.link(value.title, '', {'choice' : 'eject_document', 'assign_target' : value.ind}, null)}}
+				{{/for}}
 			{{/if}}
 		  {{/if}}
 	   {{/if}}

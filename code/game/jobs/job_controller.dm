@@ -491,7 +491,6 @@ var/global/datum/controller/occupations/job_master
 		var/datum/cert/job = GetCert(rank)
 		if(!job)
 			message_admins("JOB NOT FOUND! rank:[rank]")
-		H.mind.assigned_job = job
 		H.job = rank
 		var/list/ranks = get_standard_departments()
 		if(!H.mind.ranks)

@@ -24,7 +24,61 @@
 	if(foundrecord)
 		foundrecord.fields["rank"] = assignment
 		foundrecord.fields["real_rank"] = real_title
-
+		
+/obj/effect/datacore/proc/get_mind(var/datum/data/record/G)
+	for(var/datum/mind/mind in ticker.minds)
+		if(mind.name == G.fields["name"])
+			return mind
+/obj/effect/datacore/proc/check_changes(var/datum/mind/mind)
+	var/cert_changed = 0
+	var/rank_changed = 0
+	
+	var/datum/data/record/G = gen_byname[mind.name]
+	if(!G)
+		message_admins("No general record found for [mind.name] check_changes")
+		return
+	if(mind.primary_cert.uid != G.fields["cert_uid"])
+		var/datum/cert/job
+		if (job_master)
+			job = job_master.GetCert(G.fields["cert_uid"])
+		else
+		if(job)
+			if(mind.primary_cert == mind.assigned_job)
+				mind.assigned_job = job
+				mind.primary_cert = job
+				var/obj/item/weapon/card/id/modify = mind.spawned_id
+				if(modify)
+					modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(modify.assigned_mind.assigned_job.department_flag)], modify.assigned_mind.assigned_job)
+					modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
+				change_certification(mind, job)
+			mind.primary_cert = job
+			
+	var/list/record_ranks = G.fields["rank_list"]
+	for(var/i in record_ranks)
+		if(i == to_strings(mind.primary_cert.department_flag))
+			message_admins("check_changes, i == department_flag")
+			var/curr_rank = text2num(record_ranks[i])
+			if(curr_rank > mind.ranks[i])
+				spawn(50)
+					var/obj/item/weapon/card/id/modify = mind.spawned_id
+					if(mind.primary_cert == mind.assigned_job)
+						if(modify)
+							modify.assignment = get_default_title(record_ranks[to_strings(modify.assigned_mind.primary_cert.department_flag)], modify.assigned_mind.primary_cert)
+							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
+					notify_promotion(mind, mind.primary_cert, record_ranks[i])
+	
+			if(curr_rank < mind.ranks[i])
+				spawn(50)
+					var/obj/item/weapon/card/id/modify = mind.spawned_id
+					if(modify)
+						modify.assignment = get_default_title(record_ranks[to_strings(modify.assigned_mind.primary_cert.department_flag)], modify.assigned_mind.primary_cert)
+						modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
+					notify_demotion(mind, mind.primary_cert, record_ranks[i])
+		else
+			message_admins("check_changes i does not equal department [i] [to_strings(mind.primary_cert.department_flag)]")
+	mind.ranks = G.fields["rank_list"]
+	mind.certs = G.fields["certs"]
+	
 /obj/effect/datacore/proc/manifest_inject(var/mob/living/carbon/human/H)
 	if(PDA_Manifest.len)
 		PDA_Manifest.Cut()
@@ -46,6 +100,15 @@
 		if(genrec)
 			general += genrec
 			gen_byname[H.real_name] = genrec
+			if(!genrec.fields["rank_list"])
+				genrec.fields["rank_list"] = H.mind.ranks
+			if(!genrec.fields["cert_uid"])
+				genrec.fields["cert_uid"] = H.mind.primary_cert.uid
+			if(!genrec.fields["certs"])
+				genrec.fields["certs"] = H.mind.certs
+			else if(istype(genrec.fields["cert_uid"], /list))
+				genrec.fields["cert_uid"] = H.mind.primary_cert.uid
+			check_changes(H.mind)
 		if(!genrec)
 			//General Record
 			var/datum/data/record/G = new()
@@ -53,9 +116,13 @@
 			G.fields["name"]		= H.real_name
 			if(H.mind.assigned_job)
 				G.fields["real_rank"]	= H.mind.assigned_job.title
+				G.fields["cert_uid"]	= H.mind.assigned_job.uid
 			else
 				G.fields["real_rank"] = "Unassigned (Contact NT)"
+				G.fields["cert_uid"] = "Unassigned (Contact NT)"
 			G.fields["rank"]		= assignment
+			G.fields["rank_list"] = H.mind.ranks
+			G.fields["certs"] = H.mind.certs
 			G.fields["age"]			= H.age
 			G.fields["fingerprint"]	= md5(H.dna.uni_identity)
 			G.fields["p_stat"]		= "Active"

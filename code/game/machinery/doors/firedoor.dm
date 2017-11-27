@@ -2,7 +2,7 @@
 /var/const/CLOSED = 2
 
 /obj/machinery/door/firedoor
-	name = "Firelock"
+	name = "Emergency Door"
 	desc = "Apply crowbar"
 	icon = 'icons/obj/doors/Doorfireglass.dmi'
 	icon_state = "door_open"
@@ -77,6 +77,16 @@
 			"You hear something being welded.")
 			update_icon()
 			return
+	if(blocked)
+		if(istype(C, /obj/item/weapon/screwdriver))
+			var/obj/structure/door_assembly/door_assembly_emerg/d = new(src.loc)
+			d.state = 2
+			d.dir = dir
+			d.anchored = 1
+			d.update_state()
+			qdel(src)
+			return
+
 
 	if(blocked)
 		to_chat(user, "\red \The [src] is welded solid!")
@@ -213,8 +223,10 @@
 	switch(animation)
 		if("opening")
 			flick("door_opening", src)
+			playsound(src, 'sound/machines/airlock_ext_open.ogg', 30, 1)
 		if("closing")
 			flick("door_closing", src)
+			playsound(src, 'sound/machines/airlock_ext_close.ogg', 30, 1)
 	return
 
 /obj/machinery/door/firedoor/update_icon()

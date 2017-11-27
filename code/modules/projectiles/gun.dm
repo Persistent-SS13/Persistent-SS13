@@ -60,7 +60,7 @@
 	var/zoomed = FALSE //Zoom toggle
 	var/zoom_amt = 3 //Distance in TURFs to move the user's screen forward (the "zoom" effect)
 	var/datum/action/toggle_scope_zoom/azoom
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;chambered"
 /obj/item/weapon/gun/New()
 	..()
 	if(F)

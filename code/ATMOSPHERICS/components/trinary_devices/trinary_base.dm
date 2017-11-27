@@ -18,6 +18,28 @@
 	var/datum/pipeline/parent3
 
 	var/flipped = 0
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;initialize_directions;flipped"
+/obj/machinery/atmospherics/trinary/after_load()
+	if(!flipped)
+		switch(dir)
+			if(NORTH)
+				initialize_directions = EAST|NORTH|SOUTH
+			if(SOUTH)
+				initialize_directions = SOUTH|WEST|NORTH
+			if(EAST)
+				initialize_directions = EAST|WEST|SOUTH
+			if(WEST)
+				initialize_directions = WEST|NORTH|EAST
+	else
+		switch(dir)
+			if(NORTH)
+				initialize_directions = SOUTH|NORTH|WEST
+			if(SOUTH)
+				initialize_directions = NORTH|SOUTH|EAST
+			if(EAST)
+				initialize_directions = WEST|EAST|NORTH
+			if(WEST)
+				initialize_directions = EAST|WEST|SOUTH
 
 /obj/machinery/atmospherics/trinary/New()
 	..()

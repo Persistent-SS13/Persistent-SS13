@@ -107,7 +107,7 @@ map_storage
 		list/all_loaded = list()
 		list/datum_reference = list()
 		list/dtm_references = list()
-		
+
 	New(game_id, backdoor, ignore)
 		..()
 		if(game_id)
@@ -117,7 +117,7 @@ map_storage
 		if(ignore)
 			src.ignore_types = ignore
 		return
-	
+
 
 	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0, var/species_override = 0)
 		TICK_CHECK
@@ -133,7 +133,6 @@ map_storage
 		var/type = savefile["type"]
 		var/atom/movable/object
 		if(!type)
-			message_admins("no type found! ind: [ind] starting_loc: [starting_loc] ")
 			return
 		if(old_turf)
 		//	old_turf.blocks_air = 1
@@ -165,7 +164,7 @@ map_storage
 						var/datum/species/S = Load_Entry(savefile, x)
 						savefile.cd = "/entries/[ind]"
 						hum.set_species(S.name)
-			
+
 		for(var/v in savefile.dir)
 			savefile.cd = "/entries/[ind]"
 			if(v == "type")
@@ -215,7 +214,7 @@ map_storage
 				object.vars[v] = list()
 			else
 				savefile.cd = "/entries/[ind]"
-				object.vars[v] = Numeric(savefile[v])
+				object.vars[v] = savefile[v]
 			savefile.cd = "/entries/[ind]"
 			TICK_CHECK
 		savefile.cd = ".."
@@ -247,7 +246,7 @@ map_storage
 			var/final_params = list2params(content_refs)
 			savefile.cd = "/entries/[ref]"
 			savefile["content"] = final_params
-		
+
 		// Add any variables changed and their associated values to a list called changed_vars.
 		var/list/changed_vars = list()
 		var/list/changing_vars = params2list(A.map_storage_saved_vars)
@@ -266,14 +265,14 @@ map_storage
 					if(!conparams)
 						continue
 					savefile.cd = "/entries/[ref]"
-					savefile["[v]"] = "**entry[conparams]"  
+					savefile["[v]"] = "**entry[conparams]"
 				else if(istype(A.vars[v], /datum))
 					var/atom/movable/varob = A.vars[v]
 					var/conparams = BuildVarDirectory(savefile, varob, 1)
 					if(!conparams)
 						continue
 					savefile.cd = "/entries/[ref]"
-					savefile["[v]"] = "**entry[conparams]"  
+					savefile["[v]"] = "**entry[conparams]"
 				else if(istype(A.vars[v], /list))
 					if(safe_lists.Find(v))
 						savefile["[v]"] << A.vars[v]
@@ -305,7 +304,7 @@ map_storage
 					savefile["[v]"] = A.vars[v]
 		savefile.cd = ".."
 		return ref
-			
+
 
 
 // Returns true if the value is purely numeric, return false if there are non-numeric
@@ -358,7 +357,7 @@ map_storage
 		else if(Firstbod)
 			ckey = C.ckey
 			current = Firstbod
-			
+
 		if(findtext(ckey, "@"))
 			var/list/nums = string_explode(ckey, "@")
 			ckey = nums[2]
@@ -395,14 +394,13 @@ map_storage
 			message_admins("FILE Found [front_dir]/[search].sav !")
 			var/savefile/savefile = new("[front_dir]/[search].sav")
 			var/recind = savefile["record"]
-			message_admins("Recind : [recind]")
 			var/datum/data/record/G = Load_Entry(savefile, 1)
 			return G
 		else
 			message_admins("FILE DID NOT EXIST [front_dir]/[search].sav !")
 			return 0
 	proc/Save_Records()
-		
+
 		for(var/datum/data/record/G in data_core.general)
 			saving_references = list()
 			existing_references = list()
@@ -469,7 +467,7 @@ map_storage
 				var/turf/simulated/Te = ob
 				//Te.blocks_air = initial(Te.blocks_air)
 				Te.new_air()
-				
+
 		if(transfer)
 			M.transfer_to(mob)
 		if(loc)
@@ -477,7 +475,7 @@ map_storage
 			return loc
 		else
 			return mob
-		
+
 	proc/Load_Char_Fast(var/ckey, var/slot, var/datum/mind/M, var/transfer = 0, var/announce = 0)
 		if(!ckey)
 			message_admins("Load_Char without ckey")
@@ -496,6 +494,7 @@ map_storage
 		savefile.cd = "/entries/[bodyind]"
 		var/type = savefile["type"]
 		var/mob/object = new type()
+		var/obj/old_brain
 		object.deleting = 1
 		var/atom/movable/object2
 		if(locind != "0" && locind != 0)
@@ -503,6 +502,10 @@ map_storage
 			type = savefile["type"]
 			object2 = new type()
 		spawn(0)
+			if(istype(object, /mob/living/carbon/human))
+				var/mob/living/carbon/human/organ_donor = object
+				for(var/obj/x in organ_donor.internal_organs)
+					old_brain = x
 			var/loc = null
 			TICK_CHECK
 			if(locind != "0" && locind != 0)
@@ -528,7 +531,13 @@ map_storage
 					var/turf/simulated/Te = ob
 					//Te.blocks_air = initial(Te.blocks_air)
 					Te.new_air()
-					
+			message_admins("Char loaded!!! [all_loaded.len] instances")
+			if(!mind.initial_account)
+				message_admins("OMG! CHAR LOADED WITHOUT ACCOUNT!! [mob.real_name]")
+				mind.initial_account = create_account(mob.real_name, 500)
+			if(!mind.primary_cert)
+				message_admins("OMG! CHAR LOADED WITHOUT PRIMARY CERT! [mob.real_name]")
+				mind.primary_cert = job_master.GetCert("intern")
 			if(transfer)
 				M.transfer_to(mob)
 			if(loc)
@@ -546,6 +555,7 @@ map_storage
 				spawn(10)
 					var/join_message = "has arrived on the station"
 					AnnounceArrival(mob, rank, join_message)
+
 		if(object2)
 			return object2
 		else
@@ -573,7 +583,7 @@ map_storage
 					message_admins("[turf] failed to return a ref!")
 				savefile.cd = "/map/[turf.z]/[turf.y]"
 				savefile["[turf.x]"] = ref
-				
+
 		return 1
 	proc/Save_World(list/areas)
 		// ***** MAP SECTION *****
@@ -593,45 +603,47 @@ map_storage
 				TICK_CHECK
 		return 1
 	proc/Load_World(list/areas)
-		
+
 		for(var/A in areas)
-			var/watch = start_watch()
-			existing_references = list()
-			all_loaded = list()
-			var/B = replacetext("[A]", "/", "-")
-			if(!fexists("map_saves/[B].sav"))
-				continue
-			var/savefile/savefile = new("map_saves/[B].sav")
-			savefile.cd = "/map"
-			TICK_CHECK
-			for(var/z in savefile.dir)
-				savefile.cd = "/map/[z]"
-				for(var/y in savefile.dir)
-					savefile.cd = "/map/[z]/[y]"
-					for(var/x in savefile.dir)
-						var/turf_ref = savefile["[x]"]
-						if(!turf_ref)
-							message_admins("turf_ref not found, x: [x]")
-							continue
-						var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
-						Load_Entry(savefile, turf_ref, old_turf)
+			try
+				var/watch = start_watch()
+				existing_references = list()
+				all_loaded = list()
+				var/B = replacetext("[A]", "/", "-")
+				if(!fexists("map_saves/[B].sav"))
+					continue
+				var/savefile/savefile = new("map_saves/[B].sav")
+				savefile.cd = "/map"
+				TICK_CHECK
+				for(var/z in savefile.dir)
+					savefile.cd = "/map/[z]"
+					for(var/y in savefile.dir)
 						savefile.cd = "/map/[z]/[y]"
-						TICK_CHECK
-			for(var/i in 1 to all_loaded.len)
-				var/datum/ob = all_loaded[i]
-				ob.after_load()
-				if(istype(ob, /obj))
-					var/obj/obbie = ob
-					if(obbie.load_datums)
-						if(obbie.reagents)
-							obbie.reagents.my_atom = ob
-				if(istype(ob, /turf/simulated))
-					var/turf/simulated/Te = ob
-					//Te.blocks_air = initial(Te.blocks_air)
-					Te.new_air()
-			sleep(1)
-			log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
-			
+						for(var/x in savefile.dir)
+							var/turf_ref = savefile["[x]"]
+							if(!turf_ref)
+								message_admins("turf_ref not found, x: [x]")
+								continue
+							var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
+							Load_Entry(savefile, turf_ref, old_turf)
+							savefile.cd = "/map/[z]/[y]"
+							TICK_CHECK
+				for(var/i in 1 to all_loaded.len)
+					var/datum/ob = all_loaded[i]
+					ob.after_load()
+					if(istype(ob, /obj))
+						var/obj/obbie = ob
+						if(obbie.load_datums)
+							if(obbie.reagents)
+								obbie.reagents.my_atom = ob
+					if(istype(ob, /turf/simulated))
+						var/turf/simulated/Te = ob
+						//Te.blocks_air = initial(Te.blocks_air)
+						Te.new_air()
+				sleep(1)
+				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
+			catch(var/exception/e)
+				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
 // Loading a file is pretty straightforward - you specify the savefile to load from
 // (make sure its an actual savefile, not just a file name), and if necessary you
 // include the savefile's password as an argument. This will automatically check to

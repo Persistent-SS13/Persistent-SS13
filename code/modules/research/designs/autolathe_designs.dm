@@ -275,6 +275,14 @@
 	build_path = /obj/item/device/taperecorder/empty
 	category = list("initial", "Miscellaneous")
 
+/datum/design/plasuitcart
+	name = "Autoextinguisher Cartridge"
+	id = "plasuitcart"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 70)
+	build_path = /obj/item/weapon/plasmensuit_cartridge
+	category = list("initial", "Miscellaneous")
+
 /datum/design/tape
 	name = "Tape"
 	id = "tape"
@@ -290,7 +298,7 @@
 	materials = list(MAT_METAL = 500, MAT_GLASS = 50)
 	build_path = /obj/item/device/assembly/voice
 	category = list("initial", "Miscellaneous")
-
+	
 /datum/design/videocam
 	name = "Video Camera"
 	id = "videocam"
@@ -654,6 +662,13 @@
 	build_type = AUTOLATHE
 	materials = list(MAT_METAL = 30000)
 	build_path = /obj/item/weapon/rcd
+	category = list("hacked", "Construction")
+/datum/design/rpd
+	name = "Rapid Pipe Dispenser (RPD)"
+	id = "rpd"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 75000, MAT_GLASS = 37500)
+	build_path = /obj/item/weapon/rpd
 	category = list("hacked", "Construction")
 
 /datum/design/shotgun_dart

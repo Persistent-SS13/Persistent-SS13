@@ -100,12 +100,6 @@
 
 	name = "[initial(name)]"
 	var/brain_already_exists = 0
-	if(istype(target,/mob/living/carbon/human)) // No more IPC multibrain shenanigans
-		if(target.get_int_organ(/obj/item/organ/internal/brain))
-			brain_already_exists = 1
-
-		var/mob/living/carbon/human/H = target
-		H.update_hair(1)
 
 	if(!brain_already_exists)
 		if(brainmob)
@@ -152,6 +146,7 @@
 	icon_state = "scroll"
 
 /obj/item/organ/internal/brain/Destroy() //copypasted from MMIs.
+	/**
 	if(istype(loc, /obj))
 		var/obj/parent = loc
 		if(parent.deleting)
@@ -169,6 +164,7 @@
 			else
 				loc = parent.loc
 			return Destroy()
+	**/
 	if(brainmob && brainmob.mind && brainmob.mind.active)
 		return QDEL_HINT_LETMELIVE
 	else

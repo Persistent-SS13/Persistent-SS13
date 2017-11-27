@@ -87,6 +87,12 @@
 	typepath = /obj/item/toy/katana
 	cost = 500
 
+/datum/storeitem/plasmensuit_changer
+	desc = "A device used to alter plasmamen suits."
+	name = "Plasmaman suit adapter kit"
+	typepath =/obj/item/device/plasmensuit_changer
+	cost = 500
+
 /datum/storeitem/violin
 	name = "space violin"
 	desc = "A wooden musical instrument with four strings and a bow. \"The devil went down to space, he was looking for an assistant to grief.\""

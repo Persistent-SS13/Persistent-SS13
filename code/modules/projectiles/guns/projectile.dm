@@ -8,7 +8,7 @@
 
 	var/mag_type = /obj/item/ammo_box/magazine/m10mm //Removes the need for max_ammo and caliber info
 	var/obj/item/ammo_box/magazine/magazine
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;chambered;magazine"
 /obj/item/weapon/gun/projectile/New()
 	..()
 	if(!magazine)

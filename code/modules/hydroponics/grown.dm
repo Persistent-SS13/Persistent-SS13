@@ -11,7 +11,54 @@
 	var/potency = -1
 	var/awakening = 0
 	burn_state = FLAMMABLE
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;volume;potency;awakening;plantname" 
+/obj/item/weapon/reagent_containers/food/snacks/grown/after_load()
+	if(!dried_type)
+		dried_type = type
+	src.pixel_x = rand(-5.0, 5)
+	src.pixel_y = rand(-5.0, 5)
 
+	// Fill the object up with the appropriate reagents.
+
+	if(!plantname)
+		return
+
+	if(!plant_controller)
+		sleep(250) // ugly hack, should mean roundstart plants are fine.
+	if(!plant_controller)
+		to_chat(world, "<span class='danger'>Plant controller does not exist and [src] requires it. Aborting.</span>")
+		qdel(src)
+		return
+
+	seed = plant_controller.seeds[plantname]
+
+	if(!seed)
+		return
+
+	name = "[seed.seed_name]"
+
+	if(seed.modular_icon == 1)
+		update_icon()
+	else
+		icon = 'icons/obj/harvest.dmi'
+		icon_state = seed.preset_icon
+
+	if(!seed.chems)
+		return
+
+	potency = seed.get_trait(TRAIT_POTENCY)
+
+	for(var/rid in seed.chems)
+		var/list/reagent_data = seed.chems[rid]
+		if(reagent_data && reagent_data.len)
+			var/rtotal = reagent_data[1]
+			if(reagent_data.len > 1 && potency > 0)
+				rtotal += round(potency/reagent_data[2])
+			reagents.add_reagent(rid,max(1,rtotal))
+	update_desc()
+	update_trash()
+	if(reagents.total_volume > 0)
+		bitesize = 1+round(reagents.total_volume / 2, 1)
 /obj/item/weapon/reagent_containers/food/snacks/grown/New(newloc,planttype)
 
 	..()
@@ -186,6 +233,7 @@
 			M.stop_pulling()
 			to_chat(M, "<span class='notice'>You slipped on the [name]!</span>")
 			playsound(src.loc, 'sound/misc/slip.ogg', 50, 1, -3)
+			M.fall(1)
 			M.Stun(8)
 			M.Weaken(5)
 			seed.thrown_at(src,M)

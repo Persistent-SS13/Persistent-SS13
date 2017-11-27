@@ -1004,6 +1004,18 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 			Hu.equip_or_collect(new/obj/item/weapon/tank/plasma/plasmaman(Hu), tank_slot) // Bigger plasma tank from Raggy.
 			Hu.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(Hu), slot_in_backpack)
 			Hu.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(Hu), slot_in_backpack)
+		if (species=="Vox")
+			Hu.unEquip(Hu.wear_mask)
+			Hu.unEquip(Hu.l_hand)
+			Hu.equip_or_collect(new /obj/item/clothing/mask/breath/vox(Hu), slot_wear_mask)
+			var/tank_pref = Hu.client.prefs.speciesprefs
+			if(tank_pref)//Diseasel, here you go
+				Hu.equip_or_collect(new /obj/item/weapon/tank/nitrogen(Hu), slot_l_hand)
+			else
+				Hu.equip_or_collect(new /obj/item/weapon/tank/emergency_oxygen/vox(Hu), slot_l_hand)
+			to_chat(Hu, "<span class='notice'>You are now running on nitrogen internals from the [Hu.l_hand] in your hand. Your species finds oxygen toxic, so you must breathe nitrogen only.</span>")
+			Hu.internal = Hu.l_hand
+			Hu.update_internals_hud_icon(1)
 		Hu.equip_or_collect(new /obj/item/device/radio/headset, slot_r_ear)
 		Hu.equip_or_collect(new /obj/item/device/pda, slot_wear_pda)
 		var/obj/item/weapon/implant/crewtracker/implant = new()

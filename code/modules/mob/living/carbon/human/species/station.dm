@@ -342,16 +342,6 @@
 	return capitalize(newname)
 
 /datum/species/vox/equip(var/mob/living/carbon/human/H)
-	if(H.mind.assigned_role != "Clown" && H.mind.assigned_role != "Mime")
-		H.unEquip(H.wear_mask)
-	H.unEquip(H.l_hand)
-
-	H.equip_or_collect(new /obj/item/clothing/mask/breath/vox(H), slot_wear_mask)
-	var/tank_pref = H.client.prefs.speciesprefs
-	if(tank_pref)//Diseasel, here you go
-		H.equip_or_collect(new /obj/item/weapon/tank/nitrogen(H), slot_l_hand)
-	else
-		H.equip_or_collect(new /obj/item/weapon/tank/emergency_oxygen/vox(H), slot_l_hand)
 	to_chat(H, "<span class='notice'>You are now running on nitrogen internals from the [H.l_hand] in your hand. Your species finds oxygen toxic, so you must breathe nitrogen only.</span>")
 	H.internal = H.l_hand
 	H.update_internals_hud_icon(1)

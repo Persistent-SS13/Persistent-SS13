@@ -19,7 +19,6 @@ var/time_last_changed_position = 0
 	//if set to 0: Not able to close "original" positions. You can only close positions that you have opened before
 	var/change_position_cooldown = 60
 	//Jobs you cannot open new positions for
-	var/datum/data/record/modify_record
 	var/list/blacklisted = list(
 		/datum/job/ai,
 		/datum/job/cyborg,
@@ -53,7 +52,8 @@ var/time_last_changed_position = 0
 	//This is used to keep track of opened positions for jobs to allow instant closing
 	//Assoc array: "JobName" = (int)<Opened Positions>
 	var/list/opened_positions = list();
-
+	var/datum/data/record/found_record
+	var/not_found = 0
 /obj/machinery/computer/card/proc/is_centcom()
 	return istype(src, /obj/machinery/computer/card/centcom)
 
@@ -263,7 +263,11 @@ var/time_last_changed_position = 0
 	data["authenticated"] = is_authenticated(user)
 	data["has_modify"] = !!modify
 	data["current_function"] = current_function
-	if(modify && scan && modify.assigned_mind)
+	data["search_name"] = found_record ? found_record.fields["name"] : "Search"
+	data["has_record"] = !!found_record
+	if(found_record)
+		data["photo"] = found_record.fields["photo-south"]
+	if(scan && modify && modify.assigned_mind && modify.assigned_mind.assigned_job)
 		data["has_mind"] = istype(modify.assigned_mind)
 		data["promotions"] = format_promotions()
 		data["demotions"] = format_demotions()
@@ -352,7 +356,7 @@ var/time_last_changed_position = 0
 	switch(href_list["choice"])
 		if("modify")
 			if(modify)
-				data_core.manifest_modify(modify.registered_name, modify.assignment)
+				
 				modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
 				if(ishuman(usr))
 					modify.loc = usr.loc
@@ -369,23 +373,33 @@ var/time_last_changed_position = 0
 					I.loc = src
 					modify = I
 		if("search")
-			var/t1 = input("Search Records: (Name or Fingerprint)", "Employee records", null, null)  as text
-				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained()))
-					return
-				var/te = t1
-				te = lowertext(t1)
-				modify_record = null
-				for(var/datum/data/record/R in data_core.general)
-					if((lowertext(R.fields["name"]) == t1 || t1 == lowertext(R.fields["id"]) || t1 == lowertext(R.fields["fingerprint"])))
-						modify_record = R
-						break
-					else
-						//Foreach continue //goto(3229)
-				if(!( modify_record ))
-					modify_record = map_storage.Load_Records(te, 2)
-					if(modify_record)
-						data_core.general += modify_record
-						
+			found_record = null
+			var/t1 = input("Search String: (Name or Fingerprint)", "Gen. records", null, null)  as text
+			for(var/datum/data/record/R in data_core.general)
+				if((R.fields["name"] == t1 || t1 == R.fields["id"] || t1 == R.fields["fingerprint"]))
+					found_record = R
+				else
+					//Foreach continue //goto(3229)
+			if(!( found_record ))
+				found_record = map_storage.Load_Records(t1, 2)
+				if(found_record)
+					data_core.general += found_record
+			if(!( found_record ))
+				not_found = 1
+		if("search_card")
+			found_record = null
+			var/t1 = modify.assigned_mind.current.real_name
+			for(var/datum/data/record/R in data_core.general)
+				if((R.fields["name"] == t1 || t1 == R.fields["id"] || t1 == R.fields["fingerprint"]))
+					found_record = R
+				else
+					//Foreach continue //goto(3229)
+			if(!( found_record ))
+				found_record = map_storage.Load_Records(t1, 2)
+				if(found_record)
+					data_core.general += found_record
+			if(!( found_record ))
+				not_found = 2
 		if("scan")
 			if(scan)
 				if(ishuman(usr))
@@ -486,7 +500,7 @@ var/time_last_changed_position = 0
 					modify.assigned_mind.assigned_job = job
 					modify.assigned_mind.primary_cert = job
 					change_certification(modify.assigned_mind, job)
-					
+					data_core.manifest_modify(modify.registered_name, modify.assignment)
 	
 			nanomanager.update_uis(src)	
 			
@@ -512,7 +526,7 @@ var/time_last_changed_position = 0
 						modify.assigned_mind.assigned_job = job
 						modify.assigned_mind.primary_cert = job
 						change_certification(modify.assigned_mind, job)						
-
+						data_core.manifest_modify(modify.registered_name, modify.assignment)
 						
 			nanomanager.update_uis(src)	
 			
@@ -529,6 +543,7 @@ var/time_last_changed_position = 0
 							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
 							modify.assigned_mind.assigned_job = job
 							modify.assigned_mind.primary_cert = job
+							data_core.manifest_modify(modify.registered_name, modify.assignment)
 						if(2)
 						
 							job = job_master.GetCert("engineer")

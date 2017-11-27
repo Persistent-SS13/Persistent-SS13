@@ -727,6 +727,16 @@ var/global/nologevent = 0
 		return
 	spawn(0)
 		ticker.savestation()
+		
+/datum/admins/proc/view_requests()
+	set category = "Admin"
+	set desc="Opens the Employee Request Console (from anywhere)"
+	set name="Open Employee Request Console"
+	if(!check_rights(R_ADMIN))
+		return
+	if(employee_control_terminal)
+		employee_control_terminal.attack_hand(usr)
+		
 /datum/admins/proc/fixapc()
 	set category = "Server"
 	set desc="Fix Apcs"

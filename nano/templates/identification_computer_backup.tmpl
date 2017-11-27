@@ -23,10 +23,10 @@
 
     <div class='item'>
       <div class='itemLabel'>
-        Account:
+        Target Identity:
       </div>
       <div class='itemContent'>
-        {{:helper.link(data.search_name, '', {'choice' : 'search'})}} or {{:helper.link('Scan from card', '', {'choice' : 'search_card'})}} {{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
+        {{:helper.link(data.target_name, 'eject', {'choice' : 'modify'})}}
       </div>
     </div>
     <div class='item'>
@@ -75,24 +75,24 @@
 		<span class='exclamation-triangle'><i>You cannot edit a Command ID</i></span><br>
 	  
 	  
-	  {{else data.has_record}}	
-		  {{if data.has_record}}
+	  {{else data.has_modify}}	
+		  {{if data.has_modify}}
 			<div class='item'>
 			  <h2>Details</h2>
 			</div>
-			<table><tr><td>
-				<form name='cardcomp' action='?src={{:data.src}}' method='get'>
-				  <div class='item'>
-					<div class='itemLabel'>
-					  <input type='hidden' name='src' value='{{:data.src}}'>
-					  <input type='hidden' name='choice' value='reg'>
-					  Registered Name: '{{:data.target_owner}}'
-					</div>
 
-				  </div>
-				</form>
-			</td><td align = center valign = top>
-			<br><img src='{{:data.photo}}' height=64 width=64 border=5></td></tr></table>
+			<form name='cardcomp' action='?src={{:data.src}}' method='get'>
+			  <div class='item'>
+				<div class='itemLabel'>
+				  <input type='hidden' name='src' value='{{:data.src}}'>
+				  <input type='hidden' name='choice' value='reg'>
+				  Registered Name: '{{:data.target_owner}}'
+				</div>
+
+			  </div>
+			</form>
+
+			
 			<div class='item'>
 			  <h2>Function</h2>
 			</div>
@@ -101,9 +101,9 @@
 				{{:helper.link('None', '', {'choice' : 'function', 'func_choice' : 0}, null,(data.current_function == 0) ? 'selected' : null )}}
 				{{:helper.link('Change Department', '', {'choice' : 'function', 'func_choice' : 1}, null,(data.current_function == 1) ? 'selected' : null )}}
 				{{:helper.link('Change Primary Assignment', '', {'choice' : 'function', 'func_choice' : 2}, null,(data.current_function == 2) ? 'selected' : null )}}
-				{{:helper.link('Request Promotion', '', {'choice' : 'function', 'func_choice' : 3}, null,(data.current_function == 3) ? 'selected' : null )}}
-				{{:helper.link('Request New Certification', '', {'choice' : 'function', 'func_choice' : 4}, null,(data.current_function == 4) ? 'selected' : null )}}
-				{{:helper.link('Request Demotion', '', {'choice' : 'function', 'func_choice' : 5}, null,(data.current_function == 5) ? 'selected' : null )}}
+				{{:helper.link('Award Promotion', '', {'choice' : 'function', 'func_choice' : 3}, null,(data.current_function == 3) ? 'selected' : null )}}
+				{{:helper.link('Award New Certification', '', {'choice' : 'function', 'func_choice' : 4}, null,(data.current_function == 4) ? 'selected' : null )}}
+				{{:helper.link('Demote', '', {'choice' : 'function', 'func_choice' : 5}, null,(data.current_function == 5) ? 'selected' : null )}}
 				{{:helper.link('Request Removal of Certification', '', {'choice' : 'function', 'func_choice' : 6}, null,(data.current_function == 6) ? 'selected' : null )}}
 			</div>
 			<hr>
@@ -137,7 +137,7 @@
 			{{/if}}
 			{{if data.current_function == 3}}
 				<div class='item'>
-				  <h2>Request Promotion</h2>
+				  <h2>Award Promotion</h2>
 				</div>
 				<div class='item'>
 					{{for data.promotions}}
@@ -155,7 +155,7 @@
 			{{if data.current_function == 4}}
 			
 				<div class='item'>
-				  <h2>Request New Certification</h2>
+				  <h2>Award New Certification</h2>
 				</div>
 				<div class='item'>
 					{{for data.department_jobs}}				
@@ -166,7 +166,7 @@
 			{{if data.current_function == 5}}
 			
 				<div class='item'>
-				  <h2>Request Demotion</h2>
+				  <h2>Demote</h2>
 				</div>
 				<div class='item'>
 					{{for data.demotions}}
@@ -181,7 +181,7 @@
 			{{/if}}
 			{{if data.current_function == 6}}
 				<div class='item'>
-				  <h2>Request Removal of Certification</h2>
+				  <h2>Request removal of Certification</h2>
 				</div>
 				<div class='item'>
 					{{for data.department_jobs}}

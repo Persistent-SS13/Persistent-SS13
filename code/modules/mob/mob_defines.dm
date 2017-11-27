@@ -95,6 +95,8 @@
 	var/charges = 0.0
 	var/nutrition = 400.0//Carbon
 
+	var/disable_process = 0
+	
 	var/overeatduration = 0		// How long this guy is overeating //Carbon
 	var/paralysis = 0
 	var/stunned = 0

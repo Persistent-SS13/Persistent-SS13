@@ -130,7 +130,7 @@ var/global/default_martial_art = new/datum/martial_art
 	if(underwear)
 		equip_to_slot(underwear,slot_underwear)
 	if(undershirt)
-		equip_to_slot(underwear,slot_underwear)
+		equip_to_slot(undershirt,slot_undershirt)
 
 	var/mob/living/carbon/human/character = src
 	if(organs && !isemptylist(organs))
@@ -171,4 +171,5 @@ var/global/default_martial_art = new/datum/martial_art
 	UpdateAppearance()
 	update_eyes()
 	regenerate_icons()
+	SpeciesFix()
 	..()

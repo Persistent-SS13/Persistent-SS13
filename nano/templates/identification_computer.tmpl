@@ -202,8 +202,8 @@
 				<hr>
 				<h3>Included Documents (Insert Documents Now):</h3>
 				{{for data.documents}}
-					<br><br>
-					{{:helper.link(value.title, '', {'choice' : 'eject_document', 'assign_target' : value.ind}, null)}}
+					<br>
+					{{:helper.link(value.title, '', {'choice' : 'eject_document', 'assign_target' : value.ind}, null)}}<br>
 				{{/for}}
 			{{/if}}
 			{{if data.current_function == 6}}

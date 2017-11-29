@@ -8,6 +8,8 @@
 	icon = 'icons/obj/turrets.dmi'
 	icon_state = "turretCover"
 	anchored = 1
+	
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;component_parts;req_one_access"
 
 	density = 0
 	use_power = 1				//this turret uses and requires power

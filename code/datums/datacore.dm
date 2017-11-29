@@ -42,6 +42,7 @@
 		if (job_master)
 			job = job_master.GetCert(G.fields["cert_uid"])
 		else
+			return 0
 		if(job)
 			if(mind.primary_cert == mind.assigned_job)
 				mind.assigned_job = job
@@ -58,7 +59,9 @@
 		if(i == to_strings(mind.primary_cert.department_flag))
 			message_admins("check_changes, i == department_flag")
 			var/curr_rank = text2num(record_ranks[i])
-			if(curr_rank > mind.ranks[i])
+			message_admins("curr_rank: [curr_rank] mind.ranks: [mind.ranks[i]]")
+			if(curr_rank > text2num(mind.ranks[i]))
+				message_admins("promotion found")
 				spawn(50)
 					var/obj/item/weapon/card/id/modify = mind.spawned_id
 					if(mind.primary_cert == mind.assigned_job)
@@ -67,7 +70,8 @@
 							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
 					notify_promotion(mind, mind.primary_cert, record_ranks[i])
 	
-			if(curr_rank < mind.ranks[i])
+			if(curr_rank < text2num(mind.ranks[i]))
+				message_admins("demotion found")
 				spawn(50)
 					var/obj/item/weapon/card/id/modify = mind.spawned_id
 					if(modify)
@@ -76,7 +80,8 @@
 					notify_demotion(mind, mind.primary_cert, record_ranks[i])
 		else
 			message_admins("check_changes i does not equal department [i] [to_strings(mind.primary_cert.department_flag)]")
-	mind.ranks = G.fields["rank_list"]
+	var/list/ranklist = G.fields["rank_list"]
+	mind.ranks = ranklist.Copy()
 	mind.certs = G.fields["certs"]
 	
 /obj/effect/datacore/proc/manifest_inject(var/mob/living/carbon/human/H)

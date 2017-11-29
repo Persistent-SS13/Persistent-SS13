@@ -436,7 +436,7 @@ var/time_last_changed_position = 0
 				else
 					//Foreach continue //goto(3229)
 			if(!( found_record ))
-				found_record = map_storage.Load_Records(t1, 2)
+				found_record = map_storage.Load_Records(t1, 1)
 				if(found_record)
 					data_core.general += found_record
 			if(!( found_record ))
@@ -452,7 +452,7 @@ var/time_last_changed_position = 0
 				else
 					//Foreach continue //goto(3229)
 			if(!( found_record ))
-				found_record = map_storage.Load_Records(t1, 2)
+				found_record = map_storage.Load_Records(t1, 1)
 				if(found_record)
 					data_core.general += found_record
 			if(!( found_record ))
@@ -514,6 +514,9 @@ var/time_last_changed_position = 0
 					if(!employee_control_terminal)
 						message_admins("cert remove tried with no employee_control_terminal!")
 					employee_control_terminal.requests |= request
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
 			nanomanager.update_uis(src)	
 		if("assign_promotion")
 			if(is_authenticated(usr) && found_record)
@@ -543,7 +546,9 @@ var/time_last_changed_position = 0
 					if(!employee_control_terminal)
 						message_admins("promotion tried with no employee_control_terminal!")
 					employee_control_terminal.requests |= request
-					
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
 			nanomanager.update_uis(src)	
 		if("eject_document")
 			if(is_authenticated(usr))
@@ -579,7 +584,10 @@ var/time_last_changed_position = 0
 						message_admins("demotion tried with no rank!")				
 					if(!employee_control_terminal)
 						message_admins("demotion tried with no employee_control_terminal!")
-					employee_control_terminal.requests |= request					
+					employee_control_terminal.requests |= request
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
 			nanomanager.update_uis(src)	
 			
 		if("assign_cert")
@@ -619,6 +627,9 @@ var/time_last_changed_position = 0
 					if(!employee_control_terminal)
 						message_admins("cert remove tried with no employee_control_terminal!")
 					employee_control_terminal.requests |= request
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
 			nanomanager.update_uis(src)	
 			
 		if("department")	

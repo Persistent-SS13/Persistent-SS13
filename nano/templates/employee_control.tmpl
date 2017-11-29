@@ -25,5 +25,7 @@
 	{{:helper.link('Back', '', {'choice' : 'back_document'}, null)}}{{:helper.link('Print', '', {'choice' : 'print'}, null)}}<br>
 	<h3>{{:data.title}}</h3><br>
 	<hr>
-	{{:data.content}}
+	<div class="statusDisplay">
+		{{:data.content}}
+	</div>
 {{/if}}

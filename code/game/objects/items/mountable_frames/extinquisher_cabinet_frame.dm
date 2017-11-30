@@ -8,6 +8,5 @@
 
 
 /obj/item/mounted/frame/extinguisher_cabinet_frame/do_build(turf/on_wall, mob/user)
-	var/obj/structure/extinguisher_cabinet/E = new(get_step(user.loc, user.dir))
-	E.has_extinguisher = null
+	new /obj/structure/extinguisher_cabinet(get_turf(src), get_dir(on_wall, user), 1)
 	qdel(src)

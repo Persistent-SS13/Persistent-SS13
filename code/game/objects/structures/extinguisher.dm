@@ -11,6 +11,21 @@
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;opened;has_extinguisher"
 
 
+/obj/structure/extinguisher_cabinet/New(loc, dir, building)
+	..()
+
+	if(loc)
+		src.loc = loc
+
+	if(dir)
+		src.dir = dir
+
+	if(building)
+		has_extinguisher = null
+		pixel_x = (dir & 3)? 0 : (dir == 4 ? -24 : 24)
+		pixel_y = (dir & 3)? (dir ==1 ? -32 : 32) : 0
+
+
 /obj/structure/extinguisher_cabinet/attackby(obj/item/O, mob/user, params)
 	if(isrobot(user) || isalien(user))
 		return

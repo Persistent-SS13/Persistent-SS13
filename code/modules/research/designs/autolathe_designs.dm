@@ -405,12 +405,20 @@
 	build_path = /obj/item/mounted/frame/barsign_frame
 	category = list("initial", "Construction")
 
-/datum/design/extinguisher_cabinet
+/datum/design/extinguisher_cabinet_frame
 	name = "Extinguisher Cabinet Frame"
 	id = "extinguisher_cabinet_frame"
 	build_type = AUTOLATHE
 	materials = list(MAT_METAL = 10000, MAT_GLASS = 2000)
 	build_path = /obj/item/mounted/frame/extinguisher_cabinet_frame
+	category = list("initial", "Construction")
+
+/datum/design/mirror_frame
+	name = "Mirror"
+	id = "mirror_frame"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 1000, MAT_GLASS = 8000)
+	build_path = /obj/item/mounted/frame/mirror_frame
 	category = list("initial", "Construction")
 
 /datum/design/rcd_ammo

@@ -783,6 +783,7 @@
 #include "code\game\objects\items\mountable_frames\frames.dm"
 #include "code\game\objects\items\mountable_frames\intercom.dm"
 #include "code\game\objects\items\mountable_frames\lights.dm"
+#include "code\game\objects\items\mountable_frames\mirror_frame.dm"
 #include "code\game\objects\items\mountable_frames\mountables.dm"
 #include "code\game\objects\items\mountable_frames\newscaster_frame.dm"
 #include "code\game\objects\items\robot\robot_items.dm"

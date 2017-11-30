@@ -119,6 +119,20 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 	src.update_icon() //for any custom ones on the map...
 	..()                                //I just realised the newscasters weren't in the global machines list. The superconstructor call will tend to that
 
+/obj/machinery/newscaster/New(loc, dir, building)
+	..()
+
+	if(loc)
+		src.loc = loc
+
+	if(dir)
+		src.dir = dir
+
+	if(building)
+		pixel_x = (dir & 3)? 0 : (dir == 4 ? -28 : 28)
+		pixel_y = (dir & 3)? (dir ==1 ? -32 : 32) : 0
+
+
 /obj/machinery/newscaster/Destroy()
 	allCasters -= src
 	viewing_channel = null

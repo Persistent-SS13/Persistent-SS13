@@ -253,8 +253,16 @@ var/list/alldepartments = list()
 	switch(destination)
 		if("Central Command")
 			message_admins(sender, "CENTCOM FAX", destination, rcvdcopy, "#006100")
+			var/success = 0
+			for(var/obj/machinery/photocopier/faxmachine/F in allfaxes)
+				if( F.department == destination )
+					success = F.receivefax(copyitem)
 		if("Syndicate")
 			message_admins(sender, "SYNDICATE FAX", destination, rcvdcopy, "#DC143C")
+			var/success = 0
+			for(var/obj/machinery/photocopier/faxmachine/F in allfaxes)
+				if( F.department == destination )
+					success = F.receivefax(copyitem)
 	sendcooldown = 1800
 	sleep(50)
 	visible_message("[src] beeps, \"Message transmitted successfully.\"")

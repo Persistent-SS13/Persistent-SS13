@@ -692,10 +692,6 @@
 	id = "mannitol"
 	description = "Mannitol is a sugar alcohol that can help alleviate cranial swelling."
 	color = "#D1D1F1"
-
-	// PERSISTANT EDIT STARTS HERE
-	// 
-	
 	
 /datum/reagent/synaptizine/on_mob_life(mob/living/M)
 	M.adjustBrainLoss(-1)

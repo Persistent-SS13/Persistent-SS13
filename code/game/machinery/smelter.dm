@@ -172,7 +172,8 @@
 		updateUsrDialog()
 		var/obj/item/S = new D.refined_type(loc)
 		sleep(10)
-		step(S,output_dir)
+		if(S)
+			step(S,output_dir)
 	desc = initial(desc)
 
 /obj/machinery/mineral/conglo_smelter/process()

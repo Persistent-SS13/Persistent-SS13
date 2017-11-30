@@ -32,12 +32,12 @@
 	var/found_ce = 0
 	var/found_rd = 0
 	
-	var/highest_rank = 3
-	var/highest_rank_security = 3
-	var/highest_rank_medical = 3
-	var/highest_rank_cargo = 3
-	var/highest_rank_engineering = 3
-	var/highest_rank_science = 3
+	var/highest_rank = 4
+	var/highest_rank_security = 4
+	var/highest_rank_medical = 4
+	var/highest_rank_cargo = 4
+	var/highest_rank_engineering = 4
+	var/highest_rank_science = 4
 	
 	var/list/potential_command = list()
 	var/list/potential_medical = list()
@@ -96,6 +96,14 @@
 			else
 				found_rd = 1
 		if(M.current)
+			if(M.current.client)
+				if(employee_control_terminal.requests.len)
+					if(check_rights_for(M.current.client, R_ADMIN))
+						M.current.throw_alert("found_request",/obj/screen/alert/found_request)
+					else
+						M.current.clear_alert("found_request")
+				else
+					M.current.clear_alert("found_request")
 			var/datum/data/record/G = data_core.gen_byname[M.current.real_name]
 			if(!G)
 				message_admins("No record found for [M.current.real_name] xyz: [M.current.x],[M.current.y],[M.current.z]")

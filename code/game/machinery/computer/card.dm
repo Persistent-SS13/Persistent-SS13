@@ -510,6 +510,7 @@ var/time_last_changed_position = 0
 					request.change_cert = 2
 					request.cert_uid = job.uid
 					request.attached_documents = copy_documents()
+					notify_request(request.name_sender, "Remove the certification of [request.name_target]")
 					eject_documents()
 					if(!employee_control_terminal)
 						message_admins("cert remove tried with no employee_control_terminal!")
@@ -536,6 +537,7 @@ var/time_last_changed_position = 0
 					var/list/promo_list = get_department_promotions(job.department_flag, job)
 					var/ind = 0
 					var/target = href_list["assign_target"]
+					notify_request(request.name_sender, "Promote [request.name_target]")
 					for(var/x in promo_list)
 						ind += 1
 						if(x == target)
@@ -588,6 +590,7 @@ var/time_last_changed_position = 0
 					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
 					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
 					current_function = 0
+					notify_request(request.name_sender, "Demote [request.name_target]")
 			nanomanager.update_uis(src)	
 			
 		if("assign_cert")
@@ -626,10 +629,15 @@ var/time_last_changed_position = 0
 					eject_documents()
 					if(!employee_control_terminal)
 						message_admins("cert remove tried with no employee_control_terminal!")
-					employee_control_terminal.requests |= request
+					if(job.department_flag == SUPPORT)
+						request.approve()
+					else
+						employee_control_terminal.requests |= request
+						notify_request(request.name_sender, "Add certification [request.cert_uid] for [request.name_target]")
 					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
 					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
 					current_function = 0
+					
 			nanomanager.update_uis(src)	
 			
 		if("department")	
@@ -818,6 +826,14 @@ var/time_last_changed_position = 0
 
 	return 1
 
+/obj/machinery/computer/card/proc/notify_request(var/sender, var/faxname, font_colour="#9A04D1")
+	var/msg = "<span class='boldnotice'><font color='[font_colour]'>REQUEST SEND IN BY [sender] ([faxname])</font></span>"
+	for(var/client/C in admins)
+		if(R_EVENT & C.holder.rights)
+			to_chat(C, msg)
+			if(C.prefs.sound & SOUND_ADMINHELP)
+				C << 'sound/machines/synth_yes.ogg'
+	
 /obj/machinery/computer/card/centcom
 	name = "\improper CentComm identification computer"
 	circuit = /obj/item/weapon/circuitboard/card/centcom

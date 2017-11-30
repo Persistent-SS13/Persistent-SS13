@@ -337,7 +337,7 @@ update_flag
 
 /obj/machinery/portable_atmospherics/canister/attackby(var/obj/item/weapon/W as obj, var/mob/user as mob, params)
 	if(iswelder(W) && src.destroyed)
-		if(weld(W, user))
+		if(actWeld(user, W, skill = 0))
 			to_chat(user, "\blue You salvage whats left of \the [src]")
 			var/obj/item/stack/sheet/metal/M = new /obj/item/stack/sheet/metal(src.loc)
 			M.amount = 3
@@ -621,21 +621,3 @@ update_flag
 	src.update_icon() // Otherwise new canisters do not have their icon updated with the pressure light, likely want to add this to the canister class constructor, avoiding at current time to refrain from screwing up code for other canisters. --DZD
 	return 1
 
-/obj/machinery/portable_atmospherics/canister/proc/weld(var/obj/item/weapon/weldingtool/WT, var/mob/user)
-
-	if(busy)
-		return 0
-	if(!WT.remove_fuel(0, user))
-		return 0
-
-	// Do after stuff here
-	to_chat(user, "<span class='notice'>You start to slice away at \the [src]...</span>")
-	playsound(src.loc, 'sound/items/Welder.ogg', 50, 1)
-	busy = 1
-	if(do_after(user, 50, target = src))
-		busy = 0
-		if(!WT.isOn())
-			return 0
-		return 1
-	busy = 0
-	return 0

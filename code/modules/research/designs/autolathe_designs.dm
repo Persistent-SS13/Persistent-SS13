@@ -397,6 +397,14 @@
 	build_path = /obj/item/mounted/frame/newscaster_frame
 	category = list("initial", "Construction")
 
+/datum/design/barsign_frame
+	name = "Bar Sign Frame"
+	id = "barsign_frame"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 14000, MAT_GLASS = 8000)
+	build_path = /obj/item/mounted/frame/barsign_frame
+	category = list("initial", "Construction")
+
 /datum/design/rcd_ammo
 	name = "Compressed Matter Cardridge"
 	id = "rcd_ammo"

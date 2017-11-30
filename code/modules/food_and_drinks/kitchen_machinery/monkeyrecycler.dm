@@ -40,7 +40,7 @@
 	if(exchange_parts(user, O))
 		return
 
-	if(default_unfasten_wrench(user, O))
+	if(fastenWrench(user, O))
 		power_change()
 		return
 

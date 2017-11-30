@@ -36,11 +36,10 @@
 
 		if(1)
 			// State 1
-			if(iswelder(W))
-				if(weld(W, user))
-					to_chat(user, "You weld the assembly securely into place.")
-					anchored = 1
-					state = 2
+			if(actWeld(user, W, skill = 0))
+				to_chat(user, "You weld the assembly securely into place.")
+				anchored = 1
+				state = 2
 				return
 
 			else if(iswrench(W))
@@ -62,12 +61,10 @@
 					to_chat(user, "<span class='warning'>You need 2 coils of wire to wire the assembly.</span>")
 				return
 
-			else if(iswelder(W))
-
-				if(weld(W, user))
-					to_chat(user, "You unweld the assembly from it's place.")
-					state = 1
-					anchored = 1
+			if(actWeld(user, W, skill = 0))
+				to_chat(user, "You unweld the assembly from it's place.")
+				state = 1
+				anchored = 1
 				return
 
 
@@ -153,21 +150,3 @@
 /obj/item/weapon/camera_assembly/attack_hand(mob/user as mob)
 	if(!anchored)
 		..()
-
-/obj/item/weapon/camera_assembly/proc/weld(var/obj/item/weapon/weldingtool/WT, var/mob/living/user)
-
-	if(busy)
-		return 0
-	if(!WT.remove_fuel(0, user))
-		return 0
-
-	to_chat(user, "<span class='notice'>You start to weld the [src]..</span>")
-	playsound(src.loc, 'sound/items/Welder.ogg', 50, 1)
-	busy = 1
-	if(do_after(user, 20, target = src))
-		busy = 0
-		if(!WT.isOn())
-			return 0
-		return 1
-	busy = 0
-	return 0

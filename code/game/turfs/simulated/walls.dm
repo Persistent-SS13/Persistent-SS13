@@ -141,17 +141,14 @@
 			playsound(src, 'sound/items/Welder.ogg', 100, 1)
 			new /obj/structure/girder(src)
 			if(mineral == "metal")
-				new /obj/item/stack/sheet/metal( src )
-				new /obj/item/stack/sheet/metal( src )
+				new /obj/item/stack/sheet/metal(src, 2)
 			else
 				var/M = text2path("/obj/item/stack/sheet/mineral/[mineral]")
 				new M( src )
 				new M( src )
 		else
 			if(mineral == "metal")
-				new /obj/item/stack/sheet/metal( src )
-				new /obj/item/stack/sheet/metal( src )
-				new /obj/item/stack/sheet/metal( src )
+				new /obj/item/stack/sheet/metal(src, 3)
 			else
 				var/M = text2path("/obj/item/stack/sheet/mineral/[mineral]")
 				new M( src )

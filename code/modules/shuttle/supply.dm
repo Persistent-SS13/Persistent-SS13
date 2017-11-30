@@ -1236,11 +1236,7 @@
 	else if(iswirecutter(W))
 		to_chat(user, "<span class='notice'>You deconstruct [name].")
 		playsound(get_turf(src), 'sound/items/Wirecutter.ogg', 50, 1)
-		new /obj/item/stack/sheet/mineral/plastic(src.loc)
-		new /obj/item/stack/sheet/mineral/plastic(src.loc)
-		new /obj/item/stack/sheet/mineral/plastic(src.loc)
-		new /obj/item/stack/sheet/mineral/plastic(src.loc)
-		new /obj/item/stack/sheet/mineral/plastic(src.loc)
+		new /obj/item/stack/sheet/mineral/plastic(src.loc, 5)
 		qdel(src)
 		return
 	else

@@ -16,17 +16,14 @@
 
 
 /obj/structure/sign/barsign/New()
+	// Calls parent New()
 	..()
-
-
-//filling the barsigns list
+	// Fills the barsign list
 	for(var/bartype in subtypesof(/datum/barsign))
 		var/datum/barsign/signinfo = new bartype
 		if(!signinfo.hidden)
 			barsigns += signinfo
-
-
-//randomly assigning a sign
+	// Randomly sets the sign
 	set_sign(pick(barsigns))
 
 
@@ -61,10 +58,8 @@
 
 
 /obj/structure/sign/barsign/attackby(var/obj/item/I, var/mob/user)
-	if(!allowed(user))
-		to_chat(user, "<span class = 'info'>Access denied.</span>")
-		return
-	if( istype(I, /obj/item/weapon/screwdriver))
+
+	if(isscrewdriver(I))
 		if(!panel_open)
 			to_chat(user, "<span class='notice'>You open the maintenance panel.</span>")
 			set_sign(new /datum/barsign/hiddensigns/signoff)
@@ -78,8 +73,8 @@
 			else
 				set_sign(new /datum/barsign/hiddensigns/empbarsign)
 			panel_open = 0
-
-	if(istype(I, /obj/item/stack/cable_coil) && panel_open)
+		return
+	if(iscoil(I) && panel_open)
 		var/obj/item/stack/cable_coil/C = I
 		if(emagged) //Emagged, not broken by EMP
 			to_chat(user, "<span class='warning'>Sign has been damaged beyond repair!</span>")
@@ -93,6 +88,23 @@
 			broken = 0
 		else
 			to_chat(user, "<span class='warning'>You need at least two lengths of cable!</span>")
+		return
+	if(iswrench(I) && panel_open)
+		if(!broken)
+			to_chat(user, "<span class='notice'> Now unsecuring [name]</span>")
+			playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+			if(do_after(user, 60, target = src))
+				new /obj/item/mounted/frame/barsign_frame(src.loc)
+				playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
+				qdel(src)
+		else
+			to_chat(user, "<span class='notice'>Now deconstructing [name]</span>")
+			if(do_after(user, 60, target = src))
+				playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
+				qdel(src)
+		return
+
+
 
 
 

@@ -25,7 +25,7 @@ obj/machinery/seed_extractor/attackby(var/obj/item/O as obj, var/mob/user as mob
 	if(exchange_parts(user, O))
 		return
 
-	if(default_unfasten_wrench(user, O))
+	if(fastenWrench(user, O))
 		return
 
 	default_deconstruction_crowbar(O)

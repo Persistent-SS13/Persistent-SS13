@@ -233,7 +233,7 @@
 			nanomanager.update_uis(src)
 			return // don't smack that machine with your 2 thalers
 
-	if(default_unfasten_wrench(user, I, time = 60))
+	if(fastenWrench(user, I, time = 60))
 		return
 
 	if(istype(I, /obj/item/weapon/screwdriver) && anchored)

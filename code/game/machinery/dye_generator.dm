@@ -52,7 +52,7 @@
 
 /obj/machinery/dye_generator/attackby(obj/item/weapon/W, mob/user, params)
 
-	if(default_unfasten_wrench(user, W, time = 60))
+	if(fastenWrench(user, W, time = 60))
 		return
 
 	if(istype(W, /obj/item/hair_dye_bottle))

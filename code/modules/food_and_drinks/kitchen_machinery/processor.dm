@@ -166,7 +166,7 @@
 	if(exchange_parts(user, O))
 		return
 
-	if(default_unfasten_wrench(user, O))
+	if(fastenWrench(user, O))
 		return
 
  	default_deconstruction_crowbar(O)

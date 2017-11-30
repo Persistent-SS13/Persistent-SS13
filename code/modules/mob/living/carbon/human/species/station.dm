@@ -341,9 +341,24 @@
 		newname += pick(vox_name_syllables)
 	return capitalize(newname)
 
-/datum/species/vox/equip(var/mob/living/carbon/human/H)
-	to_chat(H, "<span class='notice'>You are now running on nitrogen internals from the [H.l_hand] in your hand. Your species finds oxygen toxic, so you must breathe nitrogen only.</span>")
-	H.internal = H.l_hand
+/datum/species/vox/equip(var/mob/living/carbon/human/H) //Why do vox tanks go in so many places?!
+	to_chat(H, "<span class='notice'>You are now running on nitrogen internals. Your species finds oxygen toxic, so you must breathe nitrogen only.</span>")
+	if(istype(H.s_store, /obj/item/weapon/tank))
+		H.internal =H.s_store
+	if(istype(H.belt, /obj/item/weapon/tank))
+		H.internal =H.belt
+	if(istype(H.back, /obj/item/weapon/tank))
+		H.internal =H.back
+	if(istype(H.l_store, /obj/item/weapon/tank))
+		H.internal =H.l_store
+	if(istype(H.r_store, /obj/item/weapon/tank))
+		H.internal =H.r_store
+	if(istype(H.l_hand, /obj/item/weapon/tank))
+		H.internal =H.l_hand
+	if(istype(H.r_hand, /obj/item/weapon/tank))
+		H.internal =H.r_hand
+	
+	
 	H.update_internals_hud_icon(1)
 
 /datum/species/vox/handle_post_spawn(var/mob/living/carbon/human/H)

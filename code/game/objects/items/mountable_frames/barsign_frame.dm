@@ -3,7 +3,7 @@
 	desc = "Used to build bar signs, just secure to the wall."
 	icon_state = "barsign"
 	item_state = "syringe_kit"
-	materials = list(MAT_METAL=14000, MAT_GLASS=8000)
+	materials = list(MAT_METAL=28000, MAT_GLASS=16000)
 	mount_reqs = list("simfloor", "nospace")
 
 

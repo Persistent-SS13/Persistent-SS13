@@ -298,7 +298,7 @@
 	materials = list(MAT_METAL = 500, MAT_GLASS = 50)
 	build_path = /obj/item/device/assembly/voice
 	category = list("initial", "Miscellaneous")
-	
+
 /datum/design/videocam
 	name = "Video Camera"
 	id = "videocam"
@@ -401,8 +401,16 @@
 	name = "Bar Sign Frame"
 	id = "barsign_frame"
 	build_type = AUTOLATHE
-	materials = list(MAT_METAL = 14000, MAT_GLASS = 8000)
+	materials = list(MAT_METAL = 28000, MAT_GLASS = 16000)
 	build_path = /obj/item/mounted/frame/barsign_frame
+	category = list("initial", "Construction")
+
+/datum/design/extinguisher_cabinet
+	name = "Extinguisher Cabinet Frame"
+	id = "extinguisher_cabinet_frame"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 10000, MAT_GLASS = 2000)
+	build_path = /obj/item/mounted/frame/extinguisher_cabinet_frame
 	category = list("initial", "Construction")
 
 /datum/design/rcd_ammo

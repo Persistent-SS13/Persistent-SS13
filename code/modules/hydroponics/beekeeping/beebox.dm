@@ -160,7 +160,7 @@
 			to_chat(user, "<span class='warning'>There's no room for anymore frames in the apiary!</span>")
 
 	if(istype(I, /obj/item/weapon/wrench))
-		if(default_unfasten_wrench(user, I, time = 20))
+		if(fastenWrench(user, I, time = 20))
 			return
 
 	if(istype(I, /obj/item/queen_bee))

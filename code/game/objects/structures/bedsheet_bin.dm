@@ -167,6 +167,11 @@ LINEN BINS
 	var/amount = 20
 	var/list/sheets = list()
 	var/obj/item/hidden = null
+	map_storage_saved_vars = "anchored;amount;sheets;hidden;"
+
+/obj/structure/bedsheetbin/New(var/loc)
+	amount = 0
+	..()
 
 
 /obj/structure/bedsheetbin/examine(mob/user)
@@ -204,11 +209,33 @@ LINEN BINS
 		sheets.Add(I)
 		amount++
 		to_chat(user, "<span class='notice'>You put [I] in [src].</span>")
-	else if(amount && !hidden && I.w_class < 4)	//make sure there's sheets to hide it among, make sure nothing else is hidden in there.
+		return
+	if(amount && !hidden && I.w_class < 4)	//make sure there's sheets to hide it among, make sure nothing else is hidden in there.
 		user.drop_item()
 		I.loc = src
 		hidden = I
 		to_chat(user, "<span class='notice'>You hide [I] among the sheets.</span>")
+		return
+	if(iswrench(I))
+		to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]secured [name].</span>")
+		anchored = !anchored
+		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+		return
+	if(isscrewdriver(I))
+		for(var/obj/item/weapon/bedsheet/B in sheets)
+			amount--
+			sheets.Remove(B)
+			B.loc = loc
+		while(amount >= 1)
+			amount--
+			new /obj/item/weapon/bedsheet(loc)
+		if(hidden)
+			hidden.loc = loc
+			hidden = null
+		new /obj/item/stack/sheet/metal(loc, 3)
+		playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
+		qdel(src)
+		return
 
 
 

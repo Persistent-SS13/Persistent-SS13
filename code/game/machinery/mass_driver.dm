@@ -13,7 +13,7 @@
 	var/id_tag = "default"
 	settagwhitelist = list("id_tag")
 	var/drive_range = 50 //this is mostly irrelevant since current mass drivers throw into space, but you could make a lower-range mass driver for interstation transport or something I guess.
-
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;id_tag"
 /obj/machinery/mass_driver/attackby(obj/item/weapon/W, mob/user as mob)
 
 	if(istype(W, /obj/item/device/multitool))

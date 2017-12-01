@@ -435,20 +435,6 @@ Class Procs:
 		return 1
 	return 0
 
-/obj/proc/default_unfasten_wrench(mob/user, obj/item/weapon/wrench/W, time = 20)
-	if(istype(W))
-		. = 1
-		to_chat(user, "<span class='notice'>Now [anchored ? "un" : ""]securing [name].</span>")
-		switch(do_after_stat(user, 50, needhand = 1, target = src, progress = 1, action_name = "[anchored ? "un" : ""]wrench [src] to the floor", auto_emote = 1, stat_used = 3, minimum = 2, maximum = 8, maxed_delay = 20, progressive_failure = 0, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 2, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1.5, sound_file = 'sound/items/Ratchet.ogg'))
-			if(1)
-				to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]secured [name].</span>")
-				anchored = !anchored
-				playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
-				return 1
-			if(2)
-				to_chat(user, "<span class='notice'>You dont have good enough reflexes to anchor this.</span>")
-		return 0
-
 /obj/machinery/proc/exchange_parts(mob/user, obj/item/weapon/storage/part_replacer/W)
 	var/shouldplaysound = 0
 	if(istype(W) && component_parts)

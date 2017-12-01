@@ -188,6 +188,16 @@ The box in your backpack has an oxygen tank and gas mask in it."
 			to_chat(usr, "You can print an updated ID card at any ID machine.")
 			clear_alert_all("need_hop")
 			clear_all_foundalerts(usr.mind)
+/obj/screen/alert/found_request
+	name = "Employment Requests Found"
+	desc = "Click here to bring up the console"
+	icon_state = "found_request"
+
+/obj/screen/alert/found_request/Click()
+	if(!check_rights(R_ADMIN))
+		return
+	if(employee_control_terminal)
+		employee_control_terminal.attack_hand(usr)
 /obj/screen/alert/need_cmo
 	name = "Chief Medical Officer Needed"
 	desc = "A Chief Medical Officer is required to direct the medical staff! Click here to become the CMO (for the shift)."

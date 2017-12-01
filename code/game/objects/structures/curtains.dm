@@ -26,6 +26,13 @@
 	toggle()
 	..()
 
+/obj/structure/curtain/attackby(var/obj/item/O as obj, var/mob/user as mob, params)
+	if(iswirecutter(O))
+		playsound(src, 'sound/items/Wirecutter.ogg', 50, 1, 1)
+		new /obj/item/stack/sheet/cloth(src.loc, 5)
+		qdel(src)
+		return
+	..()
 /obj/structure/curtain/proc/toggle()
 	set_opacity(!opacity)
 	if(opacity)

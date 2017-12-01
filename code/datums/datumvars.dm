@@ -234,6 +234,7 @@
 	body += "<option value='?_src_=vars;mark_object=\ref[D]'>Mark Object</option>"
 	body += "<option value='?_src_=vars;proc_call=\ref[D]'>Call Proc</option>"
 	body += "<option value='?_src_=vars;jump_to=\ref[D]'>Jump to Object</option>"
+	body += "<option value='?_src_=vars;add_saved_var=\ref[D]'>Add Saved Var</option>"
 	if(ismob(D))
 		body += "<option value='?_src_=vars;mob_player_panel=\ref[D]'>Show player panel</option>"
 
@@ -703,6 +704,13 @@ body
 
 		src.cmd_admin_emp(A)
 		href_list["datumrefresh"] = href_list["emp"]
+		
+	else if(href_list["add_saved_var"])
+	
+		if(!check_rights(R_ADMIN))	return
+
+		var/datum/A = locate(href_list["add_saved_var"])
+	//	A.add_saved_var(usr)
 
 	else if(href_list["mark_object"])
 		if(!check_rights(0))	return

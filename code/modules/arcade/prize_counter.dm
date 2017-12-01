@@ -48,7 +48,7 @@
 		return
 	if(panel_open)
 		if(istype(O, /obj/item/weapon/wrench))
-			default_unfasten_wrench(user, O)
+			fastenWrench(user, O)
 		if(component_parts && istype(O, /obj/item/weapon/crowbar))
 			if(tickets)		//save the tickets!
 				print_tickets()

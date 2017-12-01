@@ -95,6 +95,6 @@
 
 /obj/machinery/gameboard/attackby(var/obj/item/weapon/G as obj, var/mob/user as mob, params)
 	if(istype(G, /obj/item/weapon/wrench))
-		default_unfasten_wrench(user, G)
+		fastenWrench(user, G)
 	else if(istype(G, /obj/item/weapon/crowbar))
 		default_deconstruction_crowbar(G, ignore_panel = 1)

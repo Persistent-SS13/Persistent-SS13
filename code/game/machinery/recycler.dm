@@ -62,7 +62,7 @@ var/const/SAFETY_COOLDOWN = 100
 	if(exchange_parts(user, I))
 		return
 
-	if(default_unfasten_wrench(user, I))
+	if(fastenWrench(user, I))
 		return
 
 	default_deconstruction_crowbar(I)

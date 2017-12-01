@@ -33,7 +33,9 @@
 			set_light(2)
 		else
 			set_light(0)
-
+/obj/machinery/clonepod/after_load()
+	held_brain = new(src)
+	held_brain.loc = src
 /obj/machinery/clonepod/biomass
 	biomass = CLONE_BIOMASS
 
@@ -49,6 +51,7 @@
 	component_parts += new /obj/item/stack/cable_coil(null, 1)
 	component_parts += new /obj/item/stack/cable_coil(null, 1)
 	held_brain = new(src)
+	held_brain.loc = src
 	RefreshParts()
 	update_icon()
 
@@ -229,8 +232,9 @@
 	if(brain_insert)
 		if(!held_brain || !held_brain.brainmob)
 			message_admins("Trying to clone without a brainmob")
+		held_brain.held_brain.brainmob = held_brain.brainmob
 		held_brain.held_brain.insert(H)
-		held_brain.brainmob.mind.transfer_to(H)
+	//	held_brain.brainmob.mind.transfer_to(H)
 		qdel(held_brain.brainmob)
 		held_brain.brainmob = null
 		held_brain.held_brain = null
@@ -467,7 +471,8 @@
 			occupant_brain = brain
 			if(held_brain.brainmob)
 				to_chat(held_brain.brainmob, "You interface with the cloning pod. You can access the cloning console to make payment towards your cloning.")
-				held_brain.brainmob.loc = src
+				if(held_brain.brainmob.client)
+					held_brain.brainmob.client.eye = src
 			else
 				message_admins("brainmob disappeared during cloning! Contact the developer!")
 			return

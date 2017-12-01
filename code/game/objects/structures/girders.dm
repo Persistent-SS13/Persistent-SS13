@@ -8,8 +8,7 @@
 	var/metalUsed = 2 //used to determine amount returned in deconstruction
 
 /obj/structure/girder/proc/refundMetal(metalAmount) //refunds metal used in construction when deconstructed
-	for(var/i=0;i < metalAmount;i++)
-		new /obj/item/stack/sheet/metal(get_turf(src))
+	new /obj/item/stack/sheet/metal(src.loc, metalAmount)
 
 /obj/structure/girder/attack_animal(var/mob/living/simple_animal/M)
 	M.changeNext_move(CLICK_CD_MELEE)

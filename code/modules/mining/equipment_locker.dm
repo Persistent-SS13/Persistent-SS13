@@ -277,7 +277,7 @@
 			default_deconstruction_crowbar(W)
 		return
 
-	if(default_unfasten_wrench(user, W))
+	if(fastenWrench(user, W))
 		return
 
 	..()

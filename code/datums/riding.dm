@@ -14,47 +14,38 @@
 	ridden = null
 	return ..()
 
-/datum/riding/proc/handle_vehicle_layer()
-	if(ridden.dir != NORTH)
-		ridden.layer = 4.1
-	else
-		ridden.layer = 3.2
 
 /datum/riding/proc/on_vehicle_move()
 	for(var/mob/living/M in ridden.buckled_mob)
 		ride_check(M)
-	handle_vehicle_offsets()
-	handle_vehicle_layer()
-
 /datum/riding/proc/ride_check(mob/living/M)
 	return TRUE
 
 /datum/riding/proc/force_dismount(mob/living/M)
 	ridden.unbuckle_mob(M)
 
-/datum/riding/proc/handle_vehicle_offsets()
-	var/ridden_dir = "[ridden.dir]"
-	var/passindex = 0
+/datum/riding/proc/handle_vehicle_offsets(mob/living/buckled_mob)
 	if(ridden.buckled_mob)
-		for(var/m in ridden.buckled_mob)
-			passindex++
-			var/mob/living/buckled_mob = m
-			var/list/offsets = get_offsets(passindex)
-			dir_loop:
-				for(var/offsetdir in offsets)
-					if(offsetdir == ridden_dir)
-						var/list/diroffsets = offsets[offsetdir]
-						buckled_mob.pixel_x = diroffsets[1]
-						if(diroffsets.len == 2)
-							buckled_mob.pixel_y = diroffsets[2]
-						if(diroffsets.len == 3)
-							buckled_mob.layer = diroffsets[3]
-						break dir_loop
+		if(ridden.dir == NORTH)
+			buckled_mob.pixel_x = 0
+			buckled_mob.pixel_y = 0
+			buckled_mob.layer = MOB_LAYER
+		if(ridden.dir == SOUTH)
+			buckled_mob.pixel_x = 0
+			buckled_mob.pixel_y = 0
+			buckled_mob.layer = MOB_LAYER - 0.1
+		if(ridden.dir == EAST)
+			buckled_mob.pixel_x = 0
+			buckled_mob.pixel_y = 0
+			buckled_mob.layer = MOB_LAYER - 0.1
+		if(ridden.dir == WEST)
+			buckled_mob.pixel_x = 0
+			buckled_mob.pixel_y = 0
+			buckled_mob.layer = MOB_LAYER - 0.1
+		
+		
 
 
-//Override this to set your vehicle's various pixel offsets
-/datum/riding/proc/get_offsets(pass_index) // list(dir = x, y, layer)
-	return list("[NORTH]" = list(0, 0), "[SOUTH]" = list(0, 0), "[EAST]" = list(0, 0), "[WEST]" = list(0, 0))
 
 //KEYS
 /datum/riding/proc/keycheck(mob/user)
@@ -81,12 +72,11 @@
 		return
 	next_vehicle_move = world.time + vehicle_move_delay
 	if(keycheck(user))
+		to_chat(viewers(src), "<span class='notice'>It sees when to check offsets</span>")
 		if(!ridden.Process_Spacemove(direction) || !isturf(ridden.loc))
 			return
 		step(ridden, direction)
 
-		handle_vehicle_layer()
-		handle_vehicle_offsets()
 	else
 		to_chat(user, "<span class='notice'>You'll need the keys in one of your hands to drive \the [ridden.name].</span>")
 
@@ -111,26 +101,29 @@
 			Unbuckle(user)
 			to_chat(user, "<span class='userdanger'>You can't grab onto [ridden] with no hands!</span>")
 			return
-
-/datum/riding/mecha/handle_vehicle_layer()
+/datum/riding/mecha/handle_vehicle_offsets(mob/living/M)
 	if(ridden.buckled_mob)
-		if(ridden.dir == NORTH)
-			ridden.layer = 4.1
-		else
-			ridden.layer = 3
-	else
-		ridden.layer = MOB_LAYER
-
-/datum/riding/mecha/get_offsets(pass_index) // list(dir = x, y, layer)
-	return list("[NORTH]" = list(0, 4), "[SOUTH]" = list(0, 4), "[EAST]" = list(-6, 3), "[WEST]" = list( 6, 3))
-
-/datum/riding/mecha/handle_vehicle_offsets()
-	if(ridden.buckled_mob)
-		for(var/mob/living/M in ridden.buckled_mob)
-			M.set_dir(ridden.dir)
-			..()
-
+		ridden.buckled_mob.dir=ridden.dir
+		if(ridden.buckled_mob.dir == NORTH)
+			ridden.buckled_mob.pixel_x = 8
+			ridden.buckled_mob.pixel_y = 10
+			ridden.buckled_mob.layer = 4.1
+		if(ridden.buckled_mob.dir == SOUTH)
+			ridden.buckled_mob.pixel_x = -8
+			ridden.buckled_mob.pixel_y = 10
+			ridden.buckled_mob.layer = 3.9
+		if(ridden.buckled_mob.dir == EAST)
+			ridden.buckled_mob.pixel_x = -9
+			ridden.buckled_mob.pixel_y = 10
+			ridden.buckled_mob.layer = 3.9
+		if(ridden.buckled_mob.dir == WEST)
+			ridden.buckled_mob.pixel_x = 9
+			ridden.buckled_mob.pixel_y = 10
+			ridden.buckled_mob.layer = 3.9
+					
 /datum/riding/mecha/force_dismount(mob/living/M)
+	riding_datum.unequip_buckle_inhands(M)
+	riding_datum.restore_position(M)
 	ridden.unbuckle_mob(M)
 	var/turf/target = get_edge_target_turf(ridden, ridden.dir)
 	var/turf/targetm = get_step(get_turf(ridden), ridden.dir)
@@ -189,5 +182,4 @@
 		if(rider in ridden.buckled_mob)
 			ridden.unbuckle_mob(rider)
 			qdel(src)
-			visible_message("<span class='warning'>Does this happen?</span>")
 	. = ..()

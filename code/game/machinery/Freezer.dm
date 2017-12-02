@@ -56,7 +56,7 @@
 	if(exchange_parts(user, I))
 		return
 
-	default_deconstruction_crowbar(I)
+	default_deconstruction_crowbar(user, I)
 
 	if(istype(I, /obj/item/weapon/wrench))
 		if(!panel_open)
@@ -216,7 +216,7 @@
 	if(exchange_parts(user, I))
 		return
 
-	default_deconstruction_crowbar(I)
+	default_deconstruction_crowbar(user, I)
 
 	if(istype(I, /obj/item/weapon/wrench))
 		if(!panel_open)

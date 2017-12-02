@@ -9,7 +9,7 @@
 	if(istype(W, /obj/item/weapon/wrench) && sheets_refunded)
 		//new /obj/item/stack/sheet/metal( get_turf(src.loc), sheets_refunded )
 		var/obj/item/stack/sheet/metal/M = new /obj/item/stack/sheet/metal(get_turf(src))
-		M.amount = materials ? materials[MAT_METAL] : sheets_refunded
+		M.amount = materials ? materials[round(MAT_METAL/2000)] : sheets_refunded
 		qdel(src)
 
 /obj/item/mounted/frame/try_build(turf/on_wall, mob/user)

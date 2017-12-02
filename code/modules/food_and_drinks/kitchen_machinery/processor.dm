@@ -169,7 +169,7 @@
 	if(fastenWrench(user, O))
 		return
 
- 	default_deconstruction_crowbar(O)
+ 	default_deconstruction_crowbar(user, O)
 
 	var/obj/item/what = O
 

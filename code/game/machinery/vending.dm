@@ -258,7 +258,7 @@
 						machine_content.amount--
 						if(!machine_content.amount)
 							break
-			default_deconstruction_crowbar(I)
+			default_deconstruction_crowbar(user, I)
 	if(istype(I, /obj/item/weapon/coin) && premium.len > 0)
 		user.drop_item()
 		I.loc = src

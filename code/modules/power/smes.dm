@@ -86,7 +86,7 @@
 	terminal.master = src
 	if(!terminal.powernet)
 		terminal.connect_to_network()
-	update_icon()					
+	update_icon()
 /obj/machinery/power/smes/upgraded/New()
 	..()
 	component_parts = list()
@@ -213,7 +213,7 @@
 			return
 
 	//crowbarring it !
-	default_deconstruction_crowbar(I)
+	default_deconstruction_crowbar(user, I)
 
 /obj/machinery/power/smes/disconnect_terminal()
 	if(terminal)

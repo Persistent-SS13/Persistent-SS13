@@ -35,7 +35,7 @@
 			connect_to_network()
 		return
 
-	if(default_deconstruction_crowbar(W))
+	if(default_deconstruction_crowbar(user, W))
 		return
 
 	return ..()
@@ -74,7 +74,7 @@
 	if(fastenWrench(user, W))
 		return
 
-	if(default_deconstruction_crowbar(W))
+	if(default_deconstruction_crowbar(user, W))
 		return
 
 	return ..()

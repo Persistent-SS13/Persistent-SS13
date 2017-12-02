@@ -63,7 +63,7 @@ var/const/HOLOPAD_MODE = 0
 	if(fastenWrench(user, P))
 		return
 
-	default_deconstruction_crowbar(P)
+	default_deconstruction_crowbar(user, P)
 
 
 /obj/machinery/hologram/holopad/attack_hand(var/mob/living/carbon/human/user) //Carn: Hologram requests.

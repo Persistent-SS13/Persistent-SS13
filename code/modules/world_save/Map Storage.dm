@@ -2,7 +2,7 @@
 	return
 /datum/proc/before_save()
 	return
-	/**
+
 /datum/proc/add_saved_var(var/mob/M)
 	var/A = M.type
 	var/B = replacetext("[A]", "/", "-")
@@ -22,8 +22,20 @@
 	if(!savedvarparams)
 		savedvarparams = ""
 	var/list/saved_vars = params2list(savedvarparams)
+	var/dat = "<b>Saved Vars:</b><br><hr>"
+	dat += "<b><u>Inherited</u></b><br><hr>"
+	for(var/x in found_vars)
+		dat += "[x]<br>"
+	dat += "<b><u>For this Object</u></b><br><hr>"
+	var/ind = 0
+	for(var/x in saved_vars)
+		ind++
+		dat += "[x] <a href='?src=\ref[src];remove_saved_var=[ind]'>(Remove)</a><br>"
+	dat += "<hr><br>"
+	dat += "dat += "[x] <a href='?src=\ref[src];'>(Add new var)</a>"
+	src << browse(dat, "window=roundstats;size=500x600")
 
-	
+	/**
 /datum/Read(savefile/savefile)
 /datum/Write(savefile/savefile)
 	if(!should_save)
@@ -672,9 +684,11 @@ map_storage
 				organ_donor.disable_process = 0
 			if(mob.mind.primary_cert)
 				mob.mind.assigned_job = mob.mind.primary_cert
-				var/rank = mob.mind.primary_cert.uid
-				job_master.EquipRankPersistant(mob, rank, 1)
+				var/rank = get_default_title(mind.ranks[to_strings(mind.assigned_job.department_flag)], mind.assigned_job)
+				var/rank_uid = mob.mind.primary_cert.uid
+				job_master.EquipRankPersistant(mob, rank_uid, 1)
 				data_core.manifest_inject(mob)
+				
 				ticker.minds |= mob.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 				TICK_CHECK
 				spawn(10)

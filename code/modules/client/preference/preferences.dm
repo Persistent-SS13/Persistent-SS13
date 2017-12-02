@@ -1008,7 +1008,7 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 			Hu.unEquip(Hu.wear_mask)
 			Hu.unEquip(Hu.l_hand)
 			Hu.equip_or_collect(new /obj/item/clothing/mask/breath/vox(Hu), slot_wear_mask)
-			var/tank_pref = Hu.client.prefs.speciesprefs
+			var/tank_pref = speciesprefs
 			if(tank_pref)//Diseasel, here you go
 				Hu.equip_or_collect(new /obj/item/weapon/tank/nitrogen(Hu), slot_l_hand)
 			else

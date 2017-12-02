@@ -32,8 +32,8 @@
 		ind++
 		dat += "[x] <a href='?src=\ref[src];remove_saved_var=[ind]'>(Remove)</a><br>"
 	dat += "<hr><br>"
-	dat += "dat += "[x] <a href='?src=\ref[src];'>(Add new var)</a>"
-	src << browse(dat, "window=roundstats;size=500x600")
+	dat += "<a href='?_src_=savevars;'>(Add new var)</a>"
+//	src << browse(dat, "window=roundstats;size=500x600")
 
 	/**
 /datum/Read(savefile/savefile)

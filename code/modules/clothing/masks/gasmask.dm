@@ -396,8 +396,11 @@
 				to_chat(user, "<span class='warning'>You adjust the restrictor but nothing happens, probably because its broken.</span>")
 	else if(istype(W, /obj/item/weapon/wirecutters))
 		if(aggressiveness != 5)
-			to_chat(user, "<span class='warning'>You broke it!</span>")
+			to_chat(user, "<span class='warning'>You cut the wires that control the settings!</span>")
 			aggressiveness = 5
+		else
+			to_chat(user, "<span class='warning'>You mend the control wires.</span>")
+			aggressiveness = 1
 	else
 		..()
 

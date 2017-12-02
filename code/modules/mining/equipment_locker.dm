@@ -274,7 +274,7 @@
 	if(panel_open)
 		if(istype(W, /obj/item/weapon/crowbar))
 			empty_content()
-			default_deconstruction_crowbar(W)
+			default_deconstruction_crowbar(user, W)
 		return
 
 	if(fastenWrench(user, W))
@@ -600,7 +600,7 @@
 		return
 	if(panel_open)
 		if(istype(I, /obj/item/weapon/crowbar))
-			default_deconstruction_crowbar(I)
+			default_deconstruction_crowbar(user, I)
 		return 1
 	..()
 

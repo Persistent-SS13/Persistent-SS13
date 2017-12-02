@@ -491,7 +491,7 @@
 
 	if(istype(W, /obj/item/weapon/crowbar))
 		if(panel_open)
-			default_deconstruction_crowbar(W)
+			default_deconstruction_crowbar(user, W)
 		return
 
 	if(istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/device/pda))

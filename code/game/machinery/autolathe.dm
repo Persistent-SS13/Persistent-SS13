@@ -123,7 +123,7 @@
 	if(panel_open)
 		if(istype(O, /obj/item/weapon/crowbar))
 			materials.retrieve_all()
-			default_deconstruction_crowbar(O)
+			default_deconstruction_crowbar(user, O)
 			return 1
 		else
 			attack_hand(user)

@@ -461,7 +461,7 @@
 		if(anchored==2)
 			to_chat(user, "Unscrew the hoses first!")
 			return
-		default_deconstruction_crowbar(O, 1)
+		default_deconstruction_crowbar(user, O, 1)
 
 	//--FalseIncarnate
 	//Check if held item is an open container

@@ -129,7 +129,7 @@
 			to_chat(user, "<span class='info'>You put [O.name] in [src.name]</span>")
 
 
-	default_deconstruction_crowbar(O)
+	default_deconstruction_crowbar(user, O)
 
 	update_icon()
 	return

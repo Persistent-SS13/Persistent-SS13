@@ -309,7 +309,7 @@
 	if(exchange_parts(user, W))
 		return
 
-	default_deconstruction_crowbar(W)
+	default_deconstruction_crowbar(user, W)
 
 	..()
 	return

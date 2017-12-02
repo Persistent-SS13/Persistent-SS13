@@ -130,7 +130,7 @@
 	if(exchange_parts(user, I))
 		return
 
-	default_deconstruction_crowbar(I)
+	default_deconstruction_crowbar(user, I)
 
 /obj/machinery/power/compressor/CanAtmosPass(turf/T)
 	return !density
@@ -289,7 +289,7 @@
 	if(exchange_parts(user, I))
 		return
 
-	default_deconstruction_crowbar(I)
+	default_deconstruction_crowbar(user, I)
 
 /obj/machinery/power/turbine/interact(mob/user)
 

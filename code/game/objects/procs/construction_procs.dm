@@ -47,12 +47,12 @@ STAT_FOCUS = 5
 		playsound(src.loc, 'sound/items/Crowbar.ogg', 50, 1)
 		if(skill == 0)
 			if(message)
-				to_chat(user, "span class='notice'>[message]</span>")
+				to_chat(user, "<span class='notice'>[message]</span>")
 			if(do_after(user, time, target = src))
 				return 1
 		else
 			if(message)
-				to_chat(user, "span class='notice'>[message]</span>")
+				to_chat(user, "<span class='notice'>[message]</span>")
 			switch(do_after_stat(user, time, target = src, stat_used = skill))
 				if(1)
 					return 1
@@ -160,3 +160,4 @@ STAT_FOCUS = 5
 					return 1
 				if(2)
 					to_chat(user, "<span class='notice'>You dont have good enough reflexes to anchor this.</span>")
+

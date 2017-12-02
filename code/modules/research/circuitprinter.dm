@@ -9,9 +9,9 @@ using metal and glass, it uses glass and reagents (usually sulfuric acis).
 	desc = "Manufactures circuit boards for the construction of machines."
 	icon_state = "circuit_imprinter"
 	flags = OPENCONTAINER
-	
+
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;materials;component_parts"
-	
+
 	var/g_amount = 0
 	var/gold_amount = 0
 	var/diamond_amount = 0
@@ -118,7 +118,7 @@ using metal and glass, it uses glass and reagents (usually sulfuric acis).
 			if(diamond_amount >= MINERAL_MATERIAL_AMOUNT)
 				var/obj/item/stack/sheet/mineral/diamond/G = new /obj/item/stack/sheet/mineral/diamond(src.loc)
 				G.amount = round(diamond_amount / MINERAL_MATERIAL_AMOUNT)
-			default_deconstruction_crowbar(O)
+			default_deconstruction_crowbar(user, O)
 			return
 		else
 			to_chat(user, "<span class='warning'>You can't load the [src.name] while it's opened.</span>")

@@ -115,7 +115,7 @@
 							A.Grant(brainmob)	// i guess if u grant to someone who already has it it takes it away
 							A.Grant(target)
 			if(target.key)
-				target.ghostize()
+				target.ghostize(0, 1)
 			if(brainmob.mind)
 				brainmob.mind.transfer_to(target)
 			else

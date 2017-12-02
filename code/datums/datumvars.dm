@@ -413,6 +413,13 @@ body
 	html += "</li>"
 
 	return html
+/client/proc/saved_vars_Topic(href, href_list, hrsc)
+	if(!check_rights(R_ADMIN|R_MOD))
+		return
+	if(href_list["Vars"])
+		var/datum/D = locate(href_list["Vars"])
+
+
 
 /client/proc/view_var_Topic(href, href_list, hsrc)
 	//This should all be moved over to datum/admins/Topic() or something ~Carn

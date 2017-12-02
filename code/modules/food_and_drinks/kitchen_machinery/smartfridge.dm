@@ -207,7 +207,7 @@
 		power_change()
 		return
 
-	default_deconstruction_crowbar(O)
+	default_deconstruction_crowbar(user, O)
 
 	if(istype(O, /obj/item/device/multitool)||istype(O, /obj/item/weapon/wirecutters))
 		if(panel_open)

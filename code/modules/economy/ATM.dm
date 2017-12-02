@@ -38,12 +38,29 @@ log transactions
 	..()
 	machine_id = "[station_name()] RT #[num_financial_terminals++]"
 
+/obj/machinery/atm/New(loc, dir, building)
+	..()
+
+	if(loc)
+		src.loc = loc
+
+	if(dir)
+		src.dir = dir
+
+	if(building)
+		pixel_x = (dir & 3)? 0 : (dir == 4 ? -32 : 32)
+		pixel_y = (dir & 3)? (dir ==1 ? -32 : 32) : 0
+
 /obj/machinery/atm/initialize()
 	..()
 	reconnect_database()
 
+/obj/machinery/atm/Destroy()
+	..()
+	num_financial_terminals--
+
 /obj/machinery/atm/process()
-	if(stat & NOPOWER)
+	if(stat & NOPOWER || panel_open)
 		return
 
 	if(linked_db && ( (linked_db.stat & NOPOWER) || !linked_db.activated ) )
@@ -84,6 +101,13 @@ log transactions
 			break
 
 /obj/machinery/atm/attackby(obj/item/I as obj, mob/user as mob, params)
+	if(default_deconstruction_screwdriver(user, icon_state, icon_state, I))
+		return
+	if(panel_open && actCrowbar(user, I, time = 30, message = "You start pulling \the [src] off the wall."))
+		to_chat(user, "<span class='notice'>You pull \the [src] off the wall.</span>")
+		new /obj/item/mounted/frame/atm_frame(src.loc)
+		qdel(src)
+		return
 	if(istype(I, /obj/item/weapon/card))
 		var/obj/item/weapon/card/id/idcard = I
 		if(!held_card)

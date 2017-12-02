@@ -318,7 +318,7 @@
 		return
 
 	if(istype(G, /obj/item/weapon/crowbar))
-		default_deconstruction_crowbar(G)
+		default_deconstruction_crowbar(user, G)
 		return
 
 	if(istype(G, /obj/item/weapon/grab))

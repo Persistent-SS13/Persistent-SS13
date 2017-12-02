@@ -421,6 +421,14 @@
 	build_path = /obj/item/mounted/frame/mirror_frame
 	category = list("initial", "Construction")
 
+/datum/design/atm_frame
+	name = "ATM"
+	id = "atm_frame"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 8000, MAT_GLASS = 4000)
+	build_path = /obj/item/mounted/frame/atm_frame
+	category = list("initial", "Construction")
+
 /datum/design/rcd_ammo
 	name = "Compressed Matter Cardridge"
 	id = "rcd_ammo"

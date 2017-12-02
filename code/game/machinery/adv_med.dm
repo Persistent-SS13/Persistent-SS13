@@ -72,7 +72,7 @@
 		return
 
 	if(istype(G, /obj/item/weapon/crowbar))
-		default_deconstruction_crowbar(G)
+		default_deconstruction_crowbar(user, G)
 		return
 
 	if(istype(G, /obj/item/weapon/grab))
@@ -299,7 +299,7 @@
 	if(exchange_parts(user, G))
 		return
 
-	default_deconstruction_crowbar(G)
+	default_deconstruction_crowbar(user, G)
 
 /obj/machinery/body_scanconsole/attack_ai(user as mob)
 	return attack_hand(user)

@@ -385,17 +385,17 @@ Class Procs:
 	uid = gl_uid
 	gl_uid++
 
-/obj/machinery/proc/default_deconstruction_crowbar(var/obj/item/weapon/crowbar/C, var/ignore_panel = 0)
+/obj/machinery/proc/default_deconstruction_crowbar(var/user, var/obj/item/weapon/crowbar/C, var/ignore_panel = 0)
 	if(istype(C) && (panel_open || ignore_panel))
 		. = 1
-		switch(do_after_stat(C.loc, 100, needhand = 1, target = src, progress = 1, action_name = "crowbar [src] apart", auto_emote = 1, stat_used = 1, minimum = 3, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 5, progressive_stamina = 1, attempt_cost = 10, stamina_use_fail = 0.5, sound_file = 'sound/items/Crowbar.ogg'))
+		switch(do_after_stat(user, 100, needhand = 1, target = src, progress = 1, action_name = "crowbar [src] apart", auto_emote = 1, stat_used = 1, minimum = 3, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 5, progressive_stamina = 1, attempt_cost = 10, stamina_use_fail = 0.5, sound_file = 'sound/items/Crowbar.ogg'))
 			if(2)
-				to_chat(C.loc, "You can't quite summon the strength to take [src] apart.")
+				to_chat(user, "You can't quite summon the strength to take [src] apart.")
 				return 1
 			if(0)
 				return 1
 			if(1)
-				to_chat(C.loc, "You finish crowbaring [src] apart.")
+				to_chat(user, "You finish crowbaring [src] apart.")
 				var/obj/machinery/constructable_frame/machine_frame/M = new /obj/machinery/constructable_frame/machine_frame(src.loc)
 				M.state = 2
 				M.icon_state = "box_1"

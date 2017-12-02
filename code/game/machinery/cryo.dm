@@ -294,7 +294,7 @@
 	if(exchange_parts(user, G))
 		return
 
-	default_deconstruction_crowbar(G)
+	default_deconstruction_crowbar(user, G)
 
 	if(istype(G, /obj/item/weapon/grab))
 		if(panel_open)

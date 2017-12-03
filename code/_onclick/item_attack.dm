@@ -8,9 +8,9 @@
 	return
 
 /atom/movable/attackby(obj/item/W, mob/living/user, params)
-	user.changeNext_move(CLICK_CD_MELEE)
-	user.do_attack_animation(src)
-	if(!(W.flags&NOBLUDGEON))
+	if(!(W.flags & NOBLUDGEON))
+		user.changeNext_move(CLICK_CD_MELEE)
+		user.do_attack_animation(src)
 		visible_message("<span class='danger'>[src] has been hit by [user] with [W].</span>")
 
 /mob/living/attackby(obj/item/I, mob/user, params)

@@ -742,8 +742,8 @@ map_storage
 							found = 0
 							i++
 						else
-							backup_dir = "map_backups/[i]/[B].sav"
-				fcopy(sav, backup_dir)
+							backup_dir = "map_backups/[i]/"
+				fcopy(sav, "[backup_dir][B].sav")
 				fdel("map_saves/[B].sav")
 			var/savefile/savefile = new("map_saves/[B].sav")
 			for(var/turf/turf in get_area_turfs(A))

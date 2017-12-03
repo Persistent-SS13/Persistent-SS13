@@ -42,6 +42,7 @@
 		sleep(5)
 		icon_state = initial(icon_state)
 		updateUsrDialog()
+		playsound(loc, "sound/effects/filing_cabinet.ogg", 50, 1)
 	else if(fastenWrench(user, P))
 	else if(actWeld(user, P, skill = 0, message = "You start deconstructing \the [name]."))
 		to_chat(user, "<span class='notice'>You deconstruct \the [src]!</span>")
@@ -95,6 +96,7 @@
 		if(istype(P) && (P.loc == src) && src.Adjacent(usr))
 			usr.put_in_hands(P)
 			updateUsrDialog()
+			playsound(loc, "sound/effects/filing_cabinet.ogg", 50, 1)
 			icon_state = "[initial(icon_state)]-open"
 			spawn(0)
 				sleep(5)

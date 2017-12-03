@@ -6,7 +6,6 @@
 	var/buckle_requires_restraints = 0 //require people to be handcuffed before being able to buckle. eg: pipes
 	var/mob/living/buckled_mob = null
 
-
 //Interaction
 /atom/movable/attack_hand(mob/living/user)
 	. = ..()
@@ -58,6 +57,12 @@
 
 /atom/movable/proc/unbuckle_mob()
 	if(buckled_mob && buckled_mob.buckled == src && buckled_mob.can_unbuckle(usr))
+		if(buckled_mob.on_ride)
+			for(var/obj/item/riding_offhand/O in buckled_mob.contents)
+				qdel(O)
+			buckled_mob.on_ride=0
+			buckled_mob.pixel_x = 0
+			buckled_mob.pixel_y = 0 //just to ensure that the player goes back to where they should be.
 		. = buckled_mob
 		buckled_mob.buckled = null
 		buckled_mob.anchored = initial(buckled_mob.anchored)

@@ -1311,8 +1311,7 @@ obj/mecha/buckle_mob(mob/living/M, force = FALSE, check_loc = FALSE)
 	if(!riding_datum)
 		riding_datum = new /datum/riding/mecha(src)
 	if(buckled_mob)
-		if(M in buckled_mob)
-			return
+		return
 	if(M.stat)
 		return
 	if(M.incapacitated())
@@ -1323,6 +1322,7 @@ obj/mecha/buckle_mob(mob/living/M, force = FALSE, check_loc = FALSE)
 		to_chat(M, "<span class='notice'>You need a free hand to hold onto the mech!</span>")
 		return
 	to_chat(M, "<span class='notice'>You grab hold of the handle on the back of [src]...</span>")
+	M.on_ride=1
 	if(do_after(M, 15, target = src) && riding_datum.equip_buckle_inhands(M) && M in range(1))
 		if(iscarbon(M))
 			if(M.incapacitated(FALSE, TRUE))
@@ -1331,18 +1331,20 @@ obj/mecha/buckle_mob(mob/living/M, force = FALSE, check_loc = FALSE)
 		to_chat(viewers(src), "<span class='notice'>[M] pulls \himself up onto the back of [src]. </span>")
 		M.buckled = src
 		buckled_mob = M
+		M.floating=0
 		M.update_canmove()
 		M.stop_pulling()
 		M.forceMove(src.loc)
+		M.throw_alert("buckled", /obj/screen/alert/restrained/buckled, new_master = src)
 		riding_datum.handle_vehicle_offsets()
 	else
 		visible_message("<span class='warning'>[M] loses their grip on [src]!</span>")
+		M.on_ride=0
 
 	
 /obj/mecha/unbuckle_mob(mob/user)
-	riding_datum.unequip_buckle_inhands(user)
 	riding_datum.restore_position(user)
-	. = ..(user) 
+	..() 
 	
 	
 /obj/mecha/proc/moved_inside(var/mob/living/carbon/human/H as mob, var/override = 0)

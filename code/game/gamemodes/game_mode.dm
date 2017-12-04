@@ -198,6 +198,8 @@
 	for(var/datum/mind/M in medicalplayers)
 		if(istype(medicalplayers[M], /obj/item/device/pda))
 			var/obj/item/device/pda/P=medicalplayers[M]
+			if(P)
+				message_admins("PDA found for [M.name]")
 			var/completed = 0
 			var/msg = ""
 			var/pay = 0

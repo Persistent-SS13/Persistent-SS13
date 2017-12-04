@@ -71,11 +71,9 @@
 	if(planttype)
 		plantname = planttype
 
-	if(!plantname)
-		return
 
 	if(!plant_controller)
-		sleep(250) // ugly hack, should mean roundstart plants are fine.
+		sleep(20) // ugly hack, should mean roundstart plants are fine.
 	if(!plant_controller)
 		to_chat(world, "<span class='danger'>Plant controller does not exist and [src] requires it. Aborting.</span>")
 		qdel(src)

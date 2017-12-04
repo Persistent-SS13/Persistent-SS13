@@ -234,6 +234,7 @@
 	body += "<option value='?_src_=vars;mark_object=\ref[D]'>Mark Object</option>"
 	body += "<option value='?_src_=vars;proc_call=\ref[D]'>Call Proc</option>"
 	body += "<option value='?_src_=vars;jump_to=\ref[D]'>Jump to Object</option>"
+	body += "<option value='?_src_=vars;add_saved_var=\ref[D]'>Add Saved Var</option>"
 	if(ismob(D))
 		body += "<option value='?_src_=vars;mob_player_panel=\ref[D]'>Show player panel</option>"
 
@@ -412,7 +413,19 @@ body
 	html += "</li>"
 
 	return html
-
+/client/proc/saved_vars_Topic(href, href_list, hrsc)
+	if(!check_rights(R_ADMIN|R_MOD))
+		return
+	var/datum/D
+	if(href_list["Vars"])
+		D = locate(href_list["Vars"])
+	if(!D)
+		message_admins("saved_vars_topic, NO D")
+		return
+	if(href_list["Remove"])
+		return//
+	if(href_list["Add"])
+		return//
 /client/proc/view_var_Topic(href, href_list, hsrc)
 	//This should all be moved over to datum/admins/Topic() or something ~Carn
 	if(!check_rights(R_ADMIN|R_MOD))
@@ -703,6 +716,13 @@ body
 
 		src.cmd_admin_emp(A)
 		href_list["datumrefresh"] = href_list["emp"]
+		
+	else if(href_list["add_saved_var"])
+	
+		if(!check_rights(R_ADMIN))	return
+
+		var/datum/A = locate(href_list["add_saved_var"])
+	//	A.add_saved_var(usr)
 
 	else if(href_list["mark_object"])
 		if(!check_rights(0))	return

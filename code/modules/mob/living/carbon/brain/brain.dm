@@ -94,6 +94,7 @@ I'm using this for Stat to give it a more nifty interface to work with
 		return 1
 	if(container && istype(container, /obj/mecha))
 		return 1
+	
 	return 0
 	
 /mob/living/carbon/brain/Stat()

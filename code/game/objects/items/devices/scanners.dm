@@ -124,6 +124,8 @@ REAGENT SCANNER
 	origin_tech = "magnets=1;biotech=1"
 	var/upgraded = 0
 	var/mode = 1;
+	
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;upgraded"
 
 
 /obj/item/device/healthanalyzer/attack(mob/living/M as mob, mob/living/user as mob)

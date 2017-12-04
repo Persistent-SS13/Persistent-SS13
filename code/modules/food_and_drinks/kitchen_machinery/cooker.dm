@@ -100,7 +100,7 @@
 			default_deconstruction_screwdriver(user, openicon, officon, I)
 			return
 		if(iscrowbar(I))
-			default_deconstruction_crowbar(I)
+			default_deconstruction_crowbar(user, I)
 			return
 		if(istype(I, /obj/item/weapon/storage/part_replacer))
 			exchange_parts(user, I)

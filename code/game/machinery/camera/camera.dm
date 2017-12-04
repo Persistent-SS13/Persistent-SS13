@@ -140,7 +140,7 @@
 		wires.Interact(user)
 
 	else if(istype(W, /obj/item/weapon/weldingtool) && wires.CanDeconstruct())
-		if(weld(W, user))
+		if(actWeld(user, W, skill = 0))
 			to_chat(user, "You unweld the camera leaving it as just a frame screwed to the wall.")
 			if(!assembly)
 				assembly = new()
@@ -343,23 +343,6 @@
 			break
 
 	return null
-
-/obj/machinery/camera/proc/weld(var/obj/item/weapon/weldingtool/WT, var/mob/user)
-	if(busy)
-		return 0
-	if(!WT.remove_fuel(0, user))
-		return 0
-
-	to_chat(user, "<span class='notice'>You start to weld [src]...</span>")
-	playsound(src.loc, 'sound/items/Welder.ogg', 50, 1)
-	busy = 1
-	if(do_after(user, 100, target = src))
-		busy = 0
-		if(!WT.isOn())
-			return 0
-		return 1
-	busy = 0
-	return 0
 
 /obj/machinery/camera/proc/Togglelight(on=0)
 	for(var/mob/living/silicon/ai/A in ai_list)

@@ -51,7 +51,7 @@
 	if(exchange_parts(user, I))
 		return
 
-	default_deconstruction_crowbar(I)
+	default_deconstruction_crowbar(user, I)
 
 
 //CARGO TELEPAD//

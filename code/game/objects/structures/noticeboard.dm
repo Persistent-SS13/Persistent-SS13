@@ -7,6 +7,7 @@
 	anchored = 1
 	var/notices = 0
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;notices"
+
 /obj/structure/noticeboard/initialize()
 	for(var/obj/item/I in loc)
 		if(notices > 4) break
@@ -15,8 +16,31 @@
 			notices++
 	icon_state = "nboard0[notices]"
 
+/obj/structure/noticeboard/New(loc, dir, building)
+	..()
+
+	if(loc)
+		src.loc = loc
+
+	if(dir)
+		src.dir = dir
+
+	if(building)
+		pixel_x = (dir & 3)? 0 : (dir == 4 ? -32 : 32)
+		pixel_y = (dir & 3)? (dir ==1 ? -28 : 28) : 0
+
 //attaching papers!!
 /obj/structure/noticeboard/attackby(var/obj/item/weapon/O as obj, var/mob/user as mob, params)
+
+	if(actWrench(user, O, time = 0))
+		to_chat(user, "<span class='notice'>You deconstruct the noticeboard.</span>")
+		new /obj/item/mounted/frame/noticeboard_frame(user.loc)
+		for(var/obj/item/weapon/paper/P in src)
+			P.loc = src.loc
+		qdel(src)
+		return
+
+
 	if(istype(O, /obj/item/weapon/paper))
 		if(notices < 5)
 			O.add_fingerprint(user)

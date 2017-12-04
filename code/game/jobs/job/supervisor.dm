@@ -2,7 +2,7 @@ var/datum/announcement/minor/captain_announcement = new(do_newscast = 1)
 /datum/job/captain
 	title = "Captain"
 	flag = CAPTAIN
-	department_flag = ENGSEC
+	department_flag = COMMAND
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "Nanotrasen officials"
@@ -51,7 +51,7 @@ var/datum/announcement/minor/captain_announcement = new(do_newscast = 1)
 /datum/job/hop
 	title = "Head of Personnel"
 	flag = HOP
-	department_flag = SUPPORT
+	department_flag = COMMAND
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "the captain"

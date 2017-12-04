@@ -8,6 +8,23 @@
 	var/obj/item/weapon/extinguisher/has_extinguisher = new/obj/item/weapon/extinguisher
 	var/opened = 0
 
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;opened;has_extinguisher"
+
+
+/obj/structure/extinguisher_cabinet/New(loc, dir, building)
+	..()
+
+	if(loc)
+		src.loc = loc
+
+	if(dir)
+		src.dir = dir
+
+	if(building)
+		has_extinguisher = null
+		pixel_x = (dir & 3)? 0 : (dir == 4 ? -24 : 24)
+		pixel_y = (dir & 3)? (dir ==1 ? -32 : 32) : 0
+
 
 /obj/structure/extinguisher_cabinet/attackby(obj/item/O, mob/user, params)
 	if(isrobot(user) || isalien(user))
@@ -22,6 +39,21 @@
 			opened = !opened
 	else
 		opened = !opened
+	if(iswelder(O))
+		if(opened)
+			to_chat(user, "<span class='notice'>Open the [src] first.</span>")
+			return
+		if(!opened)
+			if(has_extinguisher)
+				to_chat(user, "<span class='notice'>Remove the [has_extinguisher] first.</span>")
+				return
+			else
+				if(actWeld(user, O, time = 20, message = "You start removing the [src] from the wall."))
+					to_chat(user, "<span class='notice'>You remove the [src] from the wall.</span>")
+					new /obj/item/mounted/frame/extinguisher_cabinet_frame(src.loc)
+					qdel(src)
+					return
+
 	update_icon()
 
 

@@ -1004,6 +1004,15 @@ var/global/list/special_role_times = list( //minimum age (in days) for accounts 
 			Hu.equip_or_collect(new/obj/item/weapon/tank/plasma/plasmaman(Hu), tank_slot) // Bigger plasma tank from Raggy.
 			Hu.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(Hu), slot_in_backpack)
 			Hu.equip_or_collect(new /obj/item/weapon/plasmensuit_cartridge(Hu), slot_in_backpack)
+		if (species=="Vox")
+			Hu.unEquip(Hu.wear_mask)
+			Hu.unEquip(Hu.l_hand)
+			Hu.equip_or_collect(new /obj/item/clothing/mask/breath/vox(Hu), slot_wear_mask)
+			var/tank_pref = speciesprefs
+			if(tank_pref)//Diseasel, here you go
+				Hu.equip_or_collect(new /obj/item/weapon/tank/nitrogen(Hu), slot_l_hand)
+			else
+				Hu.equip_or_collect(new /obj/item/weapon/tank/emergency_oxygen/vox(Hu), slot_l_hand)
 		Hu.equip_or_collect(new /obj/item/device/radio/headset, slot_r_ear)
 		Hu.equip_or_collect(new /obj/item/device/pda, slot_wear_pda)
 		var/obj/item/weapon/implant/crewtracker/implant = new()

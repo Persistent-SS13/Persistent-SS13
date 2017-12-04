@@ -218,7 +218,7 @@
 		if(panel_open)
 			for(var/obj/I in contents) // in case there is something in the scanner
 				I.forceMove(src.loc)
-			default_deconstruction_crowbar(item)
+			default_deconstruction_crowbar(user, item)
 		return
 	else if(istype(item, /obj/item/weapon/reagent_containers/glass))
 		if(beaker)

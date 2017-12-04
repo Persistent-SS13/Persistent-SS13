@@ -135,7 +135,7 @@
 	if(exchange_parts(user, I))
 		return
 
-	default_deconstruction_crowbar(I)
+	default_deconstruction_crowbar(user, I)
 
 /obj/machinery/mech_bay_recharge_port/proc/start_charge(var/obj/mecha/recharging_mecha)
 	if(stat&(NOPOWER|BROKEN))

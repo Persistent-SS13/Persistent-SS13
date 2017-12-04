@@ -349,7 +349,7 @@
 	if(exchange_parts(user, W))
 		return
 
-	default_deconstruction_crowbar(W)
+	default_deconstruction_crowbar(user, W)
 
 /obj/machinery/teleport/hub/proc/teleport(atom/movable/M as mob|obj, turf/T)
 	var/obj/machinery/computer/teleporter/com = power_station.teleporter_console
@@ -446,7 +446,7 @@
 	if(exchange_parts(user, W))
 		return
 
-	default_deconstruction_crowbar(W)
+	default_deconstruction_crowbar(user, W)
 
 /obj/machinery/teleport/station
 	name = "station"
@@ -524,7 +524,7 @@
 	if(exchange_parts(user, W))
 		return
 
-	default_deconstruction_crowbar(W)
+	default_deconstruction_crowbar(user, W)
 
 	if(panel_open)
 		if(istype(W, /obj/item/device/multitool))

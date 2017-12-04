@@ -484,7 +484,47 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containername = "Roboticist Equipment"
 	desc = "Everything a Roboticist needs."
 	authentication = list("rd", "captain", "hop")
-
+/datum/supply_item/profession/janitor
+	name = "Janitor Equipment"
+	contains = list(/obj/item/clothing/under/rank/janitor,
+					/obj/item/clothing/head/soft/purple,
+					/obj/item/clothing/glasses/janitor,
+					/obj/item/clothing/shoes/workboots,
+					/obj/item/weapon/storage/belt/janitor/full,
+					/obj/item/device/lightreplacer,
+					/obj/item/weapon/storage/bag/trash,
+					/obj/item/weapon/watertank/janitor,
+					/obj/item/device/radio/headset/headset_service) // /obj/item/weapon/cartidge/engineering
+	cost = 200
+	containertype = /obj/structure/closet/secure_closet
+	containername = "Janitor Equipment"
+	desc = "Start cleaning already!"
+/datum/supply_item/profession/chef
+	name = "Chef Equipment"
+	contains = list(/obj/item/clothing/under/rank/chef,
+					/obj/item/clothing/head/chefhat,
+					/obj/item/clothing/suit/chef/classic,
+					/obj/item/weapon/reagent_containers/glass/rag,
+					/obj/item/weapon/reagent_containers/food/condiment/enzyme,
+					/obj/item/device/radio/headset/headset_service) // /obj/item/weapon/cartidge/engineering
+	cost = 150
+	containertype = /obj/structure/closet/secure_closet
+	containername = "Chef Equipment"
+	desc = "Get cooking!"
+/datum/supply_item/profession/botanist
+	name = "Botany Equipment"
+	contains = list(/obj/item/clothing/under/rank/hydroponics,
+					/obj/item/clothing/suit/hooded/wintercoat/hydro,
+					/obj/item/clothing/mask/bandana/botany,
+					/obj/item/clothing/gloves/botanic_leather,
+					/obj/item/weapon/storage/bag/plants/portaseeder,
+					/obj/item/weapon/storage/backpack/botany,
+					/obj/item/device/radio/headset/headset_service) // /obj/item/weapon/cartidge/engineering
+	cost = 180
+	containertype = /obj/structure/closet/secure_closet/hydroponics
+	containername = "Botanist Equipment"
+	desc = "Make some dank weed."
+	
 
 /datum/supply_item/headgear	// Section header - use these to set default supply group and crate type for sections
 	name = "HEADER"				// Use "HEADER" to denote section headers, this is needed for the supply computers to filter them
@@ -1123,6 +1163,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containername = "Engineering Hardsuits - Bulk Order"
 	cost = 10000
 	desc = "10 engineering hardsuits with helmets."
+	authentication = list("chief", "captain", "hop")
 /datum/supply_item/engineering/atmoshardsuits
 	name = "Bulk Atmospheric Hardsuit Order"
 	contains = list(/obj/item/clothing/suit/space/rig/atmos,
@@ -1148,11 +1189,13 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containername = "Atmospheric Hardsuits - Bulk Order"
 	cost = 10000
 	desc = "10 atmospheric hardsuits with helmets."
+	authentication = list("chief", "captain", "hop")
 /datum/supply_item/engineering/fueltank
 	name = "Fuel Tank"
 	contains = list(/obj/structure/reagent_dispensers/fueltank)
 	cost = 400
 	desc = "Good old fashioned fossil fuels."
+	authentication = list("chief", "captain", "hop")
 /datum/supply_item/engineering/oxygen
 	name = "Canister (O2)"
 	containertype = /obj/machinery/portable_atmospherics/canister/oxygen
@@ -1236,5 +1279,29 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/twohanded/staff/broom)
     cost = 300											// Cheaper because there is less stuff.
     desc = "A witch can be just as good as a wizard in the arcane arts!"
-
+/datum/supply_item/misc/officesupplies
+	name = "Office Supplies"
+	contains = list(/obj/item/weapon/pen/multi,
+					/obj/item/weapon/pen/multi,
+					/obj/item/weapon/folder,
+					/obj/item/weapon/folder,
+					/obj/item/weapon/paper_bin,
+					/obj/item/weapon/paper_bin)
+	cost = 100
+	desc = "Everything a good little clerk needs."
+/datum/supply_item/misc/cargosupplies
+	name = "Cargo Supplies"
+	contains = list(/obj/item/weapon/rcs,
+					/obj/item/device/destTagger,
+					/obj/item/stack/packageWrap,
+					/obj/item/stack/packageWrap,
+					/obj/item/stack/packageWrap,
+					/obj/item/stack/tape_roll,
+					/obj/item/stack/tape_roll,
+					/obj/item/stack/tape_roll,
+					/obj/item/weapon/storage/box,
+					/obj/item/weapon/storage/box,
+					/obj/item/weapon/storage/box)
+	cost = 400
+	desc = "Items for a productive cargo department."
 

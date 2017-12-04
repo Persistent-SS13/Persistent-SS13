@@ -6,6 +6,8 @@
 
 /obj/mecha/medical/mechturn(direction)
 	dir = direction
+	if(buckled_mob !=null)
+		riding_datum.handle_vehicle_offsets()
 	playsound(src,'sound/mecha/mechmove01.ogg',40,1)
 	return 1
 

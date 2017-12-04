@@ -12,9 +12,9 @@ Note: Must be placed west/left of and R&D console to function.
 	desc = "Converts raw materials into useful objects."
 	icon_state = "protolathe"
 	flags = OPENCONTAINER
-	
+
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;materials;component_parts"
-	
+
 	var/datum/material_container/materials
 	var/efficiency_coeff
 
@@ -111,7 +111,7 @@ Note: Must be placed west/left of and R&D console to function.
 			for(var/obj/item/weapon/reagent_containers/glass/G in component_parts)
 				reagents.trans_to(G, G.reagents.maximum_volume)
 			materials.retrieve_all()
-			default_deconstruction_crowbar(O)
+			default_deconstruction_crowbar(user, O)
 			return 1
 		else
 			to_chat(user, "<span class='warning'>You can't load the [src.name] while it's opened.</span>")

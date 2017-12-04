@@ -8,8 +8,28 @@
 	anchored = 1
 	var/shattered = 0
 	var/list/ui_users = list()
+	var/state = 0
+
+
+/obj/structure/mirror/New(loc, dir, building)
+	..()
+
+	if(loc)
+		src.loc = loc
+
+	if(dir)
+		src.dir = dir
+
+	if(building)
+		state = 3
+		pixel_x = (dir & 3)? 0 : (dir == 4 ? -24 : 24)
+		pixel_y = (dir & 3)? (dir ==1 ? -28 : 28) : 0
+
 
 /obj/structure/mirror/attack_hand(mob/user as mob)
+	if(state != 0)
+		to_chat(user, "<span class='notice'>You need to secure the mirror first</span>")
+		return
 	if(shattered)	return
 
 	if(ishuman(user))
@@ -39,6 +59,37 @@
 
 
 /obj/structure/mirror/attackby(obj/item/I as obj, mob/living/user as mob, params)
+	if(actScrewdriver(user, I, time = 0, skill = 0))
+		switch(state)
+			if(0)
+				state = 1
+				to_chat(user, "<span class='notice'>You unfasten the [name]'s screws.</span>")
+			if(1)
+				state = 0
+				to_chat(user, "<span class='notice'>You fasten the [name]'s screws.</span>")
+			if(2)
+				state = 3
+				to_chat(user, "<span class='notice'>You unfasten the [name]'s screws.</span>")
+			if(3)
+				state = 2
+				to_chat(user, "<span class='notice'>You fasten the [name]'s screws.</span>")
+		return
+	if(state == 3 && actWrench(user, I, time = 10, skill = 0))
+		to_chat(user, "<span class='notice'>You disassemble the [name].</span>")
+		if(!shattered)
+			new /obj/item/mounted/frame/mirror_frame(user.loc)
+		qdel(src)
+		return
+	if((state == 1 || state == 2) && actCrowbar(user, I, time = 10, skill = 0))
+		switch(state)
+			if(1)
+				state = 2
+				to_chat(user, "<span class='notice'>You pry the [name] out of its frame.</span>")
+			if(2)
+				state = 1
+				to_chat(user, "<span class='notice'>You pry the [name] into its frame.</span>")
+		return
+
 	user.do_attack_animation(src)
 	if(shattered)
 		playsound(src.loc, 'sound/effects/hit_on_shattered_glass.ogg', 70, 1)

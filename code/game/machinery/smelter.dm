@@ -92,7 +92,7 @@
 
 	if(panel_open)
 		if(istype(O, /obj/item/weapon/crowbar))
-			default_deconstruction_crowbar(O)
+			default_deconstruction_crowbar(user, O)
 			return 1
 		else
 			attack_hand(user)
@@ -172,7 +172,8 @@
 		updateUsrDialog()
 		var/obj/item/S = new D.refined_type(loc)
 		sleep(10)
-		step(S,output_dir)
+		if(S)
+			step(S,output_dir)
 	desc = initial(desc)
 
 /obj/machinery/mineral/conglo_smelter/process()

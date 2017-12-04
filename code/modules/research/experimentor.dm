@@ -126,7 +126,7 @@
 		return
 
 	if(panel_open && istype(O, /obj/item/weapon/crowbar))
-		default_deconstruction_crowbar(O)
+		default_deconstruction_crowbar(user, O)
 		return
 
 	if(!checkCircumstances(O))

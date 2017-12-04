@@ -28,14 +28,14 @@
 	if(exchange_parts(user, W))
 		return
 
-	if(default_unfasten_wrench(user, W))
+	if(fastenWrench(user, W))
 		if(!anchored)
 			disconnect_from_network()
 		else
 			connect_to_network()
 		return
 
-	if(default_deconstruction_crowbar(W))
+	if(default_deconstruction_crowbar(user, W))
 		return
 
 	return ..()
@@ -71,10 +71,10 @@
 	if(exchange_parts(user, W))
 		return
 
-	if(default_unfasten_wrench(user, W))
+	if(fastenWrench(user, W))
 		return
 
-	if(default_deconstruction_crowbar(W))
+	if(default_deconstruction_crowbar(user, W))
 		return
 
 	return ..()

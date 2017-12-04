@@ -40,11 +40,11 @@
 	if(exchange_parts(user, O))
 		return
 
-	if(default_unfasten_wrench(user, O))
+	if(fastenWrench(user, O))
 		power_change()
 		return
 
-	default_deconstruction_crowbar(O)
+	default_deconstruction_crowbar(user, O)
 
 	if(istype(O, /obj/item/device/multitool))
 		cycle_through++

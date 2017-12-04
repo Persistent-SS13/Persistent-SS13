@@ -606,7 +606,8 @@ BLIND     // can't see anything
 	..()
 	accessories = list()
 	for(var/obj/item/clothing/accessory/A in contents)
-		accessories |= A
+		accessories += A
+		A.on_attached(src, src)
 /obj/item/clothing/under/proc/can_attach_accessory(obj/item/clothing/accessory/A)
 	if(istype(A))
 		.=1

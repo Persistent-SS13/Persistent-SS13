@@ -1,5 +1,3 @@
-//todo: toothbrushes, and some sort of "toilet-filthinator" for the hos
-
 /obj/structure/toilet
 	name = "toilet"
 	desc = "The HT-451, a torque rotation-based, waste disposal unit for small matter. This one seems remarkably clean."
@@ -11,12 +9,6 @@
 	var/cistern = 0			//if the cistern bit is open
 	var/w_items = 0			//the combined w_class of all the items in the cistern
 	var/mob/living/swirlie = null	//the mob being given a swirlie
-
-
-/obj/structure/toilet/New()
-	open = round(rand(0, 1))
-	update_icon()
-
 
 /obj/structure/toilet/attack_hand(mob/living/user)
 	if(swirlie)
@@ -49,14 +41,20 @@
 
 
 /obj/structure/toilet/attackby(obj/item/I, mob/living/user, params)
-	if(istype(I, /obj/item/weapon/crowbar))
-		to_chat(user, "<span class='notice'>You start to [cistern ? "replace the lid on the cistern" : "lift the lid off the cistern"]...</span>")
-		playsound(loc, 'sound/effects/stonedoor_openclose.ogg', 50, 1)
-		if(do_after(user, 30, target = src))
-			user.visible_message("[user] [cistern ? "replaces the lid on the cistern" : "lifts the lid off the cistern"]!", "<span class='notice'>You [cistern ? "replace the lid on the cistern" : "lift the lid off the cistern"]!</span>", "<span class='italics'>You hear grinding porcelain.</span>")
-			cistern = !cistern
-			update_icon()
-			return
+
+	if(dirFastenWrench(user, I))
+		return
+
+	if(actWeld(user, I, time = 10, skill = 0, message = "You start deconstucting \the [name]."))
+		to_chat(user, "<span class='notice'>You deconstruct \the [name].</span>")
+		new /obj/item/stack/sheet/metal(src.loc, 2)
+		qdel(src)
+
+	if(actCrowbar(user, I, message = "You start to [cistern ? "replace the lid on the cistern" : "lift the lid off the cistern"]..."))
+		user.visible_message("[user] [cistern ? "replaces the lid on the cistern" : "lifts the lid off the cistern"]!", "<span class='notice'>You [cistern ? "replace the lid on the cistern" : "lift the lid off the cistern"]!</span>", "<span class='italics'>You hear grinding porcelain.</span>")
+		cistern = !cistern
+		update_icon()
+		return
 
 	if(istype(I, /obj/item/weapon/reagent_containers))
 		if(!open)
@@ -185,17 +183,24 @@
 /obj/machinery/shower/attackby(obj/item/I as obj, mob/user as mob, params)
 	if(I.type == /obj/item/device/analyzer)
 		to_chat(user, "<span class='notice'>The water temperature seems to be [watertemp].</span>")
-	if(istype(I, /obj/item/weapon/wrench))
-		to_chat(user, "<span class='notice'>You begin to adjust the temperature valve with the [I].</span>")
-		if(do_after(user, 50, target = src))
-			switch(watertemp)
-				if("normal")
-					watertemp = "freezing"
-				if("freezing")
-					watertemp = "boiling"
-				if("boiling")
-					watertemp = "normal"
-			user.visible_message("<span class='notice'>[user] adjusts the shower with the [I].</span>", "<span class='notice'>You adjust the shower with the [I].</span>")
+		return
+	if(dirFastenWrench(user, I))
+		return
+	if(actWeld(user, I, time = 10, skill = 0, message = "You start deconstucting \the [name]."))
+		to_chat(user, "<span class='notice'>You deconstruct \the [name].</span>")
+		new /obj/item/stack/sheet/metal(src.loc, 2)
+		qdel(src)
+		return
+	if(actScrewdriver(user, I, time = 50, "You begin to adjust the temperature valve with the [I]."))
+		switch(watertemp)
+			if("normal")
+				watertemp = "freezing"
+			if("freezing")
+				watertemp = "boiling"
+			if("boiling")
+				watertemp = "normal"
+		user.visible_message("<span class='notice'>[user] adjusts the shower with the [I].</span>", "<span class='notice'>You adjust the shower with the [I].</span>")
+		return
 	if(on)
 		I.water_act(100, convertHeat(), src)
 
@@ -430,29 +435,13 @@
 	if(busy)
 		to_chat(user, "<span class='warning'>Someone's already washing here!</span>")
 		return
-	if(istype(O, /obj/item/weapon/wrench))
-		if(!anchored)
-			switch(input(user, "Select direction.", "Direction", "South") in list( "South", "East", "West"))
-				if("South")
-					dir = 2
-					pixel_x = 0
-					pixel_y = 14
-				if("West")
-					dir = 8
-					pixel_x = -14
-					pixel_y = 0
-				if("East")
-					dir = 4
-					pixel_x = 14
-					pixel_y = 0
-		else
-			pixel_x = 0
-			pixel_y = 0
-		to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]anchored [name].</span>")
-		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
-		anchored = !anchored
+	if(dirFastenWrench(user, O))
 		return
-
+	if(actWeld(user, O, time = 10, skill = 0, message = "You start deconstucting \the [name]."))
+		to_chat(user, "<span class='notice'>You deconstruct \the [name].</span>")
+		new /obj/item/stack/sheet/metal(src.loc, 2)
+		qdel(src)
+		return
 	if(!(istype(O)))
 		return
 

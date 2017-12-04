@@ -233,7 +233,7 @@
 			nanomanager.update_uis(src)
 			return // don't smack that machine with your 2 thalers
 
-	if(default_unfasten_wrench(user, I, time = 60))
+	if(fastenWrench(user, I, time = 60))
 		return
 
 	if(istype(I, /obj/item/weapon/screwdriver) && anchored)
@@ -258,7 +258,7 @@
 						machine_content.amount--
 						if(!machine_content.amount)
 							break
-			default_deconstruction_crowbar(I)
+			default_deconstruction_crowbar(user, I)
 	if(istype(I, /obj/item/weapon/coin) && premium.len > 0)
 		user.drop_item()
 		I.loc = src

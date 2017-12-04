@@ -469,7 +469,7 @@
 		if(istype(W, /obj/item/weapon/crowbar))
 			for(var/material in resources)
 				remove_material(material, resources[material]/MINERAL_MATERIAL_AMOUNT)
-			default_deconstruction_crowbar(W)
+			default_deconstruction_crowbar(user, W)
 			return 1
 		else
 			to_chat(user, "<span class='danger'>You can't load \the [name] while it's opened.</span>")

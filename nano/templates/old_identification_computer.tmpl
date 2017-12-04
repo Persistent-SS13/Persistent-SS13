@@ -75,7 +75,7 @@
 		<span class='exclamation-triangle'><i>You cannot edit a Command ID</i></span><br>
 	  
 	  
-	  {{else data.record}}	
+	  {{else data.has_record}}	
 		  {{if data.has_record}}
 			<div class='item'>
 			  <h2>Details</h2>
@@ -137,7 +137,7 @@
 			{{/if}}
 			{{if data.current_function == 3}}
 				<div class='item'>
-				  <h2>Award Promotion</h2>
+				  <h2>Request Promotion</h2>
 				</div>
 				<div class='item'>
 					{{for data.promotions}}
@@ -155,7 +155,7 @@
 			{{if data.current_function == 4}}
 			
 				<div class='item'>
-				  <h2>Award New Certification</h2>
+				  <h2>Request New Certification</h2>
 				</div>
 				<div class='item'>
 					{{for data.department_jobs}}				
@@ -166,7 +166,7 @@
 			{{if data.current_function == 5}}
 			
 				<div class='item'>
-				  <h2>Demote</h2>
+				  <h2>Request Demotion</h2>
 				</div>
 				<div class='item'>
 					{{for data.demotions}}
@@ -181,7 +181,7 @@
 			{{/if}}
 			{{if data.current_function == 6}}
 				<div class='item'>
-				  <h2>Request removal of Certification</h2>
+				  <h2>Request Removal of Certification</h2>
 				</div>
 				<div class='item'>
 					{{for data.department_jobs}}

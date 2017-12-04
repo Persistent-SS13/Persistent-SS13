@@ -38,7 +38,7 @@
 	sound = 'sound/items/zip.ogg'
 	var/item_path = /obj/item/bodybag
 	density = 0
-
+	w_class = -1
 
 	attackby(W as obj, mob/user as mob, params)
 		if(istype(W, /obj/item/weapon/pen))

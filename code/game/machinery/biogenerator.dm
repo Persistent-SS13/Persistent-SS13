@@ -129,7 +129,7 @@
 			to_chat(user, "<span class='info'>You put [O.name] in [src.name]</span>")
 
 
-	default_deconstruction_crowbar(O)
+	default_deconstruction_crowbar(user, O)
 
 	update_icon()
 	return
@@ -183,6 +183,10 @@
 			dat += "Leather Satchel: <A href='?src=\ref[src];create=satchel;amount=1'>Make</A> ([400/efficiency])<BR>"
 			dat += "Cash Bag: <A href='?src=\ref[src];create=cashbag;amount=1'>Make</A> ([400/efficiency])<BR>"
 			dat += "Leather Jacket: <A href='?src=\ref[src];create=jacket;amount=1'>Make</A> ([500/efficiency])<BR>"
+			dat += "</div>"
+			dat += "<h3>Cloth</h3>"
+			dat += "<div class='statusDisplay'>"
+			dat += "10 cloth: <A href='?src=\ref[src];create=cloth;amount=1'>Make</A> ([10/efficiency])<BR>"
 			dat += "</div>"
 			dat += "<h3>Belts</h3>"
 			dat += "<div class='statusDisplay'>"
@@ -342,6 +346,9 @@
 		if("band")
 			if(check_cost(300/efficiency)) return 0
 			else new/obj/item/weapon/storage/belt/bandolier(src.loc)
+		if("cloth")
+			if(check_cost(10/efficiency)) return 0
+			else new/obj/item/stack/sheet/cloth(src.loc, 10)
 	processing = 0
 	menustat = "complete"
 	update_icon()

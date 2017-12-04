@@ -141,7 +141,7 @@
 	if(exchange_parts(user, P))
 		return
 
-	default_deconstruction_crowbar(P)
+	default_deconstruction_crowbar(user, P)
 
 /obj/machinery/recharge_station/proc/process_occupant()
 	if(src.occupant)

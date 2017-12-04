@@ -2,6 +2,127 @@
 	return
 /datum/proc/before_save()
 	return
+
+/datum/proc/add_saved_var(var/mob/M)
+	var/A = M.type
+	var/B = replacetext("[A]", "/", "-")
+	var/found = 1
+	var/list/found_vars = list()
+	while(found)
+		var/ind = 1
+		found = 0
+		ind = findlasttext(B, "-", ind-1)
+		if(ind)
+			found = 1
+			var/list/split = splittext(B, ind, ind)
+			var/savedvarparams = file2text("saved_vars/[split[1]].txt")
+			var/list/saved_vars = params2list(savedvarparams)
+			found_vars |= saved_vars
+	var/savedvarparams = file2text("saved_vars/[B].txt")
+	if(!savedvarparams)
+		savedvarparams = ""
+	var/list/saved_vars = params2list(savedvarparams)
+	var/dat = "<b>Saved Vars:</b><br><hr>"
+	dat += "<b><u>Inherited</u></b><br><hr>"
+	for(var/x in found_vars)
+		dat += "[x]<br>"
+	dat += "<b><u>For this Object</u></b><br><hr>"
+	var/ind = 0
+	for(var/x in saved_vars)
+		ind++
+		dat += "[x] <a href='?src=\ref[src];remove_saved_var=[ind]'>(Remove)</a><br>"
+	dat += "<hr><br>"
+	dat += "<a href='?_src_=savevars;'>(Add new var)</a>"
+//	src << browse(dat, "window=roundstats;size=500x600")
+
+	/**
+/datum/Read(savefile/savefile)
+/datum/Write(savefile/savefile)
+	if(!should_save)
+		return 0
+	var/ind = saving_references.Find(src)
+	var/ref = 0
+	if(ind)
+		return ind
+	else
+		saving_references += A
+		ref = saving_references.len
+		A.before_save()
+	savefile.cd = "/entries/[ref]"
+	savefile["type"] = A.type
+	var/list/content_refs = list()
+	if(A.load_contents)
+		var/atom/movable/Ad = A
+		if(contents)
+			for(var/obj/content in Ad.contents)
+				if(content.loc != Ad) continue
+				var/conparams = BuildVarDirectory(savefile, content, 1)
+				savefile.cd = "/entries/[ref]"
+				if(!conparams)
+					continue
+				content_refs += "[conparams]"
+		var/final_params = list2params(content_refs)
+		savefile.cd = "/entries/[ref]"
+		savefile["content"] = final_params
+
+	// Add any variables changed and their associated values to a list called changed_vars.
+	var/list/changed_vars = list()
+	var/list/changing_vars = params2list(A.map_storage_saved_vars)
+	var/list/safe_lists = params2list(A.safe_list_vars)
+	if(istype(A, /atom/movable))
+		var/atom/movable/AM = A
+		if(contents && AM.load_datums)
+			changing_vars += "reagents"
+			changing_vars += "air_contents"
+	for(var/v in changing_vars)
+		savefile.cd = "/entries/[ref]"
+		if(A.vars.Find(v))
+			if(istype(A.vars[v], /obj))
+				var/atom/movable/varob = A.vars[v]
+				var/conparams = BuildVarDirectory(savefile, varob, 1)
+				if(!conparams)
+					continue
+				savefile.cd = "/entries/[ref]"
+				savefile["[v]"] = "**entry[conparams]"
+			else if(istype(A.vars[v], /datum))
+				var/atom/movable/varob = A.vars[v]
+				var/conparams = BuildVarDirectory(savefile, varob, 1)
+				if(!conparams)
+					continue
+				savefile.cd = "/entries/[ref]"
+				savefile["[v]"] = "**entry[conparams]"
+			else if(istype(A.vars[v], /list))
+				if(safe_lists.Find(v))
+					savefile["[v]"] << A.vars[v]
+				else
+					var/list/lis = A.vars[v]
+					if(lis.len)
+						var/list/fixed_list = list()
+						for(var/firstval in lis)
+							if(istype(firstval, /obj))
+								var/conparams = BuildVarDirectory(savefile, firstval, 1)
+								if(!conparams)
+									continue
+								fixed_list += "**entry[conparams]"
+							else if(istype(firstval, /datum))
+								var/conparams = BuildVarDirectory(savefile, firstval, 1)
+								if(!conparams)
+									continue
+								fixed_list += "**entry[conparams]"
+							else
+								fixed_list += firstval
+						savefile.cd = "/entries/[ref]"
+						savefile["[v]"] = "**list[list2params(fixed_list)]"
+					else
+						if(A.vars[v] != initial(A.vars[v]))
+							savefile.cd = "/entries/[ref]"
+							savefile["[v]"] = "**emptylist"
+			else if(A.vars[v] != initial(A.vars[v]) || v == "pixel_x" || v == "pixel_y")
+				savefile.cd = "/entries/[ref]"
+				savefile["[v]"] = A.vars[v]
+	savefile.cd = ".."
+	return ref
+	**/
 proc/lagstopsleep()
 	var/tickstosleep = 1
 	do
@@ -93,7 +214,7 @@ map_storage
 		// will be different than what the password's hash would normally be, providing
 		// a bit of extra protection against md5 hash directories.
 		game_id = "SS13"
-
+		list/allowed_locs = list(/obj/item/organ/internal/brain, /obj/item/device/mmi, /obj/mecha)
 
 
 
@@ -107,7 +228,8 @@ map_storage
 		list/all_loaded = list()
 		list/datum_reference = list()
 		list/dtm_references = list()
-
+		var/per_pause = 300
+		var/so_far = 0
 	New(game_id, backdoor, ignore)
 		..()
 		if(game_id)
@@ -119,7 +241,7 @@ map_storage
 		return
 
 
-	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0, var/species_override = 0)
+	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0, var/species_override = 0, var/lag_fix = 0)
 		TICK_CHECK
 		var/nextContents
 		if(nocontents)
@@ -134,6 +256,11 @@ map_storage
 		var/atom/movable/object
 		if(!type)
 			return
+		if(lag_fix)
+			so_far++
+			if(so_far > per_pause)
+				sleep(10)
+				so_far = 0
 		if(old_turf)
 		//	old_turf.blocks_air = 1
 			var/finished = 0
@@ -161,7 +288,7 @@ map_storage
 					var/list/fixed = string_explode(x, "entry")
 					if(fixed)
 						x = fixed[2]
-						var/datum/species/S = Load_Entry(savefile, x)
+						var/datum/species/S = Load_Entry(savefile, x, lag_fix = lag_fix)
 						savefile.cd = "/entries/[ind]"
 						hum.set_species(S.name)
 
@@ -181,7 +308,7 @@ map_storage
 							ob.forceMove(locate(200, 100, 2))
 							ob.Destroy()
 					for(var/x in refs)
-						Load_Entry(savefile, x, null, object, nocontents = nextContents)
+						Load_Entry(savefile, x, null, object, nocontents = nextContents, lag_fix = lag_fix)
 			else if(findtext(savefile[v], "**list"))
 				var/x = savefile[v]
 				var/list/fixed = string_explode(x, "list")
@@ -194,7 +321,7 @@ map_storage
 						if(findtext(xa, "**entry"))
 							var/list/fixed2 = string_explode(xa, "entry")
 							var/y = fixed2[2]
-							var/atom/movable/A = Load_Entry(savefile, y)
+							var/atom/movable/A = Load_Entry(savefile, y, lag_fix = lag_fix)
 							final_list += A
 						else
 							final_list += "**unique**"
@@ -204,7 +331,7 @@ map_storage
 				var/x = savefile[v]
 				var/list/fixed = string_explode(x, "entry")
 				x = fixed[2]
-				var/atom/movable/A = Load_Entry(savefile, x, nocontents = nextContents)
+				var/atom/movable/A = Load_Entry(savefile, x, nocontents = nextContents, lag_fix = lag_fix)
 				object.vars[v] = A
 			else if(savefile[v] == "**null")
 				object.vars[v] = null
@@ -368,8 +495,14 @@ map_storage
 		var/mindind = BuildVarDirectory(savefile, H, 1)
 		var/locind = 0
 		if(istype(current.loc, /obj))
-			locind = BuildVarDirectory(savefile, current.loc, 1)
-			current.loc.should_save = 0
+			var/foun = 0
+			for(var/typ in allowed_locs)
+				if(istype(current.loc, typ))
+					foun = 1
+					break
+			if(foun)
+				locind = BuildVarDirectory(savefile, current.loc, 1)
+				current.loc.should_save = 0
 		savefile.cd = "/data"
 		savefile["body"] = bodyind
 		savefile["mind"] = mindind
@@ -483,6 +616,7 @@ map_storage
 		if(!slot)
 			message_admins("Load_char without slot")
 			return
+		so_far = 0
 		all_loaded = list()
 		existing_references = list()
 		all_loaded = list()
@@ -504,20 +638,22 @@ map_storage
 		spawn(0)
 			if(istype(object, /mob/living/carbon/human))
 				var/mob/living/carbon/human/organ_donor = object
+				organ_donor.disable_process = 1
 				for(var/obj/x in organ_donor.internal_organs)
-					old_brain = x
+					qdel(x)
+					qdel(x)
 			var/loc = null
 			TICK_CHECK
 			if(locind != "0" && locind != 0)
-				loc = Load_Entry(savefile, locind, replacement = object2)
-			var/mob/living/mob = Load_Entry(savefile, bodyind, replacement = object, nocontents = !transfer, species_override = 1)
+				loc = Load_Entry(savefile, locind, replacement = object2, lag_fix = 1)
+			var/mob/living/mob = Load_Entry(savefile, bodyind, replacement = object, nocontents = !transfer, species_override = 1, lag_fix = 1)
 			TICK_CHECK
 			if(!mob)
 				return
 			if(!M)
 				mob.mind = new()
 				M = mob.mind
-			var/datum/mind/mind = Load_Entry(savefile, mindind, null, null, M)
+			var/datum/mind/mind = Load_Entry(savefile, mindind, null, null, M, lag_fix = 1)
 			TICK_CHECK
 			for(var/datum/dat in all_loaded)
 				dat.after_load()
@@ -542,14 +678,17 @@ map_storage
 				M.transfer_to(mob)
 			if(loc)
 				mob.loc = loc
-			spawn(600)
-				mob.deleting = 0
 			TICK_CHECK
+			if(istype(object, /mob/living/carbon/human))
+				var/mob/living/carbon/human/organ_donor = object
+				organ_donor.disable_process = 0
 			if(mob.mind.primary_cert)
 				mob.mind.assigned_job = mob.mind.primary_cert
-				var/rank = mob.mind.primary_cert.uid
-				job_master.EquipRankPersistant(mob, rank, 1)
+				var/rank = get_default_title(mind.ranks[to_strings(mind.assigned_job.department_flag)], mind.assigned_job)
+				var/rank_uid = mob.mind.primary_cert.uid
+				job_master.EquipRankPersistant(mob, rank_uid, 1)
 				data_core.manifest_inject(mob)
+				
 				ticker.minds |= mob.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 				TICK_CHECK
 				spawn(10)
@@ -587,11 +726,24 @@ map_storage
 		return 1
 	proc/Save_World(list/areas)
 		// ***** MAP SECTION *****
+		var/backup_dir
 		for(var/A in areas)
 			saving_references = list()
 			existing_references = list()
 			var/B = replacetext("[A]", "/", "-")
 			if(fexists("map_saves/[B].sav"))
+				var/savefile/sav = new("map_saves/[B].sav")
+				if(!backup_dir)
+					var/i = 1
+					var/found = 0
+					while(!found)
+						found = 1
+						if(fexists("map_backups/[i]/[B].sav"))
+							found = 0
+							i++
+						else
+							backup_dir = "map_backups/[i]/"
+				fcopy(sav, "[backup_dir][B].sav")
 				fdel("map_saves/[B].sav")
 			var/savefile/savefile = new("map_saves/[B].sav")
 			for(var/turf/turf in get_area_turfs(A))
@@ -640,7 +792,6 @@ map_storage
 						var/turf/simulated/Te = ob
 						//Te.blocks_air = initial(Te.blocks_air)
 						Te.new_air()
-				sleep(1)
 				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
 			catch(var/exception/e)
 				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")

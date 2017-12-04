@@ -241,6 +241,8 @@ var/global/loopModeNames=list(
 			return
 	if(playing)
 		var/datum/song_info/song
+		if(!playlist.len)
+			return
 		if(current_song)
 			song = playlist[current_song]
 		if(!current_song || (song && world.time >= media_start_time + song.length))

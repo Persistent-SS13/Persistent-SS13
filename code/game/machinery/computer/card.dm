@@ -19,7 +19,6 @@ var/time_last_changed_position = 0
 	//if set to 0: Not able to close "original" positions. You can only close positions that you have opened before
 	var/change_position_cooldown = 60
 	//Jobs you cannot open new positions for
-	var/datum/data/record/modify_record
 	var/list/blacklisted = list(
 		/datum/job/ai,
 		/datum/job/cyborg,
@@ -53,7 +52,11 @@ var/time_last_changed_position = 0
 	//This is used to keep track of opened positions for jobs to allow instant closing
 	//Assoc array: "JobName" = (int)<Opened Positions>
 	var/list/opened_positions = list();
-
+	var/datum/data/record/found_record
+	var/not_found = 0
+	
+	var/list/included_docs = list()
+	
 /obj/machinery/computer/card/proc/is_centcom()
 	return istype(src, /obj/machinery/computer/card/centcom)
 
@@ -95,16 +98,16 @@ var/time_last_changed_position = 0
 /obj/machinery/computer/card/proc/format_promotions()
 	var/list/formatted = list()
 	
-	if(!modify && !modify.assigned_mind)
-		return formatted
-	
-	var/list/promo_list = get_department_promotions(modify.assigned_mind.assigned_job.department_flag, modify.assigned_mind.assigned_job)
-	var/current_rank = text2num(modify.assigned_mind.ranks[to_strings(modify.assigned_mind.assigned_job.department_flag)])
+	if(!found_record)
+		return formatted = list()
+	var/datum/cert/job = job_master.GetCert(found_record.fields["cert_uid"])
+	var/list/promo_list = get_department_promotions(job.department_flag, job)
+	var/current_rank = text2num(found_record.fields["rank_list"][to_strings(job.department_flag)])
 	var/ind = 0
 	for(var/x in promo_list)
 		ind += 1
 		var/same = (ind == current_rank)
-		var/promotable = (ind == (current_rank + 1) && !modify.assigned_mind.has_been_promoted) // ADD ADMIN PROMOS
+		var/promotable = (ind == (current_rank + 1)) // ADD ADMIN PROMOS
 		formatted.Add(list(list(
 			"name" = x,
 			"can_promote" = promotable,
@@ -115,11 +118,11 @@ var/time_last_changed_position = 0
 /obj/machinery/computer/card/proc/format_demotions()
 	var/list/formatted = list()
 	
-	if(!modify && !modify.assigned_mind)
-		return formatted
-	
-	var/list/promo_list = get_department_promotions(modify.assigned_mind.assigned_job.department_flag, modify.assigned_mind.assigned_job)
-	var/current_rank = text2num(modify.assigned_mind.ranks[to_strings(modify.assigned_mind.assigned_job.department_flag)])
+	if(!found_record)
+		return formatted = list()
+	var/datum/cert/job = job_master.GetCert(found_record.fields["cert_uid"])
+	var/list/promo_list = get_department_promotions(job.department_flag, job)
+	var/current_rank = text2num(found_record.fields["rank_list"][to_strings(job.department_flag)])
 	var/ind = 0
 	for(var/x in promo_list)
 		ind += 1
@@ -136,24 +139,24 @@ var/time_last_changed_position = 0
 /obj/machinery/computer/card/proc/get_certs()
 	var/list/formatted = list()
 	
-	if(!modify || !modify.assigned_mind)
-		return formatted
+	if(!found_record)
+		return formatted = list()
+	var/datum/cert/job = job_master.GetCert(found_record.fields["cert_uid"])
+	var/list/job_list = get_department_jobs(job.department_flag)
 	
-	var/list/job_list = get_department_jobs(modify.assigned_mind.assigned_job.department_flag)
-	
-	for(var/datum/cert/job in job_list)
-		if(job.head_position) continue
-		if(job_blacklisted(job))
+	for(var/datum/cert/jobb in job_list)
+		if(jobb.head_position) continue
+		if(job_blacklisted(jobb))
 			continue
 		var/has_cert = 0	
-		for (var/datum/cert/x in modify.assigned_mind.certs)
-			if (x.title == job.title)
+		for (var/datum/cert/x in found_record.fields["certs"])
+			if (x.title == jobb.title)
 				has_cert = 1
 				break
 		formatted.Add(list(list(
-			"title" = job.title,
+			"title" = jobb.title,
 			"has_cert" = has_cert,
-			"is_primary" = ((modify.assigned_mind.assigned_job.title == job.title)))))
+			"is_primary" = ((job.title == jobb.title)))))
 
 	return formatted	
 	
@@ -190,7 +193,32 @@ var/time_last_changed_position = 0
 	else
 		to_chat(usr, "There is nothing to remove from the console.")
 	return
+	
+/obj/machinery/computer/card/attackby(obj/item/weapon/paper/P, mob/user, params)
+	if(!istype(P))
+		return ..()
+	if(!found_record)
+		return ..()
+	if(current_function == 3 || current_function == 4 || current_function == 5 || current_function == 6)
+		user.drop_item()
+		P.loc = src
+		included_docs |= P
+		nanomanager.update_uis(src)
+		attack_hand(user)
+	else
+		..()
+	
+/obj/machinery/computer/card/proc/format_documents()
+	var/list/formatted = list()
+	var/ind = 0
+	for(var/obj/item/weapon/paper/P in included_docs)
+		ind++
+		formatted.Add(list(list(
+			"title" = P.name,
+			"ind" = ind)))
 
+	return formatted
+	
 /obj/machinery/computer/card/attackby(obj/item/weapon/card/id/id_card, mob/user, params)
 	if(!istype(id_card))
 		return ..()
@@ -239,6 +267,10 @@ var/time_last_changed_position = 0
 /obj/machinery/computer/card/attack_ai(var/mob/user as mob)
 	return attack_hand(user)
 
+/obj/machinery/computer/card/proc/eject_documents()
+	for(var/obj/item/I in included_docs)
+		I.loc = loc
+	included_docs = list()
 /obj/machinery/computer/card/attack_hand(mob/user as mob)
 	if(..())
 		return
@@ -263,11 +295,14 @@ var/time_last_changed_position = 0
 	data["authenticated"] = is_authenticated(user)
 	data["has_modify"] = !!modify
 	data["current_function"] = current_function
-	if(modify && scan && modify.assigned_mind)
-		data["has_mind"] = istype(modify.assigned_mind)
+	data["search_name"] = found_record ? found_record.fields["name"] : "Search or"
+	data["has_record"] = !!found_record
+	if(found_record)
+		data["photo"] = found_record.fields["photo-south"]
 		data["promotions"] = format_promotions()
 		data["demotions"] = format_demotions()
-		var/dep = modify.assigned_mind.assigned_job.department_flag 
+		var/datum/cert/job = job_master.GetCert(found_record.fields["cert_uid"])
+		var/dep = job.department_flag 
 		if (dep == COMMAND)
 			data["is_command"] = 1
 		if(dep == CARGO)
@@ -282,6 +317,11 @@ var/time_last_changed_position = 0
 			data["current_dept"] = 5
 		if(dep == SUPPORT)
 			data["current_dept"] = 0
+			
+	if(scan && modify && modify.assigned_mind && modify.assigned_mind.assigned_job)
+		data["has_mind"] = istype(modify.assigned_mind)
+		
+	data["documents"] = format_documents()
 	data["account_number"] = modify ? modify.associated_account_number : null
 	data["centcom_access"] = is_centcom()
 	data["all_centcom_access"] = null
@@ -344,6 +384,24 @@ var/time_last_changed_position = 0
 		ui = new(user, src, ui_key, "identification_computer.tmpl", src.name, 775, 700)
 		ui.set_initial_data(data)
 		ui.open()
+		
+/obj/machinery/computer/card/proc/copy_documents()
+	var/list/paper_list = list()
+	for(var/obj/item/weapon/paper/copy in included_docs)
+		var/obj/item/weapon/paper/c = new /obj/item/weapon/paper ()
+		c.info = copy.info
+		c.name = copy.name // -- Doohl
+		c.fields = copy.fields
+		c.stamps = copy.stamps
+		c.stamped = copy.stamped
+		c.ico = copy.ico
+		c.offset_x = copy.offset_x
+		c.offset_y = copy.offset_y
+		var/list/temp_overlays = copy.overlays       //Iterates through stamps
+		var/image/img                                //and puts a matching
+		c.updateinfolinks()
+		paper_list |= c
+	return paper_list
 
 /obj/machinery/computer/card/Topic(href, href_list)
 	if(..())
@@ -352,7 +410,7 @@ var/time_last_changed_position = 0
 	switch(href_list["choice"])
 		if("modify")
 			if(modify)
-				data_core.manifest_modify(modify.registered_name, modify.assignment)
+				
 				modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
 				if(ishuman(usr))
 					modify.loc = usr.loc
@@ -369,23 +427,36 @@ var/time_last_changed_position = 0
 					I.loc = src
 					modify = I
 		if("search")
-			var/t1 = input("Search Records: (Name or Fingerprint)", "Employee records", null, null)  as text
-				if((!( t1 ) || usr.stat || !( src.authenticated ) || usr.restrained()))
-					return
-				var/te = t1
-				te = lowertext(t1)
-				modify_record = null
-				for(var/datum/data/record/R in data_core.general)
-					if((lowertext(R.fields["name"]) == t1 || t1 == lowertext(R.fields["id"]) || t1 == lowertext(R.fields["fingerprint"])))
-						modify_record = R
-						break
-					else
-						//Foreach continue //goto(3229)
-				if(!( modify_record ))
-					modify_record = map_storage.Load_Records(te, 2)
-					if(modify_record)
-						data_core.general += modify_record
-						
+			found_record = null
+			eject_documents()
+			var/t1 = input("Search String: (Name or Fingerprint)", "Gen. records", null, null)  as text
+			for(var/datum/data/record/R in data_core.general)
+				if((R.fields["name"] == t1 || t1 == R.fields["id"] || t1 == R.fields["fingerprint"]))
+					found_record = R
+				else
+					//Foreach continue //goto(3229)
+			if(!( found_record ))
+				found_record = map_storage.Load_Records(t1, 1)
+				if(found_record)
+					data_core.general += found_record
+			if(!( found_record ))
+				not_found = 1
+			
+		if("search_card")
+			found_record = null
+			eject_documents()
+			var/t1 = modify.assigned_mind.current.real_name
+			for(var/datum/data/record/R in data_core.general)
+				if((R.fields["name"] == t1 || t1 == R.fields["id"] || t1 == R.fields["fingerprint"]))
+					found_record = R
+				else
+					//Foreach continue //goto(3229)
+			if(!( found_record ))
+				found_record = map_storage.Load_Records(t1, 1)
+				if(found_record)
+					data_core.general += found_record
+			if(!( found_record ))
+				not_found = 2
 		if("scan")
 			if(scan)
 				if(ishuman(usr))
@@ -422,161 +493,211 @@ var/time_last_changed_position = 0
 		if("function")
 			var/target = text2num(href_list["func_choice"])
 			current_function = target	
-			
+			eject_documents()
 			nanomanager.update_uis(src)	
 
 		if("ask_remove")		
-		
-			if(is_authenticated(usr) && modify && modify.assigned_mind)	
-				var/owner = istype(scan.assigned_mind) ? scan.assigned_mind.name : "Unknown"
-				var/target = href_list["assign_target"]
-				var/reason = input("Reason for potential removal:") as text|null
-				if(alert(usr,"Are you sure you want to send a demotion request? Misusing this function could mean your job!","Warning!","Yes","No") == "Yes")
-					var/stri = "Request to remove [target] from [modify.assigned_mind.name] by [owner]. Reason: [reason]"
-					to_chat(usr, "<B>Request sent to CENTCOM</B>")
+			if(is_authenticated(usr) && found_record)
+				if(!included_docs.len)
+					to_chat(usr, "You must submit at least one document along with this request.")
+				else if(alert(usr,"Are you sure you want to request a certification removal for [found_record.fields["name"]]? You should include all required paperwork before submitting this request.","Warning!","Yes","No") == "Yes")
+					var/name_of = found_record.fields["name"]
+					var/target = href_list["assign_target"]
+					var/datum/cert/job = job_master.GetCert(target)
+					var/datum/employment_request/request = new()
+					request.name_target = name_of
+					request.name_sender = usr.real_name
+					request.change_cert = 2
+					request.cert_uid = job.uid
+					request.attached_documents = copy_documents()
+					notify_request(request.name_sender, "Remove the certification of [request.name_target]")
+					eject_documents()
+					if(!employee_control_terminal)
+						message_admins("cert remove tried with no employee_control_terminal!")
+					employee_control_terminal.requests |= request
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
 			nanomanager.update_uis(src)	
 		if("assign_promotion")
-			if(is_authenticated(usr) && modify && modify.assigned_mind)	
-				var/target = href_list["assign_target"]
-				var/list/promo_list = get_department_promotions(modify.assigned_mind.assigned_job.department_flag, modify.assigned_mind.assigned_job)
-				var/ind = 0
-				if(alert(usr,"Are you sure you want to promote [modify.assigned_mind.name]? Misusing this function could mean your job!","Warning!","Yes","No") == "Yes")
+			if(is_authenticated(usr) && found_record)
+				if(!included_docs.len)
+					to_chat(usr, "You must submit at least one document along with this request.")
+				else if(alert(usr,"Are you sure you want to request a promotion for [found_record.fields["name"]]? You should include all required paperwork before submitting this request.","Warning!","Yes","No") == "Yes")
+					var/name_of = found_record.fields["name"]
+					var/cert_uid = found_record.fields["cert_uid"]
+					var/datum/cert/job = job_master.GetCert(cert_uid)
+					var/datum/employment_request/request = new()
+					request.name_target = name_of
+					request.name_sender = usr.real_name
+					request.department = to_strings(job.department_flag)
+					request.change_rank = 1
+					request.attached_documents = copy_documents()
+					eject_documents()
+					var/list/promo_list = get_department_promotions(job.department_flag, job)
+					var/ind = 0
+					var/target = href_list["assign_target"]
+					notify_request(request.name_sender, "Promote [request.name_target]")
 					for(var/x in promo_list)
 						ind += 1
 						if(x == target)
-							modify.assigned_mind.ranks[to_strings(modify.assigned_mind.assigned_job.department_flag)] = ind
-							modify.assigned_mind.has_been_promoted = 1
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(modify.assigned_mind.assigned_job.department_flag)], modify.assigned_mind.assigned_job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							notify_promotion(modify.assigned_mind, modify.assigned_mind.assigned_job, ind)
+							request.rank = ind
 							break
-					
+					if(!request.rank)
+						message_admins("promotion tried with no rank!")				
+					if(!employee_control_terminal)
+						message_admins("promotion tried with no employee_control_terminal!")
+					employee_control_terminal.requests |= request
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
 			nanomanager.update_uis(src)	
+		if("eject_document")
+			if(is_authenticated(usr))
+				var/target = text2num(href_list["assign_target"])
+				var/obj/item/weapon/paper/P = included_docs[target]
+				P.loc = loc
+				included_docs -= P
+			nanomanager.update_uis(src)
 		if("assign_demotion")
-			if(is_authenticated(usr) && modify && modify.assigned_mind)	
-				var/target = href_list["assign_target"]
-				var/list/promo_list = get_department_promotions(modify.assigned_mind.assigned_job.department_flag, modify.assigned_mind.assigned_job)
-				var/ind = 0
-				if(alert(usr,"Are you sure you want to demote [modify.assigned_mind.name]? If there is not a valid reason it could mean your job!","Warning!","Yes","No") == "Yes")
+			if(is_authenticated(usr) && found_record)
+				if(!included_docs.len)
+					to_chat(usr, "You must submit at least one document along with this request.")
+				else if(alert(usr,"Are you sure you want to request a demotion for [modify.assigned_mind.name]? You should include all required paperwork before submitting this request.","Warning!","Yes","No") == "Yes")
+					var/name_of = found_record.fields["name"]
+					var/cert_uid = found_record.fields["cert_uid"]
+					var/datum/cert/job = job_master.GetCert(cert_uid)
+					var/datum/employment_request/request = new()
+					request.name_target = name_of
+					request.name_sender = usr.real_name
+					request.department = to_strings(job.department_flag)
+					request.change_rank = 2
+					request.attached_documents = copy_documents()
+					eject_documents()
+					var/list/promo_list = get_department_promotions(job.department_flag, job)
+					var/ind = 0
+					var/target = href_list["assign_target"]
 					for(var/x in promo_list)
 						ind += 1
 						if(x == target)
-							modify.assigned_mind.ranks[to_strings(modify.assigned_mind.assigned_job.department_flag)] = ind
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(modify.assigned_mind.assigned_job.department_flag)], modify.assigned_mind.assigned_job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							notify_demotion(modify.assigned_mind, modify.assigned_mind.assigned_job, ind)
+							request.rank = ind
 							break
-					
+					if(!request.rank)
+						message_admins("demotion tried with no rank!")				
+					if(!employee_control_terminal)
+						message_admins("demotion tried with no employee_control_terminal!")
+					employee_control_terminal.requests |= request
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
+					notify_request(request.name_sender, "Demote [request.name_target]")
 			nanomanager.update_uis(src)	
 			
 		if("assign_cert")
-			if(is_authenticated(usr) && modify && modify.assigned_mind)	
+			if(is_authenticated(usr) && found_record)
 				var/target = href_list["assign_target"]
 				var/datum/cert/job = 0
-				if(alert(usr,"Are you sure you want to change the primary certification of [modify.assigned_mind.name]? Misusing this function could mean your job!","Warning!","Yes","No") == "Yes")
+				if(alert(usr,"Are you sure you want to change the primary certification of [found_record.fields["name"]]? Misusing this function could mean your job!","Warning!","Yes","No") == "Yes")
 					if (job_master)
 						job = job_master.GetCert(target)
 					else
 						return 0
 					if (!job)
 						return 0
-						
-					modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-					modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-					modify.assigned_mind.assigned_job = job
-					modify.assigned_mind.primary_cert = job
-					change_certification(modify.assigned_mind, job)
-					
-	
+					found_record.fields["cert_uid"] = job.uid
+					found_record.fields["rank"] = get_default_title(found_record.fields["rank_list"][to_strings(job.department_flag)], job)
+					found_record.fields["real_rank"] = job.title					
+					var/datum/mind/mind = data_core.get_mind(found_record)
+					if(mind)
+						data_core.check_changes(mind)
 			nanomanager.update_uis(src)	
 			
 		if("add_cert")
-			if(is_authenticated(usr) && modify && modify.assigned_mind)	
-				var/target = href_list["assign_target"]
-				var/datum/cert/job = 0
-				if(alert(usr,"Are you sure you want to give this certification to [modify.assigned_mind.name]? If they are not capable, it could mean your job!","Warning!","Yes","No") == "Yes")
-					if (job_master)
-						job = job_master.GetCert(target)
+			if(is_authenticated(usr) && found_record)
+				if(!included_docs.len)
+					to_chat(usr, "You must submit at least one document along with this request.")
+				else if(alert(usr,"Are you sure you want to request a new certifcation for [found_record.fields["name"]]? You should include all required paperwork before submitting this request.","Warning!","Yes","No") == "Yes")
+					var/name_of = found_record.fields["name"]
+					var/target = href_list["assign_target"]
+					var/datum/cert/job = job_master.GetCert(target)
+					var/datum/employment_request/request = new()
+					request.name_target = name_of
+					request.name_sender = usr.real_name
+					request.change_cert = 1
+					request.cert_uid = job.uid
+					request.attached_documents = copy_documents()
+					eject_documents()
+					if(!employee_control_terminal)
+						message_admins("cert remove tried with no employee_control_terminal!")
+					if(job.department_flag == SUPPORT)
+						request.approve()
 					else
-						return 0
-					if (!job)
-						return 0
+						employee_control_terminal.requests |= request
+						notify_request(request.name_sender, "Add certification [request.cert_uid] for [request.name_target]")
+					to_chat(usr, "Request Submitted! Please do not submit duplicate requests.")
+					playsound(src.loc, 'sound/machines/synth_yes.ogg', 50, 0)
+					current_function = 0
 					
-					if(!(job in modify.assigned_mind.certs))
-						modify.assigned_mind.certs += job
-						for(var/x in job.access)
-							if (!modify.access.Find(x))
-								modify.access += job.access
-						modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-						modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-						modify.assigned_mind.assigned_job = job
-						modify.assigned_mind.primary_cert = job
-						change_certification(modify.assigned_mind, job)						
-
-						
 			nanomanager.update_uis(src)	
 			
 		if("department")	
-			if(is_authenticated(usr) && modify && modify.assigned_mind)	
+			if(is_authenticated(usr) && found_record)
 				var/target = href_list["dept_choice"]
 				var/datum/cert/job = null
-				if(alert(usr,"Are you sure you want change the department of [modify.assigned_mind.name]? If you do this without following proper procedure, it could mean your job!","Warning!","Yes","No") == "Yes")				
+				if(alert(usr,"Are you sure you want change the department of [found_record.fields["name"]]? If you do this without following proper procedure, it could mean your job!","Warning!","Yes","No") == "Yes")				
 					switch(text2num(target))
 						if(1)
 							//cargo
 							job = job_master.GetCert("Cargo Technician")
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							modify.assigned_mind.assigned_job = job
-							modify.assigned_mind.primary_cert = job
+							found_record.fields["cert_uid"] = job.uid
+							found_record.fields["rank"] = get_default_title(found_record.fields["rank_list"][to_strings(job.department_flag)], job)
+							found_record.fields["real_rank"] = job.title					
 						if(2)
 						
 							job = job_master.GetCert("engineer")
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							modify.assigned_mind.assigned_job = job
-							modify.assigned_mind.primary_cert = job
+							found_record.fields["cert_uid"] = job.uid
+							found_record.fields["rank"] = get_default_title(found_record.fields["rank_list"][to_strings(job.department_flag)], job)
+							found_record.fields["real_rank"] = job.title					
 						if(3)
 						
 							job = job_master.GetCert("doctor")
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							modify.assigned_mind.assigned_job = job
-							modify.assigned_mind.primary_cert = job
+							found_record.fields["cert_uid"] = job.uid
+							found_record.fields["rank"] = get_default_title(found_record.fields["rank_list"][to_strings(job.department_flag)], job)
+							found_record.fields["real_rank"] = job.title					
 						if(4)
 						
 							job = job_master.GetCert("officer")
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							modify.assigned_mind.assigned_job = job
-							modify.assigned_mind.primary_cert = job
+							found_record.fields["cert_uid"] = job.uid
+							found_record.fields["rank"] = get_default_title(found_record.fields["rank_list"][to_strings(job.department_flag)], job)
+							found_record.fields["real_rank"] = job.title					
 						if(5)
 							job = job_master.GetCert("scientist")
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							modify.assigned_mind.assigned_job = job
-							modify.assigned_mind.primary_cert = job
+							found_record.fields["cert_uid"] = job.uid
+							found_record.fields["rank"] = get_default_title(found_record.fields["rank_list"][to_strings(job.department_flag)], job)
+							found_record.fields["real_rank"] = job.title					
 						if(0)
 							job = job_master.GetCert("intern")
-							modify.assignment = get_default_title(modify.assigned_mind.ranks[to_strings(job.department_flag)], job)
-							modify.name = text("[modify.registered_name]'s ID Card ([modify.assignment])")
-							modify.assigned_mind.assigned_job = job
-							modify.assigned_mind.primary_cert = job
+							found_record.fields["cert_uid"] = job.uid
+							found_record.fields["rank"] = get_default_title(found_record.fields["rank_list"][to_strings(job.department_flag)], job)
+							found_record.fields["real_rank"] = job.title					
+							
 					var/has_cert = 0
 					if(job)
-						for (var/datum/cert/x in modify.assigned_mind.certs)							
+						for (var/datum/cert/x in found_record.fields["certs"])			
 							if (x.title == job.title)
 								has_cert = 1
 								break
 						if(!has_cert)		
-							modify.assigned_mind.certs += job
-							for(var/x in job.access)
-								if (!modify.access.Find(x))
-									modify.access += job.access
+							found_record.fields["certs"] += job
+							if(modify && modify.registered_name == found_record.fields["name"])
+								for(var/x in job.access)
+									if (!modify.access.Find(x))
+										modify.access += job.access
+						
+						var/datum/mind/mind = data_core.get_mind(found_record)
+						if(mind)
+							data_core.check_changes(mind)
 									
-									
-									
-						change_certification(modify.assigned_mind, job)
 			nanomanager.update_uis(src)
 		if("assign")
 			if(is_authenticated(usr) && modify)
@@ -705,6 +826,14 @@ var/time_last_changed_position = 0
 
 	return 1
 
+/obj/machinery/computer/card/proc/notify_request(var/sender, var/faxname, font_colour="#9A04D1")
+	var/msg = "<span class='boldnotice'><font color='[font_colour]'>REQUEST SEND IN BY [sender] ([faxname])</font></span>"
+	for(var/client/C in admins)
+		if(R_EVENT & C.holder.rights)
+			to_chat(C, msg)
+			if(C.prefs.sound & SOUND_ADMINHELP)
+				C << 'sound/machines/synth_yes.ogg'
+	
 /obj/machinery/computer/card/centcom
 	name = "\improper CentComm identification computer"
 	circuit = /obj/item/weapon/circuitboard/card/centcom

@@ -385,17 +385,17 @@ Class Procs:
 	uid = gl_uid
 	gl_uid++
 
-/obj/machinery/proc/default_deconstruction_crowbar(var/obj/item/weapon/crowbar/C, var/ignore_panel = 0)
+/obj/machinery/proc/default_deconstruction_crowbar(var/user, var/obj/item/weapon/crowbar/C, var/ignore_panel = 0)
 	if(istype(C) && (panel_open || ignore_panel))
 		. = 1
-		switch(do_after_stat(C.loc, 100, needhand = 1, target = src, progress = 1, action_name = "crowbar [src] apart", auto_emote = 1, stat_used = 1, minimum = 3, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 5, progressive_stamina = 1, attempt_cost = 10, stamina_use_fail = 0.5, sound_file = 'sound/items/Crowbar.ogg'))
+		switch(do_after_stat(user, 100, needhand = 1, target = src, progress = 1, action_name = "crowbar [src] apart", auto_emote = 1, stat_used = 1, minimum = 3, maximum = 8, maxed_delay = 20, progressive_failure = 1, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 1, stamina_used = 5, progressive_stamina = 1, attempt_cost = 10, stamina_use_fail = 0.5, sound_file = 'sound/items/Crowbar.ogg'))
 			if(2)
-				to_chat(C.loc, "You can't quite summon the strength to take [src] apart.")
+				to_chat(user, "You can't quite summon the strength to take [src] apart.")
 				return 1
 			if(0)
 				return 1
 			if(1)
-				to_chat(C.loc, "You finish crowbaring [src] apart.")
+				to_chat(user, "You finish crowbaring [src] apart.")
 				var/obj/machinery/constructable_frame/machine_frame/M = new /obj/machinery/constructable_frame/machine_frame(src.loc)
 				M.state = 2
 				M.icon_state = "box_1"
@@ -434,20 +434,6 @@ Class Procs:
 		to_chat(user, "<span class='notice'>You rotate [src].</span>")
 		return 1
 	return 0
-
-/obj/proc/default_unfasten_wrench(mob/user, obj/item/weapon/wrench/W, time = 20)
-	if(istype(W))
-		. = 1
-		to_chat(user, "<span class='notice'>Now [anchored ? "un" : ""]securing [name].</span>")
-		switch(do_after_stat(user, 50, needhand = 1, target = src, progress = 1, action_name = "[anchored ? "un" : ""]wrench [src] to the floor", auto_emote = 1, stat_used = 3, minimum = 2, maximum = 8, maxed_delay = 20, progressive_failure = 0, minimum_probability = 70, help_able = 0, help_ratio = 1, stamina_use = 2, stamina_used = 2, progressive_stamina = 1, attempt_cost = 5, stamina_use_fail = 1.5, sound_file = 'sound/items/Ratchet.ogg'))
-			if(1)
-				to_chat(user, "<span class='notice'>You've [anchored ? "un" : ""]secured [name].</span>")
-				anchored = !anchored
-				playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
-				return 1
-			if(2)
-				to_chat(user, "<span class='notice'>You dont have good enough reflexes to anchor this.</span>")
-		return 0
 
 /obj/machinery/proc/exchange_parts(mob/user, obj/item/weapon/storage/part_replacer/W)
 	var/shouldplaysound = 0

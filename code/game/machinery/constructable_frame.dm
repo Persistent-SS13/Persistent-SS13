@@ -534,6 +534,18 @@ to destroy them and players will be able to make replacements.
 							/obj/item/weapon/stock_parts/console_screen = 1,
 							/obj/item/weapon/stock_parts/cell = 1)
 
+/obj/item/weapon/circuitboard/reagentgrinder
+	name = "circuit board (All-in-one Grinder)"
+	build_path = /obj/machinery/reagentgrinder
+	board_type = "machine"
+	origin_tech = "mateirals=2;engineering=1;plasmatech=3;biotech=1;"
+	frame_desc = "Requires 1 Matter Bins, 1 Capacitor, 1 Manipulator, and 1 Power Cell."
+	req_components = list(
+							/obj/item/weapon/stock_parts/matter_bin = 1,
+							/obj/item/weapon/stock_parts/capacitor = 1,
+							/obj/item/weapon/stock_parts/manipulator = 1,
+							/obj/item/weapon/stock_parts/cell = 1)
+
 /obj/item/weapon/circuitboard/chem_master
 	name = "circuit board (Chem Master 2999)"
 	build_path = /obj/machinery/chem_master/constructable

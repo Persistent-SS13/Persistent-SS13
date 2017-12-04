@@ -1344,6 +1344,8 @@ obj/mecha/buckle_mob(mob/living/M, force = FALSE, check_loc = FALSE)
 
 	
 /obj/mecha/unbuckle_mob(mob/user)
+	if(!riding_datum)
+		return
 	riding_datum.restore_position(user)
 	..() 
 	

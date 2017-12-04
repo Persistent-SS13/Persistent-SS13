@@ -228,7 +228,7 @@ map_storage
 		list/all_loaded = list()
 		list/datum_reference = list()
 		list/dtm_references = list()
-		var/per_pause = 300
+		var/per_pause = 200
 		var/so_far = 0
 	New(game_id, backdoor, ignore)
 		..()
@@ -242,110 +242,114 @@ map_storage
 
 
 	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0, var/species_override = 0, var/lag_fix = 0)
-		TICK_CHECK
-		var/nextContents
-		if(nocontents)
-			nextContents = 2
-		if(existing_references["[ind]"])
-			if(starting_loc)
-				var/atom/movable/A = existing_references["[ind]"]
-				A.loc = starting_loc
-			return existing_references["[ind]"]
-		savefile.cd = "/entries/[ind]"
-		var/type = savefile["type"]
-		var/atom/movable/object
-		if(!type)
-			return
-		if(lag_fix)
-			so_far++
-			if(so_far > per_pause)
-				sleep(10)
-				so_far = 0
-		if(old_turf)
-		//	old_turf.blocks_air = 1
-			var/finished = 0
-			while(!finished)
-				finished = 1
-			var/xa = old_turf.x
-			var/ya = old_turf.y
-			var/za = old_turf.z
-			old_turf.ChangeTurf(type, FALSE, FALSE)
-			object = locate(xa,ya,za)
-		else if(replacement)
-			object = replacement
-		else
-			object = new type(starting_loc)
-		if(!object)
-			message_admins("object not created, ind: [ind] type:[type]")
-			return
-		all_loaded += object
-		existing_references["[ind]"] = object
-		if(species_override)
-			var/mob/living/carbon/human/hum = object
-			if(istype(hum, /mob/living/carbon/human))
-				var/x = savefile["species"]
-				if(x)
-					var/list/fixed = string_explode(x, "entry")
-					if(fixed)
-						x = fixed[2]
-						var/datum/species/S = Load_Entry(savefile, x, lag_fix = lag_fix)
-						savefile.cd = "/entries/[ind]"
-						hum.set_species(S.name)
-
-		for(var/v in savefile.dir)
-			savefile.cd = "/entries/[ind]"
-			if(v == "type")
-				continue
-			else if(v == "content")
-				if(nocontents != 2)
-					var/list/refs = params2list(savefile[v])
-					var/finished = 0
-					while(!finished)
-						finished = 1
-						for(var/obj/ob in object.contents)
-							if(ob.loc != object) continue
-							finished = 0
-							ob.forceMove(locate(200, 100, 2))
-							ob.Destroy()
-					for(var/x in refs)
-						Load_Entry(savefile, x, null, object, nocontents = nextContents, lag_fix = lag_fix)
-			else if(findtext(savefile[v], "**list"))
-				var/x = savefile[v]
-				var/list/fixed = string_explode(x, "list")
-				x = fixed[2]
-				var/list/lis = params2list(x)
-				var/list/final_list = list()
-				if(lis.len)
-					var/firstval = lis[1]
-					for(var/xa in lis)
-						if(findtext(xa, "**entry"))
-							var/list/fixed2 = string_explode(xa, "entry")
-							var/y = fixed2[2]
-							var/atom/movable/A = Load_Entry(savefile, y, lag_fix = lag_fix)
-							final_list += A
-						else
-							final_list += "**unique**"
-							final_list[final_list.len] = Numeric(xa)
-				object.vars[v] = final_list
-			else if(findtext(savefile[v], "**entry"))
-				var/x = savefile[v]
-				var/list/fixed = string_explode(x, "entry")
-				x = fixed[2]
-				var/atom/movable/A = Load_Entry(savefile, x, nocontents = nextContents, lag_fix = lag_fix)
-				object.vars[v] = A
-			else if(savefile[v] == "**null")
-				object.vars[v] = null
-			else if(v == "req_access_txt")
-				object.vars[v] = savefile[v]
-			else if(savefile[v] == "**emptylist")
-				object.vars[v] = list()
-			else
-				savefile.cd = "/entries/[ind]"
-				object.vars[v] = savefile[v]
-			savefile.cd = "/entries/[ind]"
+		try
 			TICK_CHECK
-		savefile.cd = ".."
-		return object
+			var/nextContents
+			if(nocontents)
+				nextContents = 2
+			if(existing_references["[ind]"])
+				if(starting_loc)
+					var/atom/movable/A = existing_references["[ind]"]
+					A.loc = starting_loc
+				return existing_references["[ind]"]
+			savefile.cd = "/entries/[ind]"
+			var/type = savefile["type"]
+			var/atom/movable/object
+			if(!type)
+				return
+			if(lag_fix)
+				so_far++
+				if(so_far > per_pause)
+					sleep(10)
+					so_far = 0
+			if(old_turf)
+			//	old_turf.blocks_air = 1
+				var/finished = 0
+				while(!finished)
+					finished = 1
+				var/xa = old_turf.x
+				var/ya = old_turf.y
+				var/za = old_turf.z
+				old_turf.ChangeTurf(type, FALSE, FALSE)
+				object = locate(xa,ya,za)
+			else if(replacement)
+				object = replacement
+			else
+				object = new type(starting_loc)
+			if(!object)
+				message_admins("object not created, ind: [ind] type:[type]")
+				return
+			all_loaded += object
+			existing_references["[ind]"] = object
+			if(species_override)
+				var/mob/living/carbon/human/hum = object
+				if(istype(hum, /mob/living/carbon/human))
+					var/x = savefile["species"]
+					if(x)
+						var/list/fixed = string_explode(x, "entry")
+						if(fixed)
+							x = fixed[2]
+							var/datum/species/S = Load_Entry(savefile, x, lag_fix = lag_fix)
+							savefile.cd = "/entries/[ind]"
+							hum.set_species(S.name)
+
+			for(var/v in savefile.dir)
+				savefile.cd = "/entries/[ind]"
+				if(v == "type")
+					continue
+				else if(v == "content")
+					if(nocontents != 2)
+						var/list/refs = params2list(savefile[v])
+						var/finished = 0
+						while(!finished)
+							finished = 1
+							for(var/obj/ob in object.contents)
+								if(ob.loc != object) continue
+								finished = 0
+								ob.forceMove(locate(200, 100, 2))
+								ob.Destroy()
+						for(var/x in refs)
+							Load_Entry(savefile, x, null, object, nocontents = nextContents, lag_fix = lag_fix)
+				else if(findtext(savefile[v], "**list"))
+					var/x = savefile[v]
+					var/list/fixed = string_explode(x, "list")
+					x = fixed[2]
+					var/list/lis = params2list(x)
+					var/list/final_list = list()
+					if(lis.len)
+						var/firstval = lis[1]
+						for(var/xa in lis)
+							if(findtext(xa, "**entry"))
+								var/list/fixed2 = string_explode(xa, "entry")
+								var/y = fixed2[2]
+								var/atom/movable/A = Load_Entry(savefile, y, lag_fix = lag_fix)
+								final_list += A
+							else
+								final_list += "**unique**"
+								final_list[final_list.len] = Numeric(xa)
+					object.vars[v] = final_list
+				else if(findtext(savefile[v], "**entry"))
+					var/x = savefile[v]
+					var/list/fixed = string_explode(x, "entry")
+					x = fixed[2]
+					var/atom/movable/A = Load_Entry(savefile, x, nocontents = nextContents, lag_fix = lag_fix)
+					object.vars[v] = A
+				else if(savefile[v] == "**null")
+					object.vars[v] = null
+				else if(v == "req_access_txt")
+					object.vars[v] = savefile[v]
+				else if(savefile[v] == "**emptylist")
+					object.vars[v] = list()
+				else
+					savefile.cd = "/entries/[ind]"
+					object.vars[v] = savefile[v]
+				savefile.cd = "/entries/[ind]"
+				TICK_CHECK
+			savefile.cd = ".."
+			return object
+		catch(var/exception/e)
+			message_admins("EXCEPTION IN LOAD ENTRY!! [e] on [e.file]:[e.line]")
+
 	proc/BuildVarDirectory(savefile/savefile, atom/A, var/contents = 0)
 		if(!A.should_save)
 			return 0

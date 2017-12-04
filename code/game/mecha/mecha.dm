@@ -1311,7 +1311,7 @@ obj/mecha/buckle_mob(mob/living/M, force = FALSE, check_loc = FALSE)
 	if(!riding_datum)
 		riding_datum = new /datum/riding/mecha(src)
 	if(buckled_mob)
-		return
+		to_chat(M, "<span class='notice'>Someone else is already on [src]!</span>")
 	if(M.stat)
 		return
 	if(M.incapacitated())
@@ -1325,8 +1325,9 @@ obj/mecha/buckle_mob(mob/living/M, force = FALSE, check_loc = FALSE)
 	M.on_ride=1
 	if(do_after(M, 15, target = src) && riding_datum.equip_buckle_inhands(M) && M in range(1))
 		if(iscarbon(M))
-			if(M.incapacitated(FALSE, TRUE))
+			if(M.incapacitated(FALSE, TRUE) || buckled_mob)
 				to_chat(M, "<span class='warning'>You lose your grip and fall off of [src]!</span>")
+				M.on_ride=0
 				return
 		to_chat(viewers(src), "<span class='notice'>[M] pulls \himself up onto the back of [src]. </span>")
 		M.buckled = src

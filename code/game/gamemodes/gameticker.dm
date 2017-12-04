@@ -703,17 +703,17 @@ var/round_start_time = 0
 	map_storage.Save_World(the_station_areas)
 	log_startup_progress("	Saved the station in [stop_watch(watch)]s.")
 	return 1
-	
+
 /datum/controller/gameticker/proc/loadstation()
 	var/watch = start_watch()
 	var/started = 0
 	log_startup_progress("Starting station load...")
-	map_storage.Load_World(the_station_areas)
+	map_storage.Load_World()
 	if(started)
 	log_startup_progress("	Loaded the station in [stop_watch(watch)]s.")
 	return 1
-	
-	
+
+
 /datum/controller/gameticker/proc/loadhalf()
 	var/watch = start_watch()
 	log_startup_progress("Starting station load...")

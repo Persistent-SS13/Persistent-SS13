@@ -357,10 +357,13 @@ map_storage
 		var/ref = 0
 		if(ind)
 			return ind
-		else
-			saving_references += A
-			ref = saving_references.len
-			A.before_save()
+		if(istype(A, /turf/space) && (!A.contents || A.contents.len == 0))
+			savefile.cd = "/entries/0"
+			savefile["type"] = A.type
+			savefile["content"] = ""
+		saving_references += A
+		ref = saving_references.len
+		A.before_save()
 		savefile.cd = "/entries/[ref]"
 		savefile["type"] = A.type
 		var/list/content_refs = list()
@@ -692,7 +695,7 @@ map_storage
 				var/rank_uid = mob.mind.primary_cert.uid
 				job_master.EquipRankPersistant(mob, rank_uid, 1)
 				data_core.manifest_inject(mob)
-				
+
 				ticker.minds |= mob.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 				TICK_CHECK
 				spawn(10)
@@ -730,75 +733,92 @@ map_storage
 		return 1
 	proc/Save_World(list/areas)
 		// ***** MAP SECTION *****
-		var/backup_dir
-		for(var/A in areas)
-			saving_references = list()
-			existing_references = list()
-			var/B = replacetext("[A]", "/", "-")
-			if(fexists("map_saves/[B].sav"))
-				var/savefile/sav = new("map_saves/[B].sav")
-				if(!backup_dir)
-					var/i = 1
-					var/found = 0
-					while(!found)
-						found = 1
-						if(fexists("map_backups/[i]/[B].sav"))
-							found = 0
-							i++
-						else
-							backup_dir = "map_backups/[i]/"
-				fcopy(sav, "[backup_dir][B].sav")
-				fdel("map_saves/[B].sav")
-			var/savefile/savefile = new("map_saves/[B].sav")
-			for(var/turf/turf in get_area_turfs(A))
-				var/ref = BuildVarDirectory(savefile, turf, 1)
-				if(!ref)
-					message_admins("[turf] failed to return a ref!")
-				savefile.cd = "/map/[turf.z]/[turf.y]"
-				savefile["[turf.x]"] = ref
-				TICK_CHECK
-		return 1
-	proc/Load_World(list/areas)
+		if(fexists(file("map_saves/recent/")))
+			fcopy("map_saves/recent/", "map_saves/backup/[time2text(world.realtime, "MM-DD hh.mm.ss")]/")
+			fdel("map_saves/recent/")
 
-		for(var/A in areas)
-			try
-				var/watch = start_watch()
-				existing_references = list()
-				all_loaded = list()
-				var/B = replacetext("[A]", "/", "-")
-				if(!fexists("map_saves/[B].sav"))
+		for(var/z = 1, z < 2, z++)
+			for(var/x = 1, x < 256, x += 15)
+				for(var/y = 1, y < 256, y += 15)
+					Save_Chunk(x, y, z)
+					sleep(-1)
+
+		return 1
+
+	proc/Save_Chunk(tx, ty, z)
+		saving_references = list()
+		existing_references = list()
+		tx = tx + 1 - tx % 15
+		ty = ty + 1 - ty % 15
+		for(var/x = tx, x < tx + 15, x++)
+			for(var/y = ty, y < ty + 15, y++)
+
+				var/turf/T = locate(x,y,z)
+				if(!T)
 					continue
-				var/savefile/savefile = new("map_saves/[B].sav")
-				savefile.cd = "/map"
+				var/B = "[tx]-[ty]"
+				var/savefile/savefile = new("map_saves/recent/[T.z]/[B].sav")
+				var/ref = BuildVarDirectory(savefile, T, 1)
+				if(!ref)
+					message_admins("[T] failed to return a ref!")
+				savefile.cd = "/map/[T.z]/[T.y]"
+				savefile["[T.x]"] = ref
 				TICK_CHECK
-				for(var/z in savefile.dir)
-					savefile.cd = "/map/[z]"
-					for(var/y in savefile.dir)
+
+		return 1
+
+	proc/Load_World()
+		var/watch = start_watch()
+		log_startup_progress("Started Loading")
+		for(var/z = 1, z < 2, z++)
+			for(var/x = 1, x < 256, x += 15)
+				message_admins("Loaded [x] out of 256")
+				for(var/y = 1, y < 256, y += 15)
+					Load_Chunk(x, y, z)
+					sleep(-1)
+
+
+	proc/Load_Chunk(tx, ty, tz, var/location = "recent")
+		try
+			tx = tx + 1 - tx % 15
+			ty = ty + 1 - ty % 15
+
+			existing_references = list()
+			all_loaded = list()
+			var/B = "[tx]-[ty]"
+			if(!fexists(file("map_saves/[location]/[tz]/[B].sav")))
+				return
+			var/savefile/savefile = new("map_saves/[location]/[tz]/[B].sav")
+			savefile.cd = "/map"
+			TICK_CHECK
+			for(var/z in savefile.dir)
+				savefile.cd = "/map/[z]"
+				for(var/y in savefile.dir)
+					savefile.cd = "/map/[z]/[y]"
+					for(var/x in savefile.dir)
+						var/turf_ref = savefile["[x]"]
+						if(!turf_ref)
+							message_admins("turf_ref not found, x: [x]")
+							continue
+						var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
+						Load_Entry(savefile, turf_ref, old_turf)
 						savefile.cd = "/map/[z]/[y]"
-						for(var/x in savefile.dir)
-							var/turf_ref = savefile["[x]"]
-							if(!turf_ref)
-								message_admins("turf_ref not found, x: [x]")
-								continue
-							var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
-							Load_Entry(savefile, turf_ref, old_turf)
-							savefile.cd = "/map/[z]/[y]"
-							TICK_CHECK
-				for(var/i in 1 to all_loaded.len)
-					var/datum/ob = all_loaded[i]
-					ob.after_load()
-					if(istype(ob, /obj))
-						var/obj/obbie = ob
-						if(obbie.load_datums)
-							if(obbie.reagents)
-								obbie.reagents.my_atom = ob
-					if(istype(ob, /turf/simulated))
-						var/turf/simulated/Te = ob
-						//Te.blocks_air = initial(Te.blocks_air)
-						Te.new_air()
-				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
-			catch(var/exception/e)
-				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
+						TICK_CHECK
+			for(var/i in 1 to all_loaded.len)
+				var/datum/ob = all_loaded[i]
+				ob.after_load()
+				if(istype(ob, /obj))
+					var/obj/obbie = ob
+					if(obbie.load_datums)
+						if(obbie.reagents)
+							obbie.reagents.my_atom = ob
+				if(istype(ob, /turf/simulated))
+					var/turf/simulated/Te = ob
+					//Te.blocks_air = initial(Te.blocks_air)
+					Te.new_air()
+		catch(var/exception/e)
+			message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
+
 // Loading a file is pretty straightforward - you specify the savefile to load from
 // (make sure its an actual savefile, not just a file name), and if necessary you
 // include the savefile's password as an argument. This will automatically check to

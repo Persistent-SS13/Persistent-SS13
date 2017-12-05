@@ -9,7 +9,7 @@
 	icon_state = "turretCover"
 	anchored = 1
 	
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;component_parts;req_one_access"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;component_parts;req_one_access;locked;check_arrest;check_records;check_synth;check_anomalies;check_weapons"
 
 	density = 0
 	use_power = 1				//this turret uses and requires power

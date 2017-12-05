@@ -190,3 +190,13 @@
 	materials = list("$metal" = 200, "$glass" = 200, "$uranium" = 1000, "$plasma" = 200)
 	build_path = /obj/item/clothing/glasses/hud/hydroponic/night
 	category = list("Equipment")
+
+/datum/design/superior_welding_googles
+	name = "superior welding goggles"
+	desc = "Welding goggles made from more expensive materials, strangely smells like potatoes."
+	id = "superior_welding_googles"
+	req_tech = list("engineering" = 2, "materials" = 2)
+	build_type = PROTOLATHE
+	materials = list("$metal" = 750, "$glass" = 300, "$silver" = 2000)
+	build_path = /obj/item/clothing/glasses/welding/superior
+	category = list("Equipment")

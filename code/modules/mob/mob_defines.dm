@@ -227,3 +227,5 @@
 	var/list/permanent_huds = list()
 
 	var/list/actions = list()
+	
+	var/on_ride = 0

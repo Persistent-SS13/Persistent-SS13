@@ -43,6 +43,11 @@ var/global/list/datum/stack_recipe/metal_recipes = list(
 	new /datum/stack_recipe("glass table frame parts", /obj/item/weapon/table_parts/glass, 2),
 	new /datum/stack_recipe("rack parts", /obj/item/weapon/rack_parts),
 	new /datum/stack_recipe("closet", /obj/structure/closet, 2, time = 15, one_per_turf = 1, on_floor = 1),
+	new /datum/stack_recipe_list("filing cabinets", list(
+		new /datum/stack_recipe("black filing cabinet", /obj/structure/filingcabinet, 5, time = 15, one_per_turf = 1, on_floor = 1),
+		new /datum/stack_recipe("grey filing cabinet", /obj/structure/filingcabinet/filingcabinet, 5, time = 15, one_per_turf = 1, on_floor = 1),
+		new /datum/stack_recipe("filing drawer", /obj/structure/filingcabinet/chestdrawer, 5, time = 15, one_per_turf = 1, on_floor = 1)
+	), 5),
 	null,
 	new /datum/stack_recipe("canister", /obj/machinery/portable_atmospherics/canister, 10, time = 15, one_per_turf = 1, on_floor = 1),
 	null,
@@ -151,7 +156,8 @@ var/global/list/datum/stack_recipe/wood_recipes = list(
 	new /datum/stack_recipe("easel", /obj/structure/easel, 3, one_per_turf = 1, on_floor = 1),
 	new /datum/stack_recipe("wooden buckler", /obj/item/weapon/shield/riot/buckler, 20, time = 40),
 	new /datum/stack_recipe("apiary", /obj/structure/beebox, 40, time = 50),
-	new /datum/stack_recipe("honey frame", /obj/item/honey_frame, 5, time = 10)
+	new /datum/stack_recipe("honey frame", /obj/item/honey_frame, 5, time = 10),
+	new /datum/stack_recipe("noticeboard frame", /obj/item/mounted/frame/noticeboard_frame, 3, time = 10)
 )
 
 /obj/item/stack/sheet/wood

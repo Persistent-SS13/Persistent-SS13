@@ -93,7 +93,7 @@
 	if(panel_open)
 		if(istype(I, /obj/item/weapon/crowbar))
 			eject_beaker()
-			default_deconstruction_crowbar(I)
+			default_deconstruction_crowbar(user, I)
 			return 1
 
 /obj/machinery/chem_heater/attack_hand(mob/user)

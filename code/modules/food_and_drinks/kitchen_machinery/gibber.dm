@@ -92,7 +92,7 @@
 	if(fastenWrench(user, P))
 		return
 
-	default_deconstruction_crowbar(P)
+	default_deconstruction_crowbar(user, P)
 
 /obj/machinery/gibber/MouseDrop_T(mob/target, mob/user)
 	if(user.incapacitated() || !ishuman(user))

@@ -150,7 +150,7 @@
 	if(panel_open)
 		if(istype(O, /obj/item/weapon/crowbar))
 			griefProtection()
-			default_deconstruction_crowbar(O)
+			default_deconstruction_crowbar(user, O)
 			return 1
 
 /obj/machinery/r_n_d/server/attack_hand(mob/user as mob)

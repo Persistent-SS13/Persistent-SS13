@@ -52,7 +52,7 @@
 	var/datum/owner			// owner that receive signals
 	var/list/params[0]		// what to send to the main object to indicate which sensor
 	var/trigger_limit = 5	// number of time we're allowed to trigger per ptick
-
+	should_save = 0
 /obj/effect/portal_sensor/New(loc, o, ...)
 	..()
 	owner = o
@@ -79,6 +79,8 @@
 
 /obj/effect/portal_sensor/proc/trigger()
 	triggered_this_tick++
+	if(!owner)
+		return
 	if(triggered_this_tick < trigger_limit)
 		call(owner, "trigger")(arglist(params))
 

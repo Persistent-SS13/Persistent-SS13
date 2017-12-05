@@ -144,7 +144,21 @@ Works together with spawning an observer, noted above.
 		x.remove(src)
 		return
 	return ghostize(flags)
-/mob/proc/ghostize(var/flags = GHOST_CAN_REENTER) // gotta change this
+/mob/proc/ghostize(var/flags = GHOST_CAN_REENTER, var/actualghost) // gotta change this
+	if(actualghost)
+		return ghostize_old(flags)
+	if(istype(src, /mob/living/carbon/human/))
+		var/mob/living/carbon/human/H = src
+		var/obj/item/organ/internal/brain/x = locate(/obj/item/organ/internal/brain) in H.internal_organs
+		if(x)
+			x.remove(H)
+			return
+	var/obj/item/organ/internal/brain/x = locate(/obj/item/organ/internal/brain) in contents
+	if(x)
+		x.remove(src)
+		return
+
+/mob/proc/ghostize_old(var/flags = GHOST_CAN_REENTER) // gotta change this
 	if(key)
 		if(non_respawnable_keys[ckey])
 			flags &= ~GHOST_CAN_REENTER

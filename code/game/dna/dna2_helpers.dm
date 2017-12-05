@@ -248,7 +248,7 @@
 		H.update_fhair()
 		H.update_markings()
 		H.update_head_accessory()
-
+		H.update_body()
 		return 1
 	else
 		return 0

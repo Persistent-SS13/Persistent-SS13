@@ -276,6 +276,7 @@
 //Set ignoregloves to add prints irrespective of the mob having gloves on.
 /atom/proc/add_fingerprint(mob/living/M as mob, ignoregloves = 0)
 	if(isnull(M)) return
+	if(!M) return
 	if(isnull(M.key)) return
 	if(ishuman(M))
 		//Add the list if it does not exist.

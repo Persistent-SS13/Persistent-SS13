@@ -97,4 +97,4 @@
 	if(istype(G, /obj/item/weapon/wrench))
 		fastenWrench(user, G)
 	else if(istype(G, /obj/item/weapon/crowbar))
-		default_deconstruction_crowbar(G, ignore_panel = 1)
+		default_deconstruction_crowbar(user, G, ignore_panel = 1)

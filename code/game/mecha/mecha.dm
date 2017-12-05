@@ -21,7 +21,9 @@
 	force = 5
 	var/initial_icon = null //Mech type for resetting icon. Only used for reskinning kits (see custom items)
 	var/can_move = 1
+	var/list/can_ride_typecache = list()
 	var/mob/living/carbon/occupant = null
+	var/datum/riding/riding_datum
 	var/step_in = 10 //make a step in step_in/10 sec.
 	var/step_delay = 0 // used for pulling thing
 	var/dir_in = 2//What direction will the mech face when entered/powered on? Defaults to South.
@@ -43,8 +45,11 @@
 	var/lights_power = 6
 	var/emagged = 0
 	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;radio;cell;internal_tank;cargo;equipment;health;dna;selected"
+	var/ride_allow_incapacitated = FALSE
+	var/allow_riding = TRUE
 	
-	
+	can_buckle = 1
+	buckle_lying = 0
 	var/stat_Grit = 3
 	var/stat_Fortitude = 3
 	var/stat_Reflex = 3
@@ -341,7 +346,8 @@
 /obj/mecha/relaymove(mob/user,direction)
 	if(user != src.occupant) //While not "realistic", this piece is player friendly.
 		user.forceMove(get_turf(src))
-		to_chat(user, "You climb out from [src]")
+		if(user !=buckled_mob)
+			to_chat(user, "You climb out from [src]")
 		return 0
 	if(connected_port)
 		if(world.time - last_message > 20)
@@ -381,6 +387,8 @@
 
 /obj/mecha/proc/mechturn(direction)
 	dir = direction
+	if(buckled_mob !=null)
+		riding_datum.handle_vehicle_offsets()
 	if(turnsound)
 		playsound(src,turnsound,40,1)
 	return 1
@@ -589,7 +597,7 @@
 		src.spark_system.start()
 		diag_hud_set_mechhealth()
 	else
-		qdel(src)
+		Destroy()
 	return
 
 /obj/mecha/attack_hand(mob/living/user as mob)
@@ -699,6 +707,8 @@
 	return
 
 /obj/mecha/Destroy()
+	if(buckled_mob!=null)
+		riding_datum.force_dismount()
 	go_out()
 	for(var/mob/M in src) //Let's just be ultra sure
 		if(isAI(M))
@@ -1265,8 +1275,7 @@
 		return
 	src.log_message("[user] tries to move in.")
 	if(src.occupant)
-		to_chat(usr, "<span class='warning'>The [src.name] is already occupied!</span>")
-		src.log_append_to_last("Permission denied.")
+		buckle_mob(M)
 		return
 	var/passed
 	if(src.dna)
@@ -1294,7 +1303,53 @@
 	else
 		to_chat(user, "You stop entering the exosuit.")
 	return
+	
+obj/mecha/buckle_mob(mob/living/M, force = FALSE, check_loc = FALSE)
+	if(!ishuman(M))
+		to_chat(M, "<span class='notice'>You can't hold onto the handle!</span>")
+		return
+	if(!riding_datum)
+		riding_datum = new /datum/riding/mecha(src)
+	if(buckled_mob)
+		to_chat(M, "<span class='notice'>Someone else is already on [src]!</span>")
+	if(M.stat)
+		return
+	if(M.incapacitated())
+		return
+	if(M.restrained())
+		return
+	if(iscarbon(M) && M.r_hand != null && M.l_hand != null)
+		to_chat(M, "<span class='notice'>You need a free hand to hold onto the mech!</span>")
+		return
+	to_chat(M, "<span class='notice'>You grab hold of the handle on the back of [src]...</span>")
+	M.on_ride=1
+	if(do_after(M, 15, target = src) && riding_datum.equip_buckle_inhands(M) && M in range(1))
+		if(iscarbon(M))
+			if(M.incapacitated(FALSE, TRUE) || buckled_mob)
+				to_chat(M, "<span class='warning'>You lose your grip and fall off of [src]!</span>")
+				M.on_ride=0
+				return
+		to_chat(viewers(src), "<span class='notice'>[M] pulls \himself up onto the back of [src]. </span>")
+		M.buckled = src
+		buckled_mob = M
+		M.floating=0
+		M.update_canmove()
+		M.stop_pulling()
+		M.forceMove(src.loc)
+		M.throw_alert("buckled", /obj/screen/alert/restrained/buckled, new_master = src)
+		riding_datum.handle_vehicle_offsets()
+	else
+		visible_message("<span class='warning'>[M] loses their grip on [src]!</span>")
+		M.on_ride=0
 
+	
+/obj/mecha/unbuckle_mob(mob/user)
+	if(!riding_datum)
+		return
+	riding_datum.restore_position(user)
+	..() 
+	
+	
 /obj/mecha/proc/moved_inside(var/mob/living/carbon/human/H as mob, var/override = 0)
 	if((H && H.client && H in range(1))|| override)
 		H.reset_view(src)
@@ -1500,6 +1555,7 @@
 		src.occupant = null
 		src.icon_state = src.reset_icon()+"-open"
 		src.dir = dir_in
+		riding_datum.handle_vehicle_offsets()
 	return
 
 /////////////////////////

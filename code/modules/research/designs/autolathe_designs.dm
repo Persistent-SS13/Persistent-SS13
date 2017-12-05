@@ -760,3 +760,11 @@
 	materials = list(MAT_GLASS = 750, MAT_METAL = 250)
 	build_path = /obj/item/weapon/circuitboard/vendor
 	category = list("initial", "Electronics")
+
+/datum/design/welding_googles
+	name = "Welding Googles"
+	id = "welding_googles"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 750, MAT_GLASS = 300)
+	build_path = /obj/item/clothing/glasses/welding
+	category = list("initial","Construction")

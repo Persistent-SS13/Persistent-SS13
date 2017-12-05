@@ -524,6 +524,38 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	containertype = /obj/structure/closet/secure_closet
 	containername = "Botanist Equipment"
 	desc = "Make some dank weed."
+/datum/supply_item/profession/clown
+	name = "Clown Equipment"
+	contains = list(/obj/item/clothing/under/rank/clown,
+					/obj/item/clothing/mask/gas/clown_hat,
+					/obj/item/clothing/shoes/clown_shoes,
+					/obj/item/gloves/color/rainbow/clown,
+					/obj/item/weapon/bikehorn,
+					/obj/item/toy/crayon/rainbow,
+					/obj/item/weapon/bedsheet/clown,
+					/obj/item/weapon/stamp/clown,
+					/obj/item/stack/sheet/mineral/bananium, // Clowns control the entire bananium industry now :eyes:
+					/obj/item/weapon/cartidge/clown, // Cannot be bought from the vendor, so adding it to this pack
+					/obj/item/weapon/storage/backpack/clown) // /obj/item/weapon/cartidge/engineering
+	cost = 250
+	containertype = /obj/structure/closet/secure_closet
+	containername = "Clown Equipment"
+	desc = "HONK!"
+/datum/supply_item/profession/mime
+	name = "Mime Equipment"
+	contains = list(/obj/item/clothing/under/rank/mime,
+					/obj/item/clothing/mask/gas/mime,
+					/obj/item/clothing/shoes/mime,
+					/obj/item/clothing/head/beret,
+					/obj/item/toy/crayon/mime,
+					/obj/item/weapon/bedsheet/mime,
+					/obj/item/stack/sheet/mineral/tranquillite,
+					/obj/item/weapon/cartridge/mime,
+					/obj/item/weapon/storage/backpack/mime) // /obj/item/weapon/cartidge/engineering
+	cost = 150
+	containertype = /obj/structure/closet/secure_closet
+	containername = "Mime Equipment"
+	desc = "....."
 	
 
 /datum/supply_item/headgear	// Section header - use these to set default supply group and crate type for sections

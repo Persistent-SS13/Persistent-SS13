@@ -129,7 +129,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/industrial,
 					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
 	cost = 150
-	containertype = /obj/structure/closet/secure_closet/engineering_personal
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Engineering Trainee Equipment"
 	desc = "Everything an Engineering Trainee needs."
 	authentication = list("chief", "captain", "hop")
@@ -142,7 +142,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/industrial,
 					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
 	cost = 150
-	containertype = /obj/structure/closet/secure_closet/engineering_personal
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Engineering Trainee Equipment"
 	desc = "Everything an Engineering Trainee needs."
 	authentication = list("chief", "captain", "hop")
@@ -157,7 +157,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/industrial,
 					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
 	cost = 500
-	containertype = /obj/structure/closet/secure_closet/atmos_personal
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Atmospheric Technician Equipment"
 	desc = "Everything an Atmos Tech needs."
 	authentication = list("chief", "captain", "hop")
@@ -172,7 +172,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/industrial,
 					/obj/item/device/radio/headset/headset_eng) // /obj/item/weapon/cartidge/engineering
 	cost = 500
-	containertype = /obj/structure/closet/secure_closet/atmos_personal
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Atmospheric Technician Equipment"
 	desc = "Everything an Atmos Tech needs."
 	authentication = list("chief", "captain", "hop")
@@ -210,7 +210,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/security,
 					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 350
-	containertype = /obj/structure/closet/secure_closet/security
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Security Cadet Equipment"
 	desc = "Everything a Security Cadet needs."
 	authentication = list("hos", "captain", "hop")
@@ -226,7 +226,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/security,
 					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 350
-	containertype = /obj/structure/closet/secure_closet/security
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Security Cadet Equipment"
 	desc = "Everything a Security Cadet needs."
 	authentication = list("hos", "captain", "hop")
@@ -248,7 +248,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/security,
 					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 700
-	containertype = /obj/structure/closet/secure_closet/security
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Security Officer Equipment"
 	desc = "Everything a Security Officer needs."
 	authentication = list("hos", "captain", "hop")
@@ -270,7 +270,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/security,
 					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 700
-	containertype = /obj/structure/closet/secure_closet/security
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Security Officer Equipment"
 	desc = "Everything a Security Officer needs."
 	authentication = list("hos", "captain", "hop")
@@ -296,7 +296,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/security,
 					/obj/item/device/radio/headset/headset_sec) // /obj/item/weapon/cartidge/engineering
 	cost = 1000
-	containertype = /obj/structure/closet/secure_closet/security
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Security Corporal Equipment"
 	desc = "Everything a Security Corporal needs."
 	authentication = list("hos", "captain", "hop")
@@ -318,7 +318,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/security,
 					/obj/item/device/radio/headset/headset_sec/alt) // /obj/item/weapon/cartidge/engineering
 	cost = 700
-	containertype = /obj/structure/closet/secure_closet/security
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Detective Equipment"
 	desc = "Everything a Detective needs."
 	authentication = list("hos", "captain", "hop")
@@ -328,7 +328,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/medic,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
 	cost = 100
-	containertype = /obj/structure/closet/secure_closet/medical3
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Medical Intern Equipment"
 	desc = "Everything a Medical Intern needs."
 	authentication = list("cmo", "captain", "hop")
@@ -338,7 +338,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/medic,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
 	cost = 100
-	containertype = /obj/structure/closet/secure_closet/medical3
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Medical Intern Equipment"
 	desc = "Everything a Medical Intern needs."
 	authentication = list("cmo", "captain", "hop")
@@ -350,7 +350,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/medic,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
 	cost = 100
-	containertype = /obj/structure/closet/secure_closet/medical3
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Nurse Equipment"
 	desc = "Everything a Nurse needs. A mostly male-dominated profession."
 	authentication = list("cmo", "captain", "hop")
@@ -366,7 +366,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_med,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
 	cost = 500
-	containertype = /obj/structure/closet/secure_closet/medical3
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Doctor Equipment"
 	desc = "Everything a Doctor needs."
 	authentication = list("cmo", "captain", "hop")
@@ -382,7 +382,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_med,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
 	cost = 500
-	containertype = /obj/structure/closet/secure_closet/medical3
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Doctor Equipment"
 	desc = "Everything a Doctor needs."
 	authentication = list("cmo", "captain", "hop")
@@ -395,7 +395,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_chem,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
 	cost = 300
-	containertype = /obj/structure/closet/secure_closet/medical3
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Chemist Equipment"
 	desc = "Everything a Chemist needs."
 	authentication = list("cmo", "captain", "hop")
@@ -408,7 +408,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_chem,
 					/obj/item/device/radio/headset/headset_med) // /obj/item/weapon/cartidge/engineering
 	cost = 300
-	containertype = /obj/structure/closet/secure_closet/medical3
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Chemist Equipment"
 	desc = "Everything a Chemist needs."
 	authentication = list("cmo", "captain", "hop")
@@ -418,7 +418,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/science,
 					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
 	cost = 100
-	containertype = /obj/structure/closet/secure_closet/scientist
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Science Intern Equipment"
 	desc = "Everything a Science Intern needs."
 	authentication = list("rd", "captain", "hop")
@@ -428,7 +428,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/science,
 					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
 	cost = 100
-	containertype = /obj/structure/closet/secure_closet/scientist
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Science Intern Equipment"
 	desc = "Everything a Science Intern needs."
 	authentication = list("rd", "captain", "hop")
@@ -441,7 +441,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_tox,
 					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
 	cost = 400
-	containertype = /obj/structure/closet/secure_closet/scientist
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Scientist Equipment"
 	desc = "Everything a Scientist needs."
 	authentication = list("rd", "captain", "hop")
@@ -454,7 +454,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_tox,
 					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
 	cost = 400
-	containertype = /obj/structure/closet/secure_closet/scientist
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Scientist Equipment"
 	desc = "Everything a Scientist needs."
 	authentication = list("rd", "captain", "hop")
@@ -467,7 +467,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_tox,
 					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
 	cost = 400
-	containertype = /obj/structure/closet/secure_closet/scientist
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Roboticist Equipment"
 	desc = "Everything a Roboticist needs."
 	authentication = list("rd", "captain", "hop")
@@ -480,7 +480,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/satchel_tox,
 					/obj/item/device/radio/headset/headset_sci) // /obj/item/weapon/cartidge/engineering
 	cost = 400
-	containertype = /obj/structure/closet/secure_closet/scientist
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Roboticist Equipment"
 	desc = "Everything a Roboticist needs."
 	authentication = list("rd", "captain", "hop")
@@ -521,7 +521,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 					/obj/item/weapon/storage/backpack/botany,
 					/obj/item/device/radio/headset/headset_service) // /obj/item/weapon/cartidge/engineering
 	cost = 180
-	containertype = /obj/structure/closet/secure_closet/hydroponics
+	containertype = /obj/structure/closet/secure_closet
 	containername = "Botanist Equipment"
 	desc = "Make some dank weed."
 	

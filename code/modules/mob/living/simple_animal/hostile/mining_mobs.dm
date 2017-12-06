@@ -25,13 +25,13 @@
 	melee_damage_lower = 15
 	melee_damage_upper = 30
 	attacktext = "rears its fangs and jumps at"
-	attack_sound = 'sound/effects/mobs/demon/Demon_attack1.wav'
+	attack_sound = 'sound/effects/mobs/demon/Demon_attack1.ogg'
 	a_intent = I_HARM
 	speak_emote = list("says")
 	status_flags = 0
 	uses_autoemote = 1
 	autoemotes = list("wails something incomprehensible", "rages around and screams!", "looks like their anger is boiling to the surface!")
-	autosounds = list('sound/effects/mobs/demon/Demon_idle1.wav', 'sound/effects/mobs/demon/Demon_idle2.wav', 'sound/effects/mobs/demon/Demon_idle3.wav', 'sound/effects/mobs/demon/Demon_idle4.wav')
+	autosounds = list('sound/effects/mobs/demon/Demon_idle1.ogg', 'sound/effects/mobs/demon/Demon_idle2.ogg', 'sound/effects/mobs/demon/Demon_idle3.ogg', 'sound/effects/mobs/demon/Demon_idle4.ogg')
 	melee_damage_type = BURN
 	AIStatus = AI_OFF
 /mob/living/simple_animal/hostile/asteroid/vindictagolem/New()
@@ -50,12 +50,12 @@
 /mob/living/simple_animal/hostile/asteroid/vindictagolem/AttackingTarget()
 	var/ob = 0
 	attacktext = pick("forces its molten appendeges at", "channels its burning rage towards", "does a fiery lunge towards")
-	attack_sound = pick('sound/effects/mobs/demon/Demon_attack1.wav', 'sound/effects/mobs/demon/Demon_attack2.wav', 'sound/effects/mobs/demon/Demon_attack3.wav')
+	attack_sound = pick('sound/effects/mobs/demon/Demon_attack1.ogg', 'sound/effects/mobs/demon/Demon_attack2.ogg', 'sound/effects/mobs/demon/Demon_attack3.ogg')
 	return ..()
 /mob/living/simple_animal/hostile/asteroid/vindictagolem/death(gibbed)
 	AIStatus = AI_OFF
 	flick("golem-die", src)
-	playsound(src.loc, 'sound/effects/mobs/demon/Demon_die.wav', rand(80, 100), 1)
+	playsound(src.loc, 'sound/effects/mobs/demon/Demon_die.ogg', rand(80, 100), 1)
 	spawn(12)
 		..()
 		qdel(src)
@@ -96,7 +96,7 @@
 	var/next_eat = 0
 	uses_autoemote = 1
 	autoemotes = list("chitters softly as it moves along", "hisses and skitters ahead", "drools profusly and lets out a shrill hiss")
-	autosounds = list('sound/effects/mobs/hiss2.wav', 'sound/effects/mobs/hiss.wav')
+	autosounds = list('sound/effects/mobs/hiss2.ogg', 'sound/effects/mobs/hiss.ogg')
 	melee_damage_type = CUT
 /mob/living/simple_animal/hostile/asteroid/petraspider/New()
 	..()
@@ -172,7 +172,7 @@
 /mob/living/simple_animal/hostile/asteroid/petraspider/Aggro()
 	..()
 	visible_message("<span class='notice'>[src] rears its fangs and hisses vicously!</span>")
-	playsound(src.loc,'sound/effects/mobs/hiss3.wav', rand(50,90), 1)
+	playsound(src.loc,'sound/effects/mobs/hiss3.ogg', rand(50,90), 1)
 	alert_status = 1
 /mob/living/simple_animal/hostile/asteroid/petraspider/LoseAggro()
 	..()

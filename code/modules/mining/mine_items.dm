@@ -390,7 +390,7 @@
 			ore_turf.resource_remaining--
 			if(!ore_turf.resource_remaining)
 				src.visible_message("[src] slowly begins to spin down to a complete stop.")
-				playsound(src.loc, 'sound/effects/engine_stop.wav', 100, 0)
+				playsound(src.loc, 'sound/effects/engine_stop.ogg', 100, 0)
 				active = 0
 				progress = 0
 				icon_state = "mining_drill"
@@ -408,7 +408,7 @@
 		if(progbar)
 			progbar.update(progress)
 		spawn(10)
-			playsound(src.loc, 'sound/effects/auger_bang.wav', 100, 0)
+			playsound(src.loc, 'sound/effects/auger_bang.ogg', 100, 0)
 		flick("mining_drill_active2", src)
 		nanomanager.update_uis(src)
 /obj/machinery/auger/proc/do_mine()
@@ -486,7 +486,7 @@
 		if("auger_off")
 			if(broken) return 0
 			src.visible_message("[src] slowly begins to spin down to a complete stop.")
-			playsound(src.loc, 'sound/effects/engine_stop.wav', 100, 0)
+			playsound(src.loc, 'sound/effects/engine_stop.ogg', 100, 0)
 			active = 0
 			progress = 0
 			icon_state = "mining_drill"
@@ -503,7 +503,7 @@
 				if(!progbar)
 					progbar = new(null, mining_speed, src)
 				src.visible_message("[src] roars to life and begins boaring into the ground.")
-				playsound(src.loc, 'sound/effects/engine_start.wav', 100, 0)
+				playsound(src.loc, 'sound/effects/engine_start.ogg', 100, 0)
 		if("anchor_on")
 			anchored = 1
 			playsound(src.loc, 'sound/effects/stolen/silo-clamps-on.ogg', 100, 1)

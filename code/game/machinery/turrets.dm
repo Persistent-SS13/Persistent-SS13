@@ -198,9 +198,9 @@
 
 		if(prob(15))
 			if(prob(50))
-				playsound(get_turf(src), 'sound/effects/turret/move1.wav', 60, 1)
+				playsound(get_turf(src), 'sound/effects/turret/move1.ogg', 60, 1)
 			else
-				playsound(get_turf(src), 'sound/effects/turret/move2.wav', 60, 1)
+				playsound(get_turf(src), 'sound/effects/turret/move2.ogg', 60, 1)
 
 	else if(!isPopping())//else, pop down
 		if(!isDown())
@@ -259,7 +259,7 @@
 	if((!isPopping()) || src.popping==-1)
 		invisibility = 0
 		popping = 1
-		playsound(get_turf(src), 'sound/effects/turret/open.wav', 60, 1)
+		playsound(get_turf(src), 'sound/effects/turret/open.ogg', 60, 1)
 		if(src.cover!=null)
 			flick("popup", src.cover)
 			src.cover.icon_state = "openTurretCover"
@@ -269,7 +269,7 @@
 /obj/machinery/turret/proc/popDown()
 	if((!isPopping()) || src.popping==1)
 		popping = -1
-		playsound(get_turf(src), 'sound/effects/turret/open.wav', 60, 1)
+		playsound(get_turf(src), 'sound/effects/turret/open.ogg', 60, 1)
 		if(src.cover!=null)
 			flick("popdown", src.cover)
 			src.cover.icon_state = "turretCover"

@@ -1,5 +1,6 @@
 /datum/preferences/proc/load_preferences(client/C)
-
+	if(!C)
+		return
 	var/DBQuery/query = dbcon.NewQuery({"SELECT
 					ooccolor,
 					UI_style,
@@ -57,6 +58,8 @@
 	return 1
 
 /datum/preferences/proc/save_preferences(client/C)
+	if(!C)
+		return
 	// Might as well scrub out any malformed be_special list entries while we're here
 	for(var/role in be_special)
 		if(!(role in special_roles))

@@ -9,7 +9,7 @@
 	icon_state = "turretCover"
 	anchored = 1
 	
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;component_parts;req_one_access"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;component_parts;req_one_access;locked;check_arrest;check_records;check_synth;check_anomalies;check_weapons"
 
 	density = 0
 	use_power = 1				//this turret uses and requires power
@@ -609,7 +609,7 @@ var/list/turret_icons
 	if(stat & BROKEN)
 		return
 	set_raised_raising(raised, 1)
-	playsound(get_turf(src), 'sound/effects/turret/open.wav', 60, 1)
+	playsound(get_turf(src), 'sound/effects/turret/open.ogg', 60, 1)
 	update_icon()
 
 	var/atom/flick_holder = new /atom/movable/porta_turret_cover(loc)
@@ -630,7 +630,7 @@ var/list/turret_icons
 	if(stat & BROKEN)
 		return
 	set_raised_raising(raised, 1)
-	playsound(get_turf(src), 'sound/effects/turret/open.wav', 60, 1)
+	playsound(get_turf(src), 'sound/effects/turret/open.ogg', 60, 1)
 	update_icon()
 
 	var/atom/flick_holder = new /atom/movable/porta_turret_cover(loc)

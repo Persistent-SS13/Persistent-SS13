@@ -174,7 +174,7 @@ emp_act
 
 //Returns 1 if the attack hit, 0 if it missed.
 /mob/living/carbon/human/proc/attacked_by(var/obj/item/I, var/mob/living/user, var/def_zone)
-	if(!I || !user)	return 0
+	if(!I || !user || (I.flags && NOBLUDGEON))	return 0
 
 	if(istype(user, /mob/living/carbon/human) || istype(user, /mob/living/silicon/robot))
 		if(user == src)

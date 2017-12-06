@@ -12,6 +12,8 @@ var/global/list/obj/item/device/pda/PDAs = list()
 	item_state = "electronic"
 	w_class = 1
 	slot_flags = SLOT_ID | SLOT_BELT | SLOT_PDA
+	
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;cartridge"
 
 	//Main variables
 	var/owner = null

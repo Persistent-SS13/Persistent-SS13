@@ -228,7 +228,7 @@ map_storage
 		list/all_loaded = list()
 		list/datum_reference = list()
 		list/dtm_references = list()
-		var/per_pause = 300
+		var/per_pause = 200
 		var/so_far = 0
 	New(game_id, backdoor, ignore)
 		..()
@@ -242,110 +242,114 @@ map_storage
 
 
 	proc/Load_Entry(savefile/savefile, var/ind, var/turf/old_turf, var/atom/starting_loc, var/atom/replacement, var/nocontents = 0, var/species_override = 0, var/lag_fix = 0)
-		TICK_CHECK
-		var/nextContents
-		if(nocontents)
-			nextContents = 2
-		if(existing_references["[ind]"])
-			if(starting_loc)
-				var/atom/movable/A = existing_references["[ind]"]
-				A.loc = starting_loc
-			return existing_references["[ind]"]
-		savefile.cd = "/entries/[ind]"
-		var/type = savefile["type"]
-		var/atom/movable/object
-		if(!type)
-			return
-		if(lag_fix)
-			so_far++
-			if(so_far > per_pause)
-				sleep(10)
-				so_far = 0
-		if(old_turf)
-		//	old_turf.blocks_air = 1
-			var/finished = 0
-			while(!finished)
-				finished = 1
-			var/xa = old_turf.x
-			var/ya = old_turf.y
-			var/za = old_turf.z
-			old_turf.ChangeTurf(type, FALSE, FALSE)
-			object = locate(xa,ya,za)
-		else if(replacement)
-			object = replacement
-		else
-			object = new type(starting_loc)
-		if(!object)
-			message_admins("object not created, ind: [ind] type:[type]")
-			return
-		all_loaded += object
-		existing_references["[ind]"] = object
-		if(species_override)
-			var/mob/living/carbon/human/hum = object
-			if(istype(hum, /mob/living/carbon/human))
-				var/x = savefile["species"]
-				if(x)
-					var/list/fixed = string_explode(x, "entry")
-					if(fixed)
-						x = fixed[2]
-						var/datum/species/S = Load_Entry(savefile, x, lag_fix = lag_fix)
-						savefile.cd = "/entries/[ind]"
-						hum.set_species(S.name)
-
-		for(var/v in savefile.dir)
-			savefile.cd = "/entries/[ind]"
-			if(v == "type")
-				continue
-			else if(v == "content")
-				if(nocontents != 2)
-					var/list/refs = params2list(savefile[v])
-					var/finished = 0
-					while(!finished)
-						finished = 1
-						for(var/obj/ob in object.contents)
-							if(ob.loc != object) continue
-							finished = 0
-							ob.forceMove(locate(200, 100, 2))
-							ob.Destroy()
-					for(var/x in refs)
-						Load_Entry(savefile, x, null, object, nocontents = nextContents, lag_fix = lag_fix)
-			else if(findtext(savefile[v], "**list"))
-				var/x = savefile[v]
-				var/list/fixed = string_explode(x, "list")
-				x = fixed[2]
-				var/list/lis = params2list(x)
-				var/list/final_list = list()
-				if(lis.len)
-					var/firstval = lis[1]
-					for(var/xa in lis)
-						if(findtext(xa, "**entry"))
-							var/list/fixed2 = string_explode(xa, "entry")
-							var/y = fixed2[2]
-							var/atom/movable/A = Load_Entry(savefile, y, lag_fix = lag_fix)
-							final_list += A
-						else
-							final_list += "**unique**"
-							final_list[final_list.len] = Numeric(xa)
-				object.vars[v] = final_list
-			else if(findtext(savefile[v], "**entry"))
-				var/x = savefile[v]
-				var/list/fixed = string_explode(x, "entry")
-				x = fixed[2]
-				var/atom/movable/A = Load_Entry(savefile, x, nocontents = nextContents, lag_fix = lag_fix)
-				object.vars[v] = A
-			else if(savefile[v] == "**null")
-				object.vars[v] = null
-			else if(v == "req_access_txt")
-				object.vars[v] = savefile[v]
-			else if(savefile[v] == "**emptylist")
-				object.vars[v] = list()
-			else
-				savefile.cd = "/entries/[ind]"
-				object.vars[v] = savefile[v]
-			savefile.cd = "/entries/[ind]"
+		try
 			TICK_CHECK
-		savefile.cd = ".."
-		return object
+			var/nextContents
+			if(nocontents)
+				nextContents = 2
+			if(existing_references["[ind]"])
+				if(starting_loc)
+					var/atom/movable/A = existing_references["[ind]"]
+					A.loc = starting_loc
+				return existing_references["[ind]"]
+			savefile.cd = "/entries/[ind]"
+			var/type = savefile["type"]
+			var/atom/movable/object
+			if(!type)
+				return
+			if(lag_fix)
+				so_far++
+				if(so_far > per_pause)
+					sleep(10)
+					so_far = 0
+			if(old_turf)
+			//	old_turf.blocks_air = 1
+				var/finished = 0
+				while(!finished)
+					finished = 1
+				var/xa = old_turf.x
+				var/ya = old_turf.y
+				var/za = old_turf.z
+				old_turf.ChangeTurf(type, FALSE, FALSE)
+				object = locate(xa,ya,za)
+			else if(replacement)
+				object = replacement
+			else
+				object = new type(starting_loc)
+			if(!object)
+				message_admins("object not created, ind: [ind] type:[type]")
+				return
+			all_loaded += object
+			existing_references["[ind]"] = object
+			if(species_override)
+				var/mob/living/carbon/human/hum = object
+				if(istype(hum, /mob/living/carbon/human))
+					var/x = savefile["species"]
+					if(x)
+						var/list/fixed = string_explode(x, "entry")
+						if(fixed)
+							x = fixed[2]
+							var/datum/species/S = Load_Entry(savefile, x, lag_fix = lag_fix)
+							savefile.cd = "/entries/[ind]"
+							hum.set_species(S.name)
+
+			for(var/v in savefile.dir)
+				savefile.cd = "/entries/[ind]"
+				if(v == "type")
+					continue
+				else if(v == "content")
+					if(nocontents != 2)
+						var/list/refs = params2list(savefile[v])
+						var/finished = 0
+						while(!finished)
+							finished = 1
+							for(var/obj/ob in object.contents)
+								if(ob.loc != object) continue
+								finished = 0
+								ob.forceMove(locate(200, 100, 2))
+								ob.Destroy()
+						for(var/x in refs)
+							Load_Entry(savefile, x, null, object, nocontents = nextContents, lag_fix = lag_fix)
+				else if(findtext(savefile[v], "**list"))
+					var/x = savefile[v]
+					var/list/fixed = string_explode(x, "list")
+					x = fixed[2]
+					var/list/lis = params2list(x)
+					var/list/final_list = list()
+					if(lis.len)
+						var/firstval = lis[1]
+						for(var/xa in lis)
+							if(findtext(xa, "**entry"))
+								var/list/fixed2 = string_explode(xa, "entry")
+								var/y = fixed2[2]
+								var/atom/movable/A = Load_Entry(savefile, y, lag_fix = lag_fix)
+								final_list += A
+							else
+								final_list += "**unique**"
+								final_list[final_list.len] = Numeric(xa)
+					object.vars[v] = final_list
+				else if(findtext(savefile[v], "**entry"))
+					var/x = savefile[v]
+					var/list/fixed = string_explode(x, "entry")
+					x = fixed[2]
+					var/atom/movable/A = Load_Entry(savefile, x, nocontents = nextContents, lag_fix = lag_fix)
+					object.vars[v] = A
+				else if(savefile[v] == "**null")
+					object.vars[v] = null
+				else if(v == "req_access_txt")
+					object.vars[v] = savefile[v]
+				else if(savefile[v] == "**emptylist")
+					object.vars[v] = list()
+				else
+					savefile.cd = "/entries/[ind]"
+					object.vars[v] = savefile[v]
+				savefile.cd = "/entries/[ind]"
+				TICK_CHECK
+			savefile.cd = ".."
+			return object
+		catch(var/exception/e)
+			message_admins("EXCEPTION IN LOAD ENTRY!! [e] on [e.file]:[e.line]")
+
 	proc/BuildVarDirectory(savefile/savefile, atom/A, var/contents = 0)
 		if(!A.should_save)
 			return 0
@@ -353,10 +357,13 @@ map_storage
 		var/ref = 0
 		if(ind)
 			return ind
-		else
-			saving_references += A
-			ref = saving_references.len
-			A.before_save()
+		if(istype(A, /turf/space) && (!A.contents || A.contents.len == 0))
+			savefile.cd = "/entries/0"
+			savefile["type"] = A.type
+			savefile["content"] = ""
+		saving_references += A
+		ref = saving_references.len
+		A.before_save()
 		savefile.cd = "/entries/[ref]"
 		savefile["type"] = A.type
 		var/list/content_refs = list()
@@ -688,7 +695,7 @@ map_storage
 				var/rank_uid = mob.mind.primary_cert.uid
 				job_master.EquipRankPersistant(mob, rank_uid, 1)
 				data_core.manifest_inject(mob)
-				
+
 				ticker.minds |= mob.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 				TICK_CHECK
 				spawn(10)
@@ -726,75 +733,92 @@ map_storage
 		return 1
 	proc/Save_World(list/areas)
 		// ***** MAP SECTION *****
-		var/backup_dir
-		for(var/A in areas)
-			saving_references = list()
-			existing_references = list()
-			var/B = replacetext("[A]", "/", "-")
-			if(fexists("map_saves/[B].sav"))
-				var/savefile/sav = new("map_saves/[B].sav")
-				if(!backup_dir)
-					var/i = 1
-					var/found = 0
-					while(!found)
-						found = 1
-						if(fexists("map_backups/[i]/[B].sav"))
-							found = 0
-							i++
-						else
-							backup_dir = "map_backups/[i]/[B].sav"
-				fcopy(sav, backup_dir)
-				fdel("map_saves/[B].sav")
-			var/savefile/savefile = new("map_saves/[B].sav")
-			for(var/turf/turf in get_area_turfs(A))
-				var/ref = BuildVarDirectory(savefile, turf, 1)
-				if(!ref)
-					message_admins("[turf] failed to return a ref!")
-				savefile.cd = "/map/[turf.z]/[turf.y]"
-				savefile["[turf.x]"] = ref
-				TICK_CHECK
-		return 1
-	proc/Load_World(list/areas)
+		if(fexists(file("map_saves/recent/")))
+			fcopy("map_saves/recent/", "map_saves/backup/[time2text(world.realtime, "MM-DD hh.mm.ss")]/")
+			fdel("map_saves/recent/")
 
-		for(var/A in areas)
-			try
-				var/watch = start_watch()
-				existing_references = list()
-				all_loaded = list()
-				var/B = replacetext("[A]", "/", "-")
-				if(!fexists("map_saves/[B].sav"))
+		for(var/z = 1, z < 2, z++)
+			for(var/x = 1, x < 256, x += 15)
+				for(var/y = 1, y < 256, y += 15)
+					Save_Chunk(x, y, z)
+					sleep(-1)
+
+		return 1
+
+	proc/Save_Chunk(tx, ty, z)
+		saving_references = list()
+		existing_references = list()
+		tx = tx + 1 - tx % 15
+		ty = ty + 1 - ty % 15
+		for(var/x = tx, x < tx + 15, x++)
+			for(var/y = ty, y < ty + 15, y++)
+
+				var/turf/T = locate(x,y,z)
+				if(!T)
 					continue
-				var/savefile/savefile = new("map_saves/[B].sav")
-				savefile.cd = "/map"
+				var/B = "[tx]-[ty]"
+				var/savefile/savefile = new("map_saves/recent/[T.z]/[B].sav")
+				var/ref = BuildVarDirectory(savefile, T, 1)
+				if(!ref)
+					message_admins("[T] failed to return a ref!")
+				savefile.cd = "/map/[T.z]/[T.y]"
+				savefile["[T.x]"] = ref
 				TICK_CHECK
-				for(var/z in savefile.dir)
-					savefile.cd = "/map/[z]"
-					for(var/y in savefile.dir)
+
+		return 1
+
+	proc/Load_World()
+		var/watch = start_watch()
+		log_startup_progress("Started Loading")
+		for(var/z = 1, z < 2, z++)
+			for(var/x = 1, x < 256, x += 15)
+				message_admins("Loaded [x] out of 256")
+				for(var/y = 1, y < 256, y += 15)
+					Load_Chunk(x, y, z)
+					sleep(-1)
+
+
+	proc/Load_Chunk(tx, ty, tz, var/location = "recent")
+		try
+			tx = tx + 1 - tx % 15
+			ty = ty + 1 - ty % 15
+
+			existing_references = list()
+			all_loaded = list()
+			var/B = "[tx]-[ty]"
+			if(!fexists(file("map_saves/[location]/[tz]/[B].sav")))
+				return
+			var/savefile/savefile = new("map_saves/[location]/[tz]/[B].sav")
+			savefile.cd = "/map"
+			TICK_CHECK
+			for(var/z in savefile.dir)
+				savefile.cd = "/map/[z]"
+				for(var/y in savefile.dir)
+					savefile.cd = "/map/[z]/[y]"
+					for(var/x in savefile.dir)
+						var/turf_ref = savefile["[x]"]
+						if(!turf_ref)
+							message_admins("turf_ref not found, x: [x]")
+							continue
+						var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
+						Load_Entry(savefile, turf_ref, old_turf)
 						savefile.cd = "/map/[z]/[y]"
-						for(var/x in savefile.dir)
-							var/turf_ref = savefile["[x]"]
-							if(!turf_ref)
-								message_admins("turf_ref not found, x: [x]")
-								continue
-							var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
-							Load_Entry(savefile, turf_ref, old_turf)
-							savefile.cd = "/map/[z]/[y]"
-							TICK_CHECK
-				for(var/i in 1 to all_loaded.len)
-					var/datum/ob = all_loaded[i]
-					ob.after_load()
-					if(istype(ob, /obj))
-						var/obj/obbie = ob
-						if(obbie.load_datums)
-							if(obbie.reagents)
-								obbie.reagents.my_atom = ob
-					if(istype(ob, /turf/simulated))
-						var/turf/simulated/Te = ob
-						//Te.blocks_air = initial(Te.blocks_air)
-						Te.new_air()
-				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
-			catch(var/exception/e)
-				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
+						TICK_CHECK
+			for(var/i in 1 to all_loaded.len)
+				var/datum/ob = all_loaded[i]
+				ob.after_load()
+				if(istype(ob, /obj))
+					var/obj/obbie = ob
+					if(obbie.load_datums)
+						if(obbie.reagents)
+							obbie.reagents.my_atom = ob
+				if(istype(ob, /turf/simulated))
+					var/turf/simulated/Te = ob
+					//Te.blocks_air = initial(Te.blocks_air)
+					Te.new_air()
+		catch(var/exception/e)
+			message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
+
 // Loading a file is pretty straightforward - you specify the savefile to load from
 // (make sure its an actual savefile, not just a file name), and if necessary you
 // include the savefile's password as an argument. This will automatically check to

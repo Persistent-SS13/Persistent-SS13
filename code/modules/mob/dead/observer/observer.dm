@@ -157,7 +157,7 @@ Works together with spawning an observer, noted above.
 	if(x)
 		x.remove(src)
 		return
-	return ghostize(flags)
+
 /mob/proc/ghostize_old(var/flags = GHOST_CAN_REENTER) // gotta change this
 	if(key)
 		if(non_respawnable_keys[ckey])

@@ -150,7 +150,7 @@
 				potential_security = list(M)
 			else if(current_rank == highest_rank_security)
 				potential_security += M
-		if(!found_hos && current_dep == CARGO)
+		if(!found_qm && current_dep == CARGO)
 			if(current_rank > highest_rank_cargo)
 				highest_rank_cargo = current_rank
 				potential_cargo = list(M)

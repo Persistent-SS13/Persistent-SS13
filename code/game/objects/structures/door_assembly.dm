@@ -16,6 +16,11 @@ obj/structure/door_assembly
 
 	New()
 		update_state()
+obj/structure/door_assembly/door_assembly_keyp
+	base_icon_state = "keyp"
+	base_name = "Keypad Airlock"
+	glass = -1
+	airlock_type = "/keypad"
 
 obj/structure/door_assembly/door_assembly_emerg
 	base_icon_state = "emerg"
@@ -111,6 +116,7 @@ obj/structure/door_assembly/door_assembly_shuttle
 	base_name = "shuttle airlock"
 	airlock_type = "/shuttle"
 	glass = -1
+
 
 obj/structure/door_assembly/multi_tile
 	icon = 'icons/obj/doors/door_assembly2x1.dmi'
@@ -226,6 +232,21 @@ obj/structure/door_assembly/multi_tile/Move()
 			to_chat(user, "\blue You installed the airlock electronics!")
 			src.state = 2
 			src.name = "Near finished Airlock Assembly"
+			src.electronics = W
+		else
+			W.loc = src.loc
+
+	else if(istype(W, /obj/item/weapon/airlock_electronics/keypad_electronics) && state == 1 && W:icon_state != "door_electronics__keyp_smoked")
+		playsound(src.loc, 'sound/items/Screwdriver.ogg', 100, 1)
+		user.visible_message("[user] installs the keypad electronics into the airlock assembly.", "You start to install the keypad electronics into the airlock assembly.")
+		user.drop_item()
+		W.loc = src
+
+		if(do_after(user, 40, target = src))
+			if(!src) return
+			to_chat(user, "\blue You installed the airlock keypad electronics!")
+			src.state = 2
+			src.name = "Near finished Keypad Airlock Assembly"
 			src.electronics = W
 		else
 			W.loc = src.loc

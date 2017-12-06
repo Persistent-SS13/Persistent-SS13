@@ -529,13 +529,13 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	contains = list(/obj/item/clothing/under/rank/clown,
 					/obj/item/clothing/mask/gas/clown_hat,
 					/obj/item/clothing/shoes/clown_shoes,
-					/obj/item/gloves/color/rainbow/clown,
+					/obj/item/clothing/gloves/color/rainbow/clown,
 					/obj/item/weapon/bikehorn,
 					/obj/item/toy/crayon/rainbow,
 					/obj/item/weapon/bedsheet/clown,
 					/obj/item/weapon/stamp/clown,
 					/obj/item/stack/sheet/mineral/bananium, // Clowns control the entire bananium industry now :eyes:
-					/obj/item/weapon/cartidge/clown, // Cannot be bought from the vendor, so adding it to this pack
+					/obj/item/weapon/cartridge/clown, // Cannot be bought from the vendor, so adding it to this pack
 					/obj/item/weapon/storage/backpack/clown) // /obj/item/weapon/cartidge/engineering
 	cost = 250
 	containertype = /obj/structure/closet/secure_closet
@@ -543,7 +543,7 @@ var/list/all_supply_lists = list(supply_profession, supply_headgear, supply_clot
 	desc = "HONK!"
 /datum/supply_item/profession/mime
 	name = "Mime Equipment"
-	contains = list(/obj/item/clothing/under/rank/mime,
+	contains = list(/obj/item/clothing/under/mime,
 					/obj/item/clothing/mask/gas/mime,
 					/obj/item/clothing/shoes/mime,
 					/obj/item/clothing/head/beret,

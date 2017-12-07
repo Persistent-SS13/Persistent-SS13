@@ -681,11 +681,14 @@
 	desc = "Poly the Parrot. An expert on quantum cracker theory."
 	clean_speak = list(
 		"Poly wanna cracker!",
+		"ACTIVATE THE GRAVITY SMES YOU CHUCKLEFUCKS!",
 		"Check the singlo, you chucklefucks!",
 		"Check the tesla, you shits!",
 		"STOP HOT-WIRING THE ENGINE, FUCKING CHRIST!",
 		"Wire the solars, you lazy bums!",
+		"Why are you putting all the money in your own account, Leland?",
 		"WHO TOOK THE DAMN HARDSUITS?",
+		"HOW ABOUT I PIZZA MY FOOT UP YOUR ASS?",
 		"OH GOD ITS FREE CALL THE SHUTTLE")
 	gold_core_spawnable = CHEM_MOB_SPAWN_INVALID
 

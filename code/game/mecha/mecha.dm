@@ -44,7 +44,7 @@
 	var/lights = 0
 	var/lights_power = 6
 	var/emagged = 0
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;radio;cell;internal_tank;cargo;equipment;health;dna;selected"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;radio;cell;internal_tank;cargo;equipment;health;dna;selected;operation_req_access;maint_access;occupant"
 	var/ride_allow_incapacitated = FALSE
 	var/allow_riding = TRUE
 	

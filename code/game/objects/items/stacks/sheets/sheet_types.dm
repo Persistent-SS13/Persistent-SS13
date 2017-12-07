@@ -78,6 +78,8 @@ var/global/list/datum/stack_recipe/metal_recipes = list(
 		new /datum/stack_recipe("high security airlock assembly", /obj/structure/door_assembly/door_assembly_highsecurity, 4, time = 50, one_per_turf = 1, on_floor = 1),
 		new /datum/stack_recipe("multi-tile airlock assembly", /obj/structure/door_assembly/multi_tile, 4, time = 50, one_per_turf = 1, on_floor = 1),
 		new /datum/stack_recipe("emergency airlock assembly", /obj/structure/door_assembly/door_assembly_emerg, 4, time = 50, one_per_turf = 1, on_floor = 1),
+		new /datum/stack_recipe("keypad airlock assembly", /obj/structure/door_assembly/door_assembly_keyp, 4, time = 50, one_per_turf = 1, on_floor = 1),
+
 	), 4),
 	null,
 	new /datum/stack_recipe("mass driver button frame", /obj/item/mounted/frame/driver_button, 1, time = 50, one_per_turf = 0, on_floor = 1),

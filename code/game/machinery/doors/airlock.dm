@@ -48,6 +48,7 @@
 	var/safe = 1
 	normalspeed = 1
 	var/obj/item/weapon/airlock_electronics/electronics = null
+	var/obj/item/weapon/airlock_electronics/keypelectronics = null
 	var/hasShocked = 0 //Prevents multiple shocks from happening
 	var/frozen = 0 //special condition for airlocks that are frozen shut, this will look weird on not normal airlocks because of a lack of special overlays.
 	autoclose = 1
@@ -58,6 +59,8 @@
 	var/boltUp = 'sound/machines/BoltsUp.ogg'
 	var/boltDown = 'sound/machines/BoltsDown.ogg'
 	var/is_special = 0
+	var/haskeypad = 0
+
 /obj/machinery/door/airlock/command
 	name = "Airlock"
 	icon = 'icons/obj/doors/Doorcom.dmi'
@@ -89,7 +92,7 @@
 	assembly_type = /obj/structure/door_assembly/door_assembly_ext
 	doorOpen = 'sound/machines/airlock_ext_open.ogg'
 	doorClose = 'sound/machines/airlock_ext_close.ogg'
-	
+
 /obj/machinery/door/airlock/glass
 	name = "Glass Airlock"
 	icon = 'icons/obj/doors/Doorglass.dmi'
@@ -300,6 +303,82 @@
 	name = "shuttle airlock"
 	icon = 'icons/obj/doors/doorshuttle.dmi'
 	assembly_type = /obj/structure/door_assembly/door_assembly_shuttle
+
+/obj/machinery/door/airlock/keypad // HERE
+	name = "Keypad Entry Airlock"
+	icon = 'icons/obj/doors/Doorkeypad.dmi'
+	desc = "A door with a keypad lock."
+	assembly_type = /obj/structure/door_assembly/door_assembly_keyp
+	haskeypad = 1
+	var/code = ""
+	var/l_code = null
+	var/l_set = 0
+	var/l_setshort = 0
+	var/l_hacking = 0
+	var/open = 0
+	Topic(href, href_list)
+		..()
+		if((usr.stat || usr.restrained()) || (get_dist(src, usr) > 1))
+			return
+		if(href_list["type"])
+			if(href_list["type"] == "E")
+				if((src.l_set == 0) && (length(src.code) == 5) && (!src.l_setshort) && (src.code != "ERROR"))
+					src.l_code = src.code
+					src.l_set = 1
+				else if((src.code == src.l_code) && (src.emagged == 0) && (src.l_set == 1))
+					src.locked = 0
+					playsound(src,boltUp, 30, 0, 3)
+					update_icon()
+					src.overlays = null
+					src.code = null
+				else
+					src.code = "ERROR"
+			else
+				if((href_list["type"] == "R") && (src.emagged == 0) && (!src.l_setshort))
+					src.locked = 1
+					playsound(src,boltDown, 30, 0, 3)
+					src.overlays = null
+					update_icon()
+					src.code = null
+					src.close(usr)
+				else
+					src.code += text("[]", href_list["type"])
+					if(length(src.code) > 5)
+						src.code = "ERROR"
+			src.add_fingerprint(usr)
+			for(var/mob/M in viewers(1, src.loc))
+				if((M.client && M.machine == src))
+					src.attack_hand(M)
+				return
+		return
+
+/obj/machinery/door/airlock/keypad/attack_hand(mob/user as mob)
+	if(!istype(user, /mob/living/silicon))
+		if(src.isElectrified())
+			if(src.shock(user, 100))
+				return
+
+	if(!istype(user, /mob/living/silicon))
+		user.set_machine(src)
+		var/dat = text("<TT><B>[]</B><BR>\n\nLock Status: []",src, (src.locked ? "LOCKED" : "UNLOCKED"))
+		var/message = "Code"
+		if((src.l_set == 0) && (!src.emagged) && (!src.l_setshort))
+			dat += text("<p>\n<b>5-DIGIT PASSCODE NOT SET.<br>ENTER NEW DOOR PASSCODE.</b>")
+		if(src.emagged)
+			dat += text("<p>\n<font color=red><b>LOCKING SYSTE	M ERROR - 1701</b></font>")
+		if(src.l_setshort)
+			dat += text("<p>\n<font color=red><b>ALERT: MEMORY SYSTEM ERROR - 6040 201</b></font>")
+		message = text("[]", src.code)
+		if(!src.locked)
+			message = "*****"
+		dat += text("<HR>\n>[]<BR>\n<A href='?src=\ref[];type=1'>1</A>-<A href='?src=\ref[];type=2'>2</A>-<A href='?src=\ref[];type=3'>3</A><BR>\n<A href='?src=\ref[];type=4'>4</A>-<A href='?src=\ref[];type=5'>5</A>-<A href='?src=\ref[];type=6'>6</A><BR>\n<A href='?src=\ref[];type=7'>7</A>-<A href='?src=\ref[];type=8'>8</A>-<A href='?src=\ref[];type=9'>9</A><BR>\n<A href='?src=\ref[];type=R'>R</A>-<A href='?src=\ref[];type=0'>0</A>-<A href='?src=\ref[];type=E'>E</A><BR>\n</TT>", message, src, src, src, src, src, src, src, src, src, src, src, src)
+		user << browse(dat, "window=caselock;size=300x280")
+
+	if(src.p_open)
+		wires.Interact(user)
+	else
+		..(user)
+	return
 
 /obj/machinery/door/airlock/alien
 	name = "Alien Airlock"
@@ -792,6 +871,7 @@ About the new airlock wires panel:
 		return
 
 	src.add_fingerprint(user)
+
 	if((istype(C, /obj/item/weapon/weldingtool) && !( src.operating ) && src.density))
 		var/obj/item/weapon/weldingtool/W = C
 		if(W.remove_fuel(0,user))
@@ -842,7 +922,10 @@ About the new airlock wires panel:
 
 				var/obj/item/weapon/airlock_electronics/ae
 				if(!electronics)
-					ae = new/obj/item/weapon/airlock_electronics( src.loc )
+					if(src.haskeypad ==1)
+						ae = new/obj/item/weapon/airlock_electronics/keypad_electronics( src.loc )
+					if(src.haskeypad == 0)
+						ae = new/obj/item/weapon/airlock_electronics( src.loc )
 					if(!src.req_access)
 						src.check_access()
 					if(src.req_access.len)
@@ -860,6 +943,7 @@ About the new airlock wires panel:
 
 				qdel(src)
 				return
+
 		else if(arePowerSystemsOn())
 			to_chat(user, "\blue The airlock's motors resist your efforts to force it.")
 		else if(locked)

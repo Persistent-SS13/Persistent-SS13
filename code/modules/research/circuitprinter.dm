@@ -10,7 +10,7 @@ using metal and glass, it uses glass and reagents (usually sulfuric acis).
 	icon_state = "circuit_imprinter"
 	flags = OPENCONTAINER
 
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;materials;component_parts"
+	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;req_access_txt;req_personal;g_amount;gold_amount;diamond_amount;reagents;component_parts"
 
 	var/g_amount = 0
 	var/gold_amount = 0

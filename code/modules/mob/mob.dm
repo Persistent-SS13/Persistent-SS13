@@ -1211,7 +1211,7 @@ var/list/slot_equipment_priority = list( \
 
 /mob/proc/Stun(amount)
 	SetStunned(max(stunned, amount))
-
+	fall(1)
 /mob/proc/SetStunned(amount) //if you REALLY need to set stun to a set amount without the whole "can't go below current stunned"
 	if(status_flags & CANSTUN)
 		stunned = max(amount, 0)

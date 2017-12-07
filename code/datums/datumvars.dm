@@ -423,9 +423,10 @@ body
 		message_admins("saved_vars_topic, NO D")
 		return
 	if(href_list["Remove"])
-		return//
+		var/ind = href_list["Remove"]
+		D.remove_saved(text2num(ind))
 	if(href_list["Add"])
-		return//
+		D.add_saved(usr)
 /client/proc/view_var_Topic(href, href_list, hsrc)
 	//This should all be moved over to datum/admins/Topic() or something ~Carn
 	if(!check_rights(R_ADMIN|R_MOD))
@@ -722,7 +723,7 @@ body
 		if(!check_rights(R_ADMIN))	return
 
 		var/datum/A = locate(href_list["add_saved_var"])
-	//	A.add_saved_var(usr)
+		A.add_saved_var(usr)
 
 	else if(href_list["mark_object"])
 		if(!check_rights(0))	return

@@ -2,10 +2,6 @@
 	return
 /datum/proc/before_save()
 	return
-
-
-
-
 /datum/proc/remove_saved(var/ind)
 	var/A = src.type
 	var/B = replacetext("[A]", "/", "-")
@@ -130,6 +126,7 @@
 	dat += "<hr><br>"
 	dat += "<a href='?_src_=savevars;Vars=\ref[src];Add=1'>(Add new var)</a>"
 	M << browse(dat, "window=roundstats;size=500x600")
+
 	/**
 /datum/Read(savefile/savefile)
 /datum/Write(savefile/savefile)
@@ -162,7 +159,7 @@
 
 	// Add any variables changed and their associated values to a list called changed_vars.
 	var/list/changed_vars = list()
-	var/list/changing_vars = params2list(A.map_storage_saved_vars)
+	var/list/changing_vars = A.get_saved_vars()
 	var/list/safe_lists = params2list(A.safe_list_vars)
 	if(istype(A, /atom/movable))
 		var/atom/movable/AM = A
@@ -452,13 +449,10 @@ map_storage
 		var/ref = 0
 		if(ind)
 			return ind
-		if(istype(A, /turf/space) && (!A.contents || A.contents.len == 0))
-			savefile.cd = "/entries/0"
-			savefile["type"] = A.type
-			savefile["content"] = ""
-		saving_references += A
-		ref = saving_references.len
-		A.before_save()
+		else
+			saving_references += A
+			ref = saving_references.len
+			A.before_save()
 		savefile.cd = "/entries/[ref]"
 		savefile["type"] = A.type
 		var/list/content_refs = list()
@@ -478,7 +472,7 @@ map_storage
 
 		// Add any variables changed and their associated values to a list called changed_vars.
 		var/list/changed_vars = list()
-		var/list/changing_vars = params2list(A.map_storage_saved_vars)
+		var/list/changing_vars = A.get_saved_vars()
 		var/list/safe_lists = params2list(A.safe_list_vars)
 		if(istype(A, /atom/movable))
 			var/atom/movable/AM = A
@@ -790,7 +784,7 @@ map_storage
 				var/rank_uid = mob.mind.primary_cert.uid
 				job_master.EquipRankPersistant(mob, rank_uid, 1)
 				data_core.manifest_inject(mob)
-
+				
 				ticker.minds |= mob.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 				TICK_CHECK
 				spawn(10)
@@ -828,17 +822,75 @@ map_storage
 		return 1
 	proc/Save_World(list/areas)
 		// ***** MAP SECTION *****
-		if(fexists(file("map_saves/recent/")))
-			fcopy("map_saves/recent/", "map_saves/backup/[time2text(world.realtime, "MM-DD hh.mm.ss")]/")
-			fdel("map_saves/recent/")
-
-		for(var/z = 1, z < 2, z++)
-			for(var/x = 1, x < 256, x += 15)
-				for(var/y = 1, y < 256, y += 15)
-					Save_Chunk(x, y, z)
-					sleep(-1)
-
+		var/backup_dir
+		for(var/A in areas)
+			saving_references = list()
+			existing_references = list()
+			var/B = replacetext("[A]", "/", "-")
+			if(fexists("map_saves/[B].sav"))
+				var/savefile/sav = new("map_saves/[B].sav")
+				if(!backup_dir)
+					var/i = 1
+					var/found = 0
+					while(!found)
+						found = 1
+						if(fexists("map_backups/[i]/[B].sav"))
+							found = 0
+							i++
+						else
+							backup_dir = "map_backups/[i]/"
+				fcopy(sav, "[backup_dir][B].sav")
+				fdel("map_saves/[B].sav")
+			var/savefile/savefile = new("map_saves/[B].sav")
+			for(var/turf/turf in get_area_turfs(A))
+				var/ref = BuildVarDirectory(savefile, turf, 1)
+				if(!ref)
+					message_admins("[turf] failed to return a ref!")
+				savefile.cd = "/map/[turf.z]/[turf.y]"
+				savefile["[turf.x]"] = ref
+				TICK_CHECK
 		return 1
+	proc/Load_World(list/areas)
+
+		for(var/A in areas)
+			try
+				var/watch = start_watch()
+				existing_references = list()
+				all_loaded = list()
+				var/B = replacetext("[A]", "/", "-")
+				if(!fexists("map_saves/[B].sav"))
+					continue
+				var/savefile/savefile = new("map_saves/[B].sav")
+				savefile.cd = "/map"
+				TICK_CHECK
+				for(var/z in savefile.dir)
+					savefile.cd = "/map/[z]"
+					for(var/y in savefile.dir)
+						savefile.cd = "/map/[z]/[y]"
+						for(var/x in savefile.dir)
+							var/turf_ref = savefile["[x]"]
+							if(!turf_ref)
+								message_admins("turf_ref not found, x: [x]")
+								continue
+							var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
+							Load_Entry(savefile, turf_ref, old_turf)
+							savefile.cd = "/map/[z]/[y]"
+							TICK_CHECK
+				for(var/i in 1 to all_loaded.len)
+					var/datum/ob = all_loaded[i]
+					ob.after_load()
+					if(istype(ob, /obj))
+						var/obj/obbie = ob
+						if(obbie.load_datums)
+							if(obbie.reagents)
+								obbie.reagents.my_atom = ob
+					if(istype(ob, /turf/simulated))
+						var/turf/simulated/Te = ob
+						//Te.blocks_air = initial(Te.blocks_air)
+						Te.new_air()
+				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
+			catch(var/exception/e)
+				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
 
 	proc/Save_Chunk(tx, ty, z)
 		saving_references = list()
@@ -861,18 +913,6 @@ map_storage
 				TICK_CHECK
 
 		return 1
-
-	proc/Load_World()
-		var/watch = start_watch()
-		log_startup_progress("Started Loading")
-		for(var/z = 1, z < 2, z++)
-			for(var/x = 1, x < 256, x += 15)
-				message_admins("Loaded [x] out of 256")
-				for(var/y = 1, y < 256, y += 15)
-					Load_Chunk(x, y, z)
-					sleep(-1)
-
-
 	proc/Load_Chunk(tx, ty, tz, var/location = "recent")
 		try
 			tx = tx + 1 - tx % 15

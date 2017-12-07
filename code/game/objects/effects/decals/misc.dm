@@ -6,7 +6,7 @@
 	layer = 16.0
 	anchored = 1
 	mouse_opacity = 0
-
+	should_save = 0
 // Used for spray that you spray at walls, tables, hydrovats etc
 /obj/effect/decal/spraystill
 	density = 0

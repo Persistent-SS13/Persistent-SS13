@@ -708,7 +708,7 @@ var/round_start_time = 0
 	var/watch = start_watch()
 	var/started = 0
 	log_startup_progress("Starting station load...")
-	map_storage.Load_World()
+	map_storage.Load_World(the_station_areas)
 	if(started)
 	log_startup_progress("	Loaded the station in [stop_watch(watch)]s.")
 	return 1

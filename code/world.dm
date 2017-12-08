@@ -359,7 +359,7 @@ var/world_topic_spam_protect_time = world.timeofday
 	var/s = ""
 
 	if(config && config.server_name)
-		s += "<b>Persistent Station | NEW! | Saving / Loading Station and Characters<br> (<a href='https://discord.gg/CA696Vc'>Discord</a>)</b>"
+		s += "<b>Persistent Station | NEW! | Preparing for Rebase! Last Public Test? <br> (<a href='https://discord.gg/CA696Vc'>Discord</a>)</b>"
 		s += "<i>Build custom stations/departments that save and load! Rank up, Level up and create a history!</i>"
 	var/list/features = list()
 

@@ -1,0 +1,1 @@
+frequency%0d%0a=&on%0d%0a=&internal_channels%0d%0a=&channels%0d%0a=&broadcasting%0d%0a=&listening

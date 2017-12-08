@@ -73,7 +73,13 @@
 		savedvarparams = ""
 	var/list/savedvars = params2list(savedvarparams)
 	if(savedvars && savedvars.len)
-		to_save |= savedvars
+		
+	for(var/v in savedvars)
+		if(findtext(v, " "))
+			var/list/split2 = splittext(v, " ")
+			to_save |= split2[1]
+		else
+			to_save |= v
 	var/list/found_vars = list()
 	var/list/split = splittext(B, "-")
 	var/list/subtypes = list()
@@ -85,8 +91,12 @@
 				subtypes_text += "-[xa]"
 			var/savedvarparamss = file2text("saved_vars/[subtypes_text]-[x].txt")
 			var/list/saved_vars = params2list(savedvarparamss)
-			if(saved_vars && saved_vars.len)
-				found_vars |= saved_vars
+			for(var/v in saved_vars)
+				if(findtext(v, " "))
+					var/list/split2 = splittext(v, " ")
+					found_vars |= split2[1]
+				else
+					found_vars |= v
 			subtypes += x
 	if(found_vars && found_vars.len)
 		to_save |= found_vars
@@ -162,7 +172,7 @@
 
 	// Add any variables changed and their associated values to a list called changed_vars.
 	var/list/changed_vars = list()
-	var/list/changing_vars = params2list(A.map_storage_saved_vars)
+	var/list/changing_vars = A.get_saved_vars()
 	var/list/safe_lists = params2list(A.safe_list_vars)
 	if(istype(A, /atom/movable))
 		var/atom/movable/AM = A
@@ -478,7 +488,8 @@ map_storage
 
 		// Add any variables changed and their associated values to a list called changed_vars.
 		var/list/changed_vars = list()
-		var/list/changing_vars = params2list(A.map_storage_saved_vars)
+		var/list/changing_vars = A.get_saved_vars()
+		var/list/old_vars = params2list(A.map_storage_saved_vars)
 		var/list/safe_lists = params2list(A.safe_list_vars)
 		if(istype(A, /atom/movable))
 			var/atom/movable/AM = A
@@ -531,6 +542,8 @@ map_storage
 				else if(A.vars[v] != initial(A.vars[v]) || v == "pixel_x" || v == "pixel_y")
 					savefile.cd = "/entries/[ref]"
 					savefile["[v]"] = A.vars[v]
+			else
+				message_admins("trying to save an invalid var |[v]|")
 		savefile.cd = ".."
 		return ref
 
@@ -828,6 +841,36 @@ map_storage
 		return 1
 	proc/Save_World(list/areas)
 		// ***** MAP SECTION *****
+		var/backup_dir
+		for(var/A in areas)
+			saving_references = list()
+			existing_references = list()
+			var/B = replacetext("[A]", "/", "-")
+			if(fexists("map_saves/[B].sav"))
+				var/savefile/sav = new("map_saves/[B].sav")
+				if(!backup_dir)
+					var/i = 1
+					var/found = 0
+					while(!found)
+						found = 1
+						if(fexists("map_backups/[i]/[B].sav"))
+							found = 0
+							i++
+						else
+							backup_dir = "map_backups/[i]/"
+				fcopy(sav, "[backup_dir][B].sav")
+				fdel("map_saves/[B].sav")
+			var/savefile/savefile = new("map_saves/[B].sav")
+			for(var/turf/turf in get_area_turfs(A))
+				var/ref = BuildVarDirectory(savefile, turf, 1)
+				if(!ref)
+					message_admins("[turf] failed to return a ref!")
+				savefile.cd = "/map/[turf.z]/[turf.y]"
+				savefile["[turf.x]"] = ref
+				TICK_CHECK
+		return 1
+	proc/Save_World_Chunk(list/areas)
+		// ***** MAP SECTION *****
 		if(fexists(file("map_saves/recent/")))
 			fcopy("map_saves/recent/", "map_saves/backup/[time2text(world.realtime, "MM-DD hh.mm.ss")]/")
 			fdel("map_saves/recent/")
@@ -862,7 +905,7 @@ map_storage
 
 		return 1
 
-	proc/Load_World()
+	proc/Load_World_Chunk()
 		var/watch = start_watch()
 		log_startup_progress("Started Loading")
 		for(var/z = 1, z < 2, z++)
@@ -872,7 +915,47 @@ map_storage
 					Load_Chunk(x, y, z)
 					sleep(-1)
 
+	proc/Load_World(list/areas)
 
+		for(var/A in areas)
+			try
+				var/watch = start_watch()
+				existing_references = list()
+				all_loaded = list()
+				var/B = replacetext("[A]", "/", "-")
+				if(!fexists("map_saves/[B].sav"))
+					continue
+				var/savefile/savefile = new("map_saves/[B].sav")
+				savefile.cd = "/map"
+				TICK_CHECK
+				for(var/z in savefile.dir)
+					savefile.cd = "/map/[z]"
+					for(var/y in savefile.dir)
+						savefile.cd = "/map/[z]/[y]"
+						for(var/x in savefile.dir)
+							var/turf_ref = savefile["[x]"]
+							if(!turf_ref)
+								message_admins("turf_ref not found, x: [x]")
+								continue
+							var/turf/old_turf = locate(text2num(x), text2num(y), text2num(z))
+							Load_Entry(savefile, turf_ref, old_turf)
+							savefile.cd = "/map/[z]/[y]"
+							TICK_CHECK
+				for(var/i in 1 to all_loaded.len)
+					var/datum/ob = all_loaded[i]
+					ob.after_load()
+					if(istype(ob, /obj))
+						var/obj/obbie = ob
+						if(obbie.load_datums)
+							if(obbie.reagents)
+								obbie.reagents.my_atom = ob
+					if(istype(ob, /turf/simulated))
+						var/turf/simulated/Te = ob
+						//Te.blocks_air = initial(Te.blocks_air)
+						Te.new_air()
+				log_startup_progress("	Loaded [A] in [stop_watch(watch)]s.")
+			catch(var/exception/e)
+				message_admins("EXCEPTION IN MAP LOADING!! [e] on [e.file]:[e.line]")
 	proc/Load_Chunk(tx, ty, tz, var/location = "recent")
 		try
 			tx = tx + 1 - tx % 15

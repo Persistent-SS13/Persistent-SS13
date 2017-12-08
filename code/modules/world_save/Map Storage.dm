@@ -75,8 +75,8 @@
 	if(savedvars && savedvars.len)
 		
 	for(var/v in savedvars)
-		if(findtext(v, " "))
-			var/list/split2 = splittext(v, " ")
+		if(findtext(v, "\n"))
+			var/list/split2 = splittext(v, "\n")
 			to_save |= split2[1]
 		else
 			to_save |= v
@@ -92,8 +92,8 @@
 			var/savedvarparamss = file2text("saved_vars/[subtypes_text]-[x].txt")
 			var/list/saved_vars = params2list(savedvarparamss)
 			for(var/v in saved_vars)
-				if(findtext(v, " "))
-					var/list/split2 = splittext(v, " ")
+				if(findtext(v, "\n"))
+					var/list/split2 = splittext(v, "\n")
 					found_vars |= split2[1]
 				else
 					found_vars |= v
@@ -500,11 +500,8 @@ map_storage
 				changing_vars += "air_contents"
 		for(var/v in changing_vars)
 			if(!old_vars.Find(v))
-				message_admins("added var?:|[v]| 1")
 			savefile.cd = "/entries/[ref]"
 			if(A.vars.Find(v))
-				if(!old_vars.Find(v))
-					message_admins("added var?:|[v]| 2")
 				if(istype(A.vars[v], /obj))
 					var/atom/movable/varob = A.vars[v]
 					var/conparams = BuildVarDirectory(savefile, varob, 1)
@@ -549,7 +546,7 @@ map_storage
 					savefile.cd = "/entries/[ref]"
 					savefile["[v]"] = A.vars[v]
 			else
-				message_admins("trying to save an invalid var |[v]|")
+				// message_admins("trying to save an invalid var |[v]|")
 		savefile.cd = ".."
 		return ref
 

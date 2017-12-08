@@ -137,13 +137,16 @@ var/global/datum/controller/gameticker/ticker
 	else
 		src.mode.announce()
 
-	setup_economy()
+	GLOB.using_map.setup_economy()
 	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)
 	create_characters() //Create player characters and transfer them
 	collect_minds()
 	equip_characters()
-	GLOB.data_core.manifest()
+	for(var/mob/living/carbon/human/H in GLOB.player_list)
+		if(!H.mind || player_is_antag(H.mind, only_offstation_roles = 1) || !job_master.ShouldCreateRecords(H.mind.assigned_role))
+			continue
+		CreateModularRecord(H)
 
 	callHook("roundstart")
 
@@ -152,7 +155,7 @@ var/global/datum/controller/gameticker/ticker
 	spawn(0)//Forking here so we dont have to wait for this to finish
 		mode.post_setup()
 		to_world("<FONT color='blue'><B>Enjoy the game!</B></FONT>")
-		sound_to(world, sound('sound/AI/welcome.ogg'))// Skie
+		sound_to(world, sound(GLOB.using_map.welcome_sound))
 
 		//Holiday Round-start stuff	~Carn
 		Holiday_Game_Start()
@@ -276,7 +279,6 @@ var/global/datum/controller/gameticker/ticker
 
 
 	proc/create_characters()
-		load_world()
 		for(var/mob/new_player/player in GLOB.player_list)
 			if(player && player.ready && player.mind)
 				if(player.mind.assigned_role=="AI")
@@ -303,7 +305,6 @@ var/global/datum/controller/gameticker/ticker
 					captainless=0
 				if(!player_is_antag(player.mind, only_offstation_roles = 1))
 					job_master.EquipRank(player, player.mind.assigned_role, 0)
-					UpdateFactionList(player)
 					equip_custom_items(player)
 		if(captainless)
 			for(var/mob/M in GLOB.player_list)
@@ -395,215 +396,16 @@ var/global/datum/controller/gameticker/ticker
 			//call a transfer shuttle vote
 			spawn(50)
 				if(!round_end_announced) // Spam Prevention. Now it should announce only once.
-					to_world("<span class='danger'>The round has ended!</span>")
-
-					round_end_announced = 1
+					log_and_message_admins(": All antagonists are deceased or the gamemode has ended.") //Outputs as "Event: All antagonists are deceased or the gamemode has ended."
 				vote.autotransfer()
 
 		return 1
-		
-		
-/datum/controller/gameticker/proc/save_world()
-	spawn(0)
-		var/list/areas = list()
-		for(var/area/A in world)
-			areas += save_area(A)
-		var/paramareas = list2params(areas)
-		var/DBQuery/secondquery = dbcon.NewQuery("DELETE FROM [format_table_name("world")] WHERE id = '1'")
-		if(!secondquery.Execute())
-			var/err = query.ErrorMsg()
-			log_game("SQL ERROR during deleting world Error : \[[err]\]\n")
-			message_admins("SQL ERROR during delete world Error : \[[err]\]\n")
-			return
-		var/DBQuery/query = dbcon.NewQuery({"
-						INSERT INTO [format_table_name("world")] (id, areas)
 
-						VALUES
-										('1', '[paramturfs]')
-						"}
-						)
-		if(!query.Execute())
-			var/err = query.ErrorMsg()
-			log_game("SQL ERROR during WORLD SAVING : \[[err]\]\n")
-			message_admins("SQL ERROR during WORLD SAVING : \[[err]\]\n")
-			return
-			
-	return 1
-	
-/datum/controller/gameticker/proc/load_world()
-	spawn(0)
-		var/DBQuery/query = dbcon.NewQuery({"SELECT
-						areas
-						FROM [format_table_name("world")] WHERE id='1'"})
-		if(!query.Execute())
-			var/err = query.ErrorMsg()
-			log_game("SQL ERROR during load_turf Error : \[[err]\]\n")
-			message_admins("SQL ERROR during load_turf Error : \[[err]\]\n")
-			return
-		while(query.NextRow())
-			var/areas = params2list(query.item[1])
-			for(var/x in areas)
-				load_area(x)
-
-	
-/datum/controller/gameticker/proc/save_area(var/area/A)
-	if(!A)
-		message_admins("No AREA found!")
-		return 0
-	var/list/turfs = list()
-	for(var/turf/T in get_area_turfs(A.type))
-		turfs += save_turf(T)
-	var/paramturfs = list2params(turfs)
-	var/DBQuery/query = dbcon.NewQuery({"
-					INSERT INTO [format_table_name("areas")] (turfs)
-
-					VALUES
-									('[paramturfs]')
-					"}
-					)
-	var/DBQuery/secondquery = dbcon.NewQuery({"
-					SELECT LAST_INSERT_ID() FROM [format_table_name("areas")]
-					"}
-					)
-
-	if(!query.Execute())
-		var/err = query.ErrorMsg()
-		log_game("SQL ERROR during AREA SAVING : \[[err]\]\n")
-		message_admins("SQL ERROR during AREA SAVING : \[[err]\]\n")
-		return
-	if(!secondquery.Execute())
-		var/err = secondquery.ErrorMsg()
-		log_game("SQL ERROR during TURF SAVING : \[[err]\]\n")
-		message_admins("SQL ERROR during AREA SAVING : \[[err]\]\n")
-		return
-
-	while(secondquery.NextRow())
-		var/id = secondquery.item[1]
-		return text2num(id)
-
-	return 0
-
-/datum/controller/gameticker/proc/load_area(var/uid)
-	uid = text2num(uid)
-	if (uid == 0)
-		return
-	var/DBQuery/query = dbcon.NewQuery({"SELECT
-					areas
-				 	FROM [format_table_name("areas")] WHERE id='[uid]'"})
-	if(!query.Execute())
-		var/err = query.ErrorMsg()
-		log_game("SQL ERROR during load_area Error : \[[err]\]\n")
-		message_admins("SQL ERROR during load_area Error : \[[err]\]\n")
-		return
-	while(query.NextRow())
-		var/areas = params2list(query.item[1])
-		for(var/x in areas)
-			load_turf(x)
-
-	
-/datum/controller/gameticker/proc/save_turf(var/turf/T)
-	var/list/content = list()
-	if (!istype(T, /turf/))
-		return
-	var/path = T.type
-	var/name = sql_sanitize_text(T.name)
-	var/icon_state = T.icon_state
-	var/list/reagents = list()
-	var/gas_mixture = 0
-	var/xax = T.x
-	var/yax = T.y
-	var/zax = T.z 
-	if(T.reagents)
-		for(var/datum/reagent/x in T.reagents.reagent_list)
-			reagents |= save_reagent(C, x)
-	if(T.air)
-		gas_mixture = save_gasmixture(C, T.air) 
-	for(var/obj/item/pa in T.contents)
-		var/tempint = save_item(C, pa)
-		content += tempint
-	var/paramreagent = list2params(reagents)
-	var/DBQuery/query = dbcon.NewQuery({"
-					INSERT INTO [format_table_name("turfs")] (path, name, contents, icon_state, reagents, gas_mixture, x, y, z)
-
-					VALUES
-									('[path]', '[name]', '[contentlist]', '[icon_state]', '[paramreagent]', '[gas_mixture]', '[xax]', '[yax]', '[zax]')
-					"}
-					)
-	var/DBQuery/secondquery = dbcon.NewQuery({"
-					SELECT LAST_INSERT_ID() FROM [format_table_name("turfs")]
-					"}
-					)
-
-	if(!query.Execute())
-		var/err = query.ErrorMsg()
-		log_game("SQL ERROR during TURF SAVING : \[[err]\]\n")
-		message_admins("SQL ERROR during TURF SAVING : \[[err]\]\n")
-		return
-	if(!secondquery.Execute())
-		var/err = secondquery.ErrorMsg()
-		log_game("SQL ERROR during TURF SAVING : \[[err]\]\n")
-		message_admins("SQL ERROR during TURF SAVING : \[[err]\]\n")
-		return
-
-	while(secondquery.NextRow())
-		var/id = secondquery.item[1]
-		return text2num(id)
-
-	return 0
-	
-/datum/controller/gameticker/proc/load_turf(var/uid)
-	uid = text2num(uid)
-	if (uid == 0)
-		return
-	var/DBQuery/query = dbcon.NewQuery({"SELECT
-					path,
-					name,
-					contents,
-					icon_state,
-					reagents,
-					gas_mixture,
-					x,
-					y,
-					z
-				 	FROM [format_table_name("turfs")] WHERE id='[uid]'"})
-	if(!query.Execute())
-		var/err = query.ErrorMsg()
-		log_game("SQL ERROR during load_turf Error : \[[err]\]\n")
-		message_admins("SQL ERROR during load_turf Error : \[[err]\]\n")
-		return
-	while(query.NextRow())
-		var/path = query.item[1]
-		var/name = query.item[2]
-		var/contents = params2list(query.item[3])
-		var/icon_state = query.item[4]
-		var/xax = text2num(query.item[7])
-		var/yax = text2num(query.item[8])
-		var/zax = text2num(query.item[9])
-		var/turf/T = locate(xax, yax, zax)
-		spawn(0)
-			for(var/obj/ob in T.contents)
-				qdel(ob)
-		T.ChangeTurf(path)
-		T.name = name
-		T.icon_state = icon_state
-		T.air = load_gasmixture(C, query.item[6])
-		T.reagents.clear_reagents()
-		var/list/reagents = params2list(query.item[12])
-		if(reagents && !isemptylist(reagents))
-			for(var/x in reagents)
-				var/datum/reagent/reag = load_reagent(C, x)
-				if(reag)
-					reag.holder = T.reagents
-					T.reagents.reagent_list += reag
-			T.reagents.update_total()
-		spawn(0)
-			T.contents = list()
-			for(var/p in contents)
-				T.contents += load_item(C, p)
-		return T
 /datum/controller/gameticker/proc/declare_completion()
 	to_world("<br><br><br><H1>A round of [mode.name] has ended!</H1>")
-
+	for(var/client/C)
+		if(!C.credits)
+			C.RollCredits()
 	for(var/mob/Player in GLOB.player_list)
 		if(Player.mind && !isnewplayer(Player))
 			if(Player.stat != DEAD)
@@ -629,7 +431,7 @@ var/global/datum/controller/gameticker/ticker
 	to_world("<br>")
 
 
-	for (var/mob/living/silicon/ai/aiPlayer in GLOB.mob_list)
+	for (var/mob/living/silicon/ai/aiPlayer in SSmobs.mob_list)
 		if (aiPlayer.stat != 2)
 			to_world("<b>[aiPlayer.name] (Played by: [aiPlayer.key])'s laws at the end of the round were:</b>")
 
@@ -647,7 +449,7 @@ var/global/datum/controller/gameticker/ticker
 
 	var/dronecount = 0
 
-	for (var/mob/living/silicon/robot/robo in GLOB.mob_list)
+	for (var/mob/living/silicon/robot/robo in SSmobs.mob_list)
 
 		if(istype(robo,/mob/living/silicon/robot/drone))
 			dronecount++

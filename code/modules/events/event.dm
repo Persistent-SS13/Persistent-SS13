@@ -5,11 +5,12 @@
 	var/min_weight	= 0 // The minimum weight that this event will have. Only used if non-zero.
 	var/max_weight	= 0 // The maximum weight that this event will have. Only use if non-zero.
 	var/severity 	= 0 // The current severity of this event
-	var/one_shot	= 0	//If true, then the event will not be re-added to the list of available events
+	var/one_shot	= 0	// If true, then the event will not be re-added to the list of available events
+	var/add_to_queue= 1	// If true, add back to the queue of events upon finishing.
 	var/list/role_weights = list()
 	var/datum/event/event_type
 
-/datum/event_meta/New(var/event_severity, var/event_name, var/datum/event/type, var/event_weight, var/list/job_weights, var/is_one_shot = 0, var/min_event_weight = 0, var/max_event_weight = 0)
+/datum/event_meta/New(var/event_severity, var/event_name, var/datum/event/type, var/event_weight, var/list/job_weights, var/is_one_shot = 0, var/min_event_weight = 0, var/max_event_weight = 0, var/add_to_queue = 1)
 	name = event_name
 	severity = event_severity
 	event_type = type
@@ -17,6 +18,7 @@
 	weight = event_weight
 	min_weight = min_event_weight
 	max_weight = max_event_weight
+	src.add_to_queue = add_to_queue
 	if(job_weights)
 		role_weights = job_weights
 
@@ -37,18 +39,14 @@
 
 	return total_weight
 
-/datum/event_meta/alien/get_weight(var/list/active_with_role)
-	if(aliens_allowed)
-		return ..(active_with_role)
-	return 0
+/datum/event_meta/extended_penalty
+	var/penalty = 100 // A simple penalty gives admins the ability to increase the weight to again be part of the random event selection
 
-/*/datum/event_meta/ninja/get_weight(var/list/active_with_role)
-	if(toggle_space_ninja)
-		return ..(active_with_role)
-	return 0*/
+/datum/event_meta/extended_penalty/get_weight()
+	return ..() - (ticker && istype(ticker.mode, /datum/game_mode/extended) ? penalty : 0)
+
 
 /datum/event	//NOTE: Times are measured in master controller ticks!
-	var/processing = 1
 	var/startWhen		= 0	//When in the lifetime to call start().
 	var/announceWhen	= 0	//When in the lifetime to call announce().
 	var/endWhen			= 0	//When in the lifetime the event should end.
@@ -58,8 +56,6 @@
 	var/isRunning		= 1 //If this event is currently running. You should not change this.
 	var/startedAt		= 0 //When this event started.
 	var/endedAt			= 0 //When this event ended.
-	var/noAutoEnd       = 0 //Does the event end automatically after endWhen passes?
-	var/area/impact_area    //The area the event will hit
 	var/datum/event_meta/event_meta = null
 
 /datum/event/nothing
@@ -106,10 +102,7 @@
 //Do not override this proc, instead use the appropiate procs.
 //This proc will handle the calls to the appropiate procs.
 /datum/event/proc/process()
-	if(!processing)
-		return
-
-	if(activeFor > startWhen && activeFor < endWhen || noAutoEnd)
+	if(activeFor > startWhen && activeFor < endWhen)
 		tick()
 
 	if(activeFor == startWhen)
@@ -119,12 +112,12 @@
 	if(activeFor == announceWhen)
 		announce()
 
-	if(activeFor == endWhen && !noAutoEnd)
+	if(activeFor == endWhen)
 		isRunning = 0
 		end()
 
 	// Everything is done, let's clean up.
-	if(activeFor >= lastProcessAt() && !noAutoEnd)
+	if(activeFor >= lastProcessAt())
 		kill()
 
 	activeFor++
@@ -137,15 +130,12 @@
 		end()
 
 	endedAt = world.time
-	event_manager.active_events -= src
-	event_manager.event_complete(src)
+	GLOB.event_manager.active_events -= src
+	GLOB.event_manager.event_complete(src)
 
 /datum/event/New(var/datum/event_meta/EM)
 	// event needs to be responsible for this, as stuff like APLUs currently make their own events for curious reasons
-	event_manager.active_events += src
-
-	if(!EM)
-		EM = new /datum/event_meta(EVENT_LEVEL_MAJOR, "Unknown, Most likely admin called", src.type)
+	GLOB.event_manager.active_events += src
 
 	event_meta = EM
 	severity = event_meta.severity

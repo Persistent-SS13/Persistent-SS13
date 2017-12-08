@@ -4,7 +4,7 @@
 		Tank Pressure:
 	</div>
 	<div class="itemContent">
-		{{:helper.smoothRound(data.tankPressure)}} kPa
+		{{:data.tankPressure}} kPa
 	</div>
 </div>
 
@@ -14,6 +14,24 @@
 	</div>
 	<div class="itemContent">
 		{{:data.portConnected ? '<span class="good">Connected</span>' : '<span class="average">Disconnected</span>'}}
+	</div>
+</div>
+
+<div class="item">
+	<div class="itemLabel">
+		Load:
+	</div>
+	<div class="itemContent">
+		{{:data.powerDraw}} W
+	</div>
+</div>
+
+<div class="item">
+	<div class="itemLabel">
+		Cell Charge:
+	</div>
+	<div class="itemContent">
+		{{:helper.displayBar(data.cellCharge, 0, data.cellMaxCharge)}}
 	</div>
 </div>
 
@@ -33,7 +51,7 @@
 			Tank Pressure:
 		</div>
 		<div class="itemContent">
-			{{:helper.smoothRound(data.holdingTank.tankPressure)}} kPa
+			{{:data.holdingTank.tankPressure}} kPa
 		</div>
 	</div>
 {{else}}
@@ -68,7 +86,7 @@
 		Power Switch:
 	</div>
 	<div class="itemContent">
-		{{:helper.link('On', 'unlock', {'power' : 1}, data.on ? 'selected' : null)}}{{:helper.link('Off', 'lock', {'power' : 1}, data.on ? null : 'selected')}}
+		{{:helper.link('On', 'unlocked', {'power' : 1}, data.on ? 'selected' : null)}} {{:helper.link('Off', 'locked', {'power' : 1}, data.on ? null : 'selected')}}
 	</div>
 </div>
 
@@ -77,8 +95,6 @@
 		Pump Direction:
 	</div>
 	<div class="itemContent">
-		{{:helper.link('Out', 'arrow-right', {'direction' : 1}, data.pump_dir ? 'selected' : null)}}{{:helper.link('In', 'arrow-left', {'direction' : 1}, data.pump_dir ? null : 'selected')}}
+		{{:helper.link('Out', 'arrowreturn-1-e', {'direction' : 1}, data.pump_dir ? 'selected' : null)}} {{:helper.link('In', 'arrowreturn-1-w', {'direction' : 1}, data.pump_dir ? null : 'selected')}}
 	</div>
 </div>
-
-

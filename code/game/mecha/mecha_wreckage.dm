@@ -10,15 +10,14 @@
 	density = 1
 	anchored = 0
 	opacity = 0
-	var/list/welder_salvage = list(/obj/item/stack/sheet/plasteel,/obj/item/stack/sheet/metal,/obj/item/stack/rods)
-	var/list/wirecutters_salvage = list(/obj/item/stack/cable_coil)
-	var/list/crowbar_salvage
-	var/salvage_num = 5
 
-	New()
-		..()
-		crowbar_salvage = new
-		return
+	plane = OBJ_PLANE
+	layer = BELOW_OBJ_LAYER
+
+	var/list/welder_salvage = list(/obj/item/stack/material/plasteel,/obj/item/stack/material/steel,/obj/item/stack/rods)
+	var/list/wirecutters_salvage = list(/obj/item/stack/cable_coil)
+	var/list/crowbar_salvage = list()
+	var/salvage_num = 5
 
 /obj/effect/decal/mecha_wreckage/ex_act(severity)
 	if(severity < 2)
@@ -30,33 +29,26 @@
 	return
 
 
-/obj/effect/decal/mecha_wreckage/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
+/obj/effect/decal/mecha_wreckage/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/weldingtool))
 		var/obj/item/weapon/weldingtool/WT = W
 		if(salvage_num <= 0)
-			user.visible_message("[user] begins to slice apart the now completely stripped [src].", "You begin to slice apart the [src].", "You hear the sound of a welder nearby.")
-			if(WT.remove_fuel(0,user) && do_after(user,80,target=src))
-				user.visible_message("The now-dilapidated [src] falls apart in a clatter.", "As you slice apart the final support structures, the [src] falls apart in a heap.", "You hear metal clanking to the floor.")
-				new /obj/item/stack/sheet/metal(src.loc)
-				var/obj/item/stack/rods/rods = new /obj/item/stack/rods(src.loc)
-				rods.amount = 2
-				qdel(src)
-		else
-			if(isemptylist(welder_salvage))
-				to_chat(user, "<span class='warning'>What's left on the [src] cannot be removed with a welder, besides the frame itself</span>")
-			else if(WT.remove_fuel(0,user))
-				var/type = prob(70)?pick(welder_salvage):null
-				if(type)
-					var/N = new type(get_turf(user))
-					user.visible_message("[user] cuts [N] from [src]", "You cut [N] from [src]", "You hear a sound of welder nearby")
-					if(istype(N, /obj/item/mecha_parts/part))
-						welder_salvage -= type
-					salvage_num--
-				else
-					to_chat(user, "You failed to salvage anything valuable from [src].")
+			to_chat(user, "You don't see anything that can be cut with [W].")
+			return
+		if (!isemptylist(welder_salvage) && WT.remove_fuel(0,user))
+			var/type = prob(70)?pick(welder_salvage):null
+			if(type)
+				var/N = new type(get_turf(user))
+				user.visible_message("[user] cuts [N] from [src]", "You cut [N] from [src]", "You hear a sound of welder nearby")
+				if(istype(N, /obj/item/mecha_parts/part))
+					welder_salvage -= type
+				salvage_num--
 			else
-				to_chat(user, "\blue You need more welding fuel to complete this task.")
-	else if(istype(W, /obj/item/weapon/wirecutters))
+				to_chat(user, "You failed to salvage anything valuable from [src].")
+		else
+			to_chat(user, "<span class='notice'>You need more welding fuel to complete this task.</span>")
+			return
+	if(istype(W, /obj/item/weapon/wirecutters))
 		if(salvage_num <= 0)
 			to_chat(user, "You don't see anything that can be cut with [W].")
 			return
@@ -68,13 +60,14 @@
 				salvage_num--
 			else
 				to_chat(user, "You failed to salvage anything valuable from [src].")
-	else if(istype(W, /obj/item/weapon/crowbar))
+	if(istype(W, /obj/item/weapon/crowbar))
 		if(!isemptylist(crowbar_salvage))
 			var/obj/S = pick(crowbar_salvage)
 			if(S)
 				S.loc = get_turf(user)
 				crowbar_salvage -= S
 				user.visible_message("[user] pries [S] from [src].", "You pry [S] from [src].")
+			return
 		else
 			to_chat(user, "You don't see anything that can be pried with [W].")
 	else
@@ -110,17 +103,13 @@
 	icon_state = "marauder-broken"
 
 /obj/effect/decal/mecha_wreckage/mauler
-	name = "Mauler wreckage"
+	name = "Mauler Wreckage"
 	icon_state = "mauler-broken"
 	desc = "The syndicate won't be very happy about this..."
 
 /obj/effect/decal/mecha_wreckage/seraph
 	name = "Seraph wreckage"
 	icon_state = "seraph-broken"
-
-/obj/effect/decal/mecha_wreckage/recitence
-	name = "\improper Recitence wreckage"
-	icon_state = "mime-broken"
 
 /obj/effect/decal/mecha_wreckage/ripley
 	name = "Ripley wreckage"
@@ -163,27 +152,6 @@
 	name = "Death-Ripley wreckage"
 	icon_state = "deathripley-broken"
 
-/obj/effect/decal/mecha_wreckage/honker
-	name = "Honker wreckage"
-	icon_state = "honker-broken"
-
-	New()
-		..()
-		var/list/parts = list(
-								/obj/item/mecha_parts/chassis/honker,
-								/obj/item/mecha_parts/part/honker_torso,
-								/obj/item/mecha_parts/part/honker_head,
-								/obj/item/mecha_parts/part/honker_left_arm,
-								/obj/item/mecha_parts/part/honker_right_arm,
-								/obj/item/mecha_parts/part/honker_left_leg,
-								/obj/item/mecha_parts/part/honker_right_leg)
-		for(var/i=0;i<2;i++)
-			if(!isemptylist(parts) && prob(40))
-				var/part = pick(parts)
-				welder_salvage += part
-				parts -= part
-		return
-
 /obj/effect/decal/mecha_wreckage/durand
 	name = "Durand wreckage"
 	icon_state = "durand-broken"
@@ -203,11 +171,6 @@
 				welder_salvage += part
 				parts -= part
 		return
-
-
-/obj/effect/decal/mecha_wreckage/durand/old
-	name = "Durand wreckage"
-	icon_state = "old_durand-broken"
 
 /obj/effect/decal/mecha_wreckage/phazon
 	name = "Phazon wreckage"
@@ -233,3 +196,7 @@
 				welder_salvage += part
 				parts -= part
 		return
+
+/obj/effect/decal/mecha_wreckage/hoverpod
+	name = "Hover pod wreckage"
+	icon_state = "engineering_pod-broken"

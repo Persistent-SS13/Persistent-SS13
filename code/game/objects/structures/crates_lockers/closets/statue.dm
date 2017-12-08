@@ -1,6 +1,6 @@
 /obj/structure/closet/statue
 	name = "statue"
-	desc = "An incredibly lifelike marble carving"
+	desc = "An incredibly lifelike marble carving."
 	icon = 'icons/obj/statue.dmi'
 	icon_state = "human_male"
 	density = 1
@@ -13,8 +13,7 @@
 	var/timer = 240 //eventually the person will be freed
 
 /obj/structure/closet/statue/New(loc, var/mob/living/L)
-
-	if(ishuman(L) || iscorgi(L))
+	if(L && (ishuman(L) || L.isMonkey() || iscorgi(L)))
 		if(L.buckled)
 			L.buckled = 0
 			L.anchored = 0
@@ -22,19 +21,19 @@
 			L.client.perspective = EYE_PERSPECTIVE
 			L.client.eye = src
 		L.loc = src
-		L.disabilities += MUTE
+		L.sdisabilities |= MUTE
 		health = L.health + 100 //stoning damaged mobs will result in easier to shatter statues
 		intialTox = L.getToxLoss()
 		intialFire = L.getFireLoss()
 		intialBrute = L.getBruteLoss()
 		intialOxy = L.getOxyLoss()
-		if(issmall(L))
-			name = "statue of a monkey"
-			icon_state = "monkey"
-		else if(ishuman(L))
+		if(ishuman(L))
 			name = "statue of [L.name]"
 			if(L.gender == "female")
 				icon_state = "human_female"
+		else if(L.isMonkey())
+			name = "statue of a monkey"
+			icon_state = "monkey"
 		else if(iscorgi(L))
 			name = "statue of a corgi"
 			icon_state = "corgi"
@@ -44,7 +43,7 @@
 		qdel(src)
 		return
 
-	processing_objects.Add(src)
+	GLOB.processing_objects.Add(src)
 	..()
 
 /obj/structure/closet/statue/process()
@@ -54,44 +53,26 @@
 		M.adjustFireLoss(intialFire - M.getFireLoss())
 		M.adjustBruteLoss(intialBrute - M.getBruteLoss())
 		M.setOxyLoss(intialOxy)
-	if(timer <= 0)
+	if (timer <= 0)
 		dump_contents()
-		processing_objects.Remove(src)
+		GLOB.processing_objects.Remove(src)
 		qdel(src)
 
 /obj/structure/closet/statue/dump_contents()
-
-	if(istype(src.loc, /mob/living/simple_animal/hostile/statue))
-		var/mob/living/simple_animal/hostile/statue/S = src.loc
-		src.loc = S.loc
-		if(S.mind)
-			for(var/mob/M in contents)
-				S.mind.transfer_to(M)
-				to_chat(M, "As the animating magic wears off you feel yourself coming back to your senses. You are yourself again!")
-				break
-		qdel(S)
-
 
 	for(var/obj/O in src)
 		O.loc = src.loc
 
 	for(var/mob/living/M in src)
 		M.loc = src.loc
-		M.disabilities -= MUTE
+		M.sdisabilities &= ~MUTE
 		M.take_overall_damage((M.health - health - 100),0) //any new damage the statue incurred is transfered to the mob
 		if(M.client)
 			M.client.eye = M.client.mob
 			M.client.perspective = MOB_PERSPECTIVE
 
-
 /obj/structure/closet/statue/open()
 	return
-
-
-
-/obj/structure/closet/statue/open()
-	return
-
 
 /obj/structure/closet/statue/close()
 	return
@@ -105,17 +86,15 @@
 			shatter(M)
 
 /obj/structure/closet/statue/bullet_act(var/obj/item/projectile/Proj)
-	health -= Proj.damage
+	health -= Proj.get_structure_damage()
 	check_health()
 
-/obj/structure/closet/statue/attack_animal(mob/living/simple_animal/user as mob)
-	if(user.environment_smash)
+	return
+
+/obj/structure/closet/statue/attack_generic(var/mob/user, damage, attacktext, environment_smash)
+	if(damage && environment_smash)
 		for(var/mob/M in src)
 			shatter(M)
-
-/obj/structure/closet/statue/blob_act()
-	for(var/mob/M in src)
-		shatter(M)
 
 /obj/structure/closet/statue/ex_act(severity)
 	for(var/mob/M in src)
@@ -123,10 +102,10 @@
 		health -= 60 / severity
 		check_health()
 
-/obj/structure/closet/statue/attackby(obj/item/I as obj, mob/user as mob, params)
-	user.changeNext_move(CLICK_CD_MELEE)
+/obj/structure/closet/statue/attackby(obj/item/I as obj, mob/user as mob)
 	health -= I.force
-	visible_message("\red [user] strikes [src] with [I].")
+	user.do_attack_animation(src)
+	visible_message("<span class='danger'>[user] strikes [src] with [I].</span>")
 	check_health()
 
 /obj/structure/closet/statue/MouseDrop_T()
@@ -145,23 +124,8 @@
 	return
 
 /obj/structure/closet/statue/proc/shatter(mob/user as mob)
-	if(user)
+	if (user)
 		user.dust()
 	dump_contents()
-	visible_message("\red [src] shatters!. ")
+	visible_message("<span class='warning'>[src] shatters!.</span>")
 	qdel(src)
-
-
-/obj/structure/statue
-	name = "statue"
-	desc = "An incredibly lifelike marble carving"
-	icon = 'icons/obj/statue.dmi'
-	icon_state = "human_male"
-	density = 1
-	anchored = 1
-
-obj/structure/statue/angel
-	icon_state = "angelseen"
-
-obj/structure/statue/corgi
-	icon_state = "corgi"

@@ -3,16 +3,23 @@
 	desc = "To stop that awful noise."
 	icon_state = "muzzle"
 	item_state = "muzzle"
-	flags = MASKCOVERSMOUTH
-	w_class = 2
+	body_parts_covered = FACE
+	w_class = ITEM_SIZE_SMALL
 	gas_transfer_coefficient = 0.90
-	put_on_delay = 20
-	var/resist_time = 0 //deciseconds of how long you need to gnaw to get rid of the gag, 0 to make it impossible to remove
-	var/mute = 1 // 1 - completely mutes you, 0 - muffles everything you say "MHHPHHMMM!!!"
-	species_fit = list("Vox")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi'
-		)
+	voicechange = 1
+
+/obj/item/clothing/mask/muzzle/tape
+	name = "length of tape"
+	desc = "It's a robust DIY muzzle!"
+	icon = 'icons/obj/bureaucracy.dmi'
+	icon_state = "tape_cross"
+	item_state = null
+	w_class = ITEM_SIZE_TINY
+
+/obj/item/clothing/mask/muzzle/New()
+    ..()
+    say_messages = list("Mmfph!", "Mmmf mrrfff!", "Mmmf mnnf!")
+    say_verbs = list("mumbles", "says")
 
 // Clumsy folks can't take the mask off themselves.
 /obj/item/clothing/mask/muzzle/attack_hand(mob/user as mob)
@@ -20,92 +27,47 @@
 		return 0
 	..()
 
-/obj/item/clothing/mask/muzzle/gag
-	name = "gag"
-	desc = "Stick this in their mouth to stop the noise."
-	icon_state = "gag"
-	w_class = 1
-
-/obj/item/clothing/mask/muzzle/tapegag
-	name = "tape gag"
-	desc = "MHPMHHH!"
-	icon_state = "tapegag"
-	item_state = null
-	w_class = 1
-	resist_time = 150
-	mute = 0
-	species_fit = list("Vox", "Unathi", "Tajaran", "Vulpkanin")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi'
-		)
-
-/obj/item/clothing/mask/muzzle/tapegag/dropped(mob/living/carbon/human/user)
-	var/atom/movable/R = new /obj/item/trash/tapetrash
-	if(user.species.bodyflags & HAS_FUR)
-		R.desc += " Is that...fur?"
-	var/turf/T = get_turf(src)
-	R.loc = T
-	transfer_fingerprints_to(R)
-	playsound(src,'sound/items/poster_ripped.ogg',40,1)
-	spawn(0) // Because of how dropping is done, if the muzzle gets deleted now, icons won't properly update and the whole unEquip() proc will break stuff.
-		qdel(src) // This makes sure it gets deleted AFTER all that has to be done is done.
-		user.emote("scream")
-
 /obj/item/clothing/mask/surgical
 	name = "sterile mask"
 	desc = "A sterile mask designed to help prevent the spread of diseases."
 	icon_state = "sterile"
 	item_state = "sterile"
-	w_class = 1
-	flags = MASKCOVERSMOUTH
+	w_class = ITEM_SIZE_SMALL
+	body_parts_covered = FACE
+	item_flags = FLEXIBLEMATERIAL
 	gas_transfer_coefficient = 0.90
 	permeability_coefficient = 0.01
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 25, rad = 0)
-	actions_types = list(/datum/action/item_action/adjust)
-	species_fit = list("Vox", "Unathi", "Tajaran", "Vulpkanin")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi'
-		)
-
-
-/obj/item/clothing/mask/surgical/attack_self(var/mob/user)
-	adjustmask(user)
+	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 60, rad = 0)
+	down_gas_transfer_coefficient = 1
+	down_body_parts_covered = null
+	down_icon_state = "steriledown"
+	pull_mask = 1
 
 /obj/item/clothing/mask/fakemoustache
-	name = "completely real moustache"
-	desc = "moustache is totally real."
+	name = "fake moustache"
+	desc = "Warning: moustache is fake."
 	icon_state = "fake-moustache"
 	flags_inv = HIDEFACE
-	species_fit = list("Vox", "Unathi", "Tajaran", "Vulpkanin")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi'
-		)
+	body_parts_covered = 0
+	visible_name = "Scoundrel"
 
-/obj/item/clothing/mask/fakemoustache/verb/pontificate()
-	set name = "Pontificate Evilly"
-	set category = "Object"
-	set desc = "Devise evil plans of evilness."
-
-	usr.visible_message("<span class = 'danger'>\ [usr] twirls \his moustache and laughs [pick("fiendishly","maniacally","diabolically","evilly")]!</span>")
+/obj/item/clothing/mask/snorkel
+	name = "Snorkel"
+	desc = "For the Swimming Savant."
+	icon_state = "snorkel"
+	flags_inv = HIDEFACE
+	body_parts_covered = 0
 
 //scarves (fit in in mask slot)
-
+//None of these actually have on-mob sprites...
 /obj/item/clothing/mask/bluescarf
 	name = "blue neck scarf"
 	desc = "A blue neck scarf."
 	icon_state = "blueneckscarf"
 	item_state = "blueneckscarf"
-	flags = MASKCOVERSMOUTH
-	w_class = 2
+	body_parts_covered = FACE
+	item_flags = FLEXIBLEMATERIAL
+	w_class = ITEM_SIZE_SMALL
 	gas_transfer_coefficient = 0.90
 
 /obj/item/clothing/mask/redscarf
@@ -113,8 +75,9 @@
 	desc = "A red and white checkered neck scarf."
 	icon_state = "redwhite_scarf"
 	item_state = "redwhite_scarf"
-	flags = MASKCOVERSMOUTH
-	w_class = 2
+	body_parts_covered = FACE
+	item_flags = FLEXIBLEMATERIAL
+	w_class = ITEM_SIZE_SMALL
 	gas_transfer_coefficient = 0.90
 
 /obj/item/clothing/mask/greenscarf
@@ -122,8 +85,9 @@
 	desc = "A green neck scarf."
 	icon_state = "green_scarf"
 	item_state = "green_scarf"
-	flags = MASKCOVERSMOUTH
-	w_class = 2
+	body_parts_covered = FACE
+	item_flags = FLEXIBLEMATERIAL
+	w_class = ITEM_SIZE_SMALL
 	gas_transfer_coefficient = 0.90
 
 /obj/item/clothing/mask/ninjascarf
@@ -131,170 +95,155 @@
 	desc = "A stealthy, dark scarf."
 	icon_state = "ninja_scarf"
 	item_state = "ninja_scarf"
-	flags = MASKCOVERSMOUTH
-	w_class = 2
+	body_parts_covered = FACE
+	item_flags = FLEXIBLEMATERIAL
+	w_class = ITEM_SIZE_SMALL
 	gas_transfer_coefficient = 0.90
+	siemens_coefficient = 0
 
 /obj/item/clothing/mask/pig
 	name = "pig mask"
 	desc = "A rubber pig mask."
 	icon_state = "pig"
 	item_state = "pig"
-	flags = BLOCKHAIR
-	flags_inv = HIDEFACE
-	w_class = 2
-
+	flags_inv = HIDEFACE|BLOCKHAIR
+	w_class = ITEM_SIZE_SMALL
+	siemens_coefficient = 0.9
+	body_parts_covered = HEAD|FACE|EYES
 
 /obj/item/clothing/mask/horsehead
 	name = "horse head mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a horse."
 	icon_state = "horsehead"
 	item_state = "horsehead"
-	flags = BLOCKHAIR
+	flags_inv = HIDEFACE|BLOCKHAIR
+	body_parts_covered = HEAD|FACE|EYES
+	w_class = ITEM_SIZE_SMALL
+	siemens_coefficient = 0.9
+
+/obj/item/clothing/mask/horsehead/New()
+    ..()
+    // The horse mask doesn't cause voice changes by default, the wizard spell changes the flag as necessary
+    say_messages = list("NEEIIGGGHHHH!", "NEEEIIIIGHH!", "NEIIIGGHH!", "HAAWWWWW!", "HAAAWWW!")
+    say_verbs = list("whinnies", "neighs", "says")
+
+
+/obj/item/clothing/mask/ai
+	name = "camera MIU"
+	desc = "Allows for direct mental connection to accessible camera networks."
+	icon_state = "s-ninja"
+	item_state = "s-ninja"
 	flags_inv = HIDEFACE
-	w_class = 2
-	var/voicechange = 0
-	var/temporaryname = " the Horse"
-	var/originalname = ""
+	body_parts_covered = FACE|EYES
+	action_button_name = "Toggle MUI"
+	origin_tech = list(TECH_DATA = 5, TECH_ENGINEERING = 5)
+	var/active = FALSE
+	var/mob/observer/eye/cameranet/eye
 
-
-
-/obj/item/clothing/mask/horsehead/equipped(mob/user, slot)
-	if(flags & NODROP)	//cursed masks only
-		originalname = user.real_name
-		if(!user.real_name || user.real_name == "Unknown")
-			user.real_name = "A Horse With No Name" //it felt good to be out of the rain
-		else
-			user.real_name = "[user.name][temporaryname]"
-		..()
-
-/obj/item/clothing/mask/horsehead/dropped() //this really shouldn't happen, but call it extreme caution
-	if(flags & NODROP)
-		goodbye_horses(loc)
+/obj/item/clothing/mask/ai/New()
+	eye = new(src)
+	eye.name_sufix = "camera MIU"
 	..()
 
-/obj/item/clothing/mask/horsehead/Destroy()
-	if(flags & NODROP)
-		goodbye_horses(loc)
-	return ..()
+/obj/item/clothing/mask/ai/Destroy()
+	if(eye)
+		if(active)
+			disengage_mask(eye.owner)
+		qdel(eye)
+		eye = null
+	..()
 
-/obj/item/clothing/mask/horsehead/proc/goodbye_horses(mob/user) //I'm flying over you
-	if(!ismob(user))
+/obj/item/clothing/mask/ai/attack_self(var/mob/user)
+	if(user.incapacitated())
 		return
-	if(user.real_name == "[originalname][temporaryname]" || user.real_name == "A Horse With No Name") //if it's somehow changed while the mask is on it doesn't revert
-		user.real_name = originalname
+	active = !active
+	to_chat(user, "<span class='notice'>You [active ? "" : "dis"]engage \the [src].</span>")
+	if(active)
+		engage_mask(user)
+	else
+		disengage_mask(user)
 
-/obj/item/clothing/mask/fawkes
-	name = "Guy Fawkes mask"
-	desc = "A mask designed to help you remember a specific date."
-	icon_state = "fawkes"
-	item_state = "fawkes"
-	flags_inv = HIDEFACE
-	w_class = 2
+/obj/item/clothing/mask/ai/equipped(var/mob/user, var/slot)
+	..(user, slot)
+	engage_mask(user)
 
-/obj/item/clothing/mask/gas/clown_hat/pennywise
-	name = "Pennywise Mask"
-	desc = "It's the eater of worlds, and of children."
-	icon_state = "pennywise_mask"
-	item_state = "pennywise_mask"
-	species_fit = list("Vox")
-	flags = MASKCOVERSMOUTH | MASKCOVERSEYES | BLOCK_GAS_SMOKE_EFFECT | AIRTIGHT | BLOCKHAIR
-
-// Bandanas
-/obj/item/clothing/mask/bandana
-	name = "bandana"
-	desc = "A colorful bandana."
-	flags = MASKCOVERSMOUTH
-	flags_inv = HIDEFACE
-	w_class = 1
-	slot_flags = SLOT_MASK
-	adjusted_flags = SLOT_HEAD
-	icon_state = "bandbotany"
-	species_fit = list("Vox", "Unathi", "Tajaran", "Vulpkanin")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi'
-		)
-	actions_types = list(/datum/action/item_action/adjust)
-
-/obj/item/clothing/mask/bandana/attack_self(var/mob/user)
-	adjustmask(user)
-
-/obj/item/clothing/mask/bandana/red
-	name = "red bandana"
-	icon_state = "bandred"
-	item_color = "red"
-	desc = "It's a red bandana."
-
-/obj/item/clothing/mask/bandana/blue
-	name = "blue bandana"
-	icon_state = "bandblue"
-	item_color = "blue"
-	desc = "It's a blue bandana."
-
-/obj/item/clothing/mask/bandana/gold
-	name = "gold bandana"
-	icon_state = "bandgold"
-	item_color = "yellow"
-	desc = "It's a gold bandana."
-
-/obj/item/clothing/mask/bandana/green
-	name = "green bandana"
-	icon_state = "bandgreen"
-	item_color = "green"
-	desc = "It's a green bandana."
-
-/obj/item/clothing/mask/bandana/orange
-	name = "orange bandana"
-	icon_state = "bandorange"
-	item_color = "orange"
-	desc = "It's an orange bandana."
-
-/obj/item/clothing/mask/bandana/purple
-	name = "purple bandana"
-	icon_state = "bandpurple"
-	item_color = "purple"
-	desc = "It's a purple bandana."
-
-/obj/item/clothing/mask/bandana/botany
-	name = "botany bandana"
-	desc = "It's a green bandana with some fine nanotech lining."
-	icon_state = "bandbotany"
-
-/obj/item/clothing/mask/bandana/skull
-	name = "skull bandana"
-	desc = "It's a black bandana with a skull pattern."
-	icon_state = "bandskull"
-
-/obj/item/clothing/mask/bandana/black
-	name = "black bandana"
-	icon_state = "bandblack"
-	item_color = "black"
-	desc = "It's a black bandana."
-
-/obj/item/clothing/mask/cursedclown
-	name = "cursed clown mask"
-	desc = "This is a very, very odd looking mask."
-	icon = 'icons/goonstation/objects/clothing/mask.dmi'
-	icon_state = "cursedclown"
-	item_state = "cclown_hat"
-	icon_override = 'icons/goonstation/mob/clothing/mask.dmi'
-	lefthand_file = 'icons/goonstation/mob/inhands/clothing_lefthand.dmi'
-	righthand_file = 'icons/goonstation/mob/inhands/clothing_righthand.dmi'
-	flags = NODROP
-
-/obj/item/clothing/mask/cursedclown/equipped(mob/user, slot)
+/obj/item/clothing/mask/ai/dropped(var/mob/user)
 	..()
-	var/mob/living/carbon/human/H = user
-	if(istype(H) && slot == slot_wear_mask)
-		to_chat(H, "<span class='danger'>[src] grips your face!</span>")
-		if(H.mind && H.mind.assigned_role != "Cluwne")
-			H.makeCluwne()
+	disengage_mask(user)
 
-/obj/item/clothing/mask/cursedclown/suicide_act(mob/user)
-	user.visible_message("<span class='danger'>[user] gazes into the eyes of [src]. [src] gazes back!</span>")
-	spawn(10)
-		user.gib()
-	return BRUTELOSS
+/obj/item/clothing/mask/ai/proc/engage_mask(var/mob/user)
+	if(!active)
+		return
+	if(user.get_equipped_item(slot_wear_mask) != src)
+		return
+
+	eye.possess(user)
+	to_chat(eye.owner, "<span class='notice'>You feel disorented for a moment as your mind connects to the camera network.</span>")
+
+/obj/item/clothing/mask/ai/proc/disengage_mask(var/mob/user)
+	if(user == eye.owner)
+		to_chat(eye.owner, "<span class='notice'>You feel disorented for a moment as your mind disconnects from the camera network.</span>")
+		eye.release(eye.owner)
+		eye.forceMove(src)
+
+/obj/item/clothing/mask/rubber
+	name = "rubber mask"
+	desc = "A rubber mask."
+	icon_state = "balaclava"
+	flags_inv = HIDEFACE|BLOCKHAIR
+	siemens_coefficient = 0.9
+	body_parts_covered = HEAD|FACE|EYES
+
+/obj/item/clothing/mask/rubber/trasen
+	name = "Jack Trasen mask"
+	desc = "CEO of NanoTrasen corporation. Perfect for scaring the unionizing children."
+	icon_state = "trasen"
+	visible_name = "Jack Trasen"
+
+/obj/item/clothing/mask/rubber/barros
+	name = "Amaya Barros mask"
+	desc = "Current Secretary-General of Sol Cental Government. Not that the real thing would visit this pigsty."
+	icon_state = "barros"
+	visible_name = "Amaya Barros"
+
+/obj/item/clothing/mask/rubber/admiral
+	name = "Admiral Diwali mask"
+	desc = "Admiral that defeated the Terran Confederacy fleet in Gaia war. For bridge officers who wish they'd achieve a fraction of that."
+	icon_state = "admiral"
+	visible_name = "Admiral Diwali"
+
+/obj/item/clothing/mask/rubber/turner
+	name = "Charles Turner mask"
+	desc = "Speaker of the Terran Confederacy. Probably shouldn't wear this in front of your veteran uncle."
+	icon_state = "turner"
+	visible_name = "Charles Turner"
+
+/obj/item/clothing/mask/rubber/species
+	name = "human mask"
+	desc = "A rubber human mask."
+	var/species = SPECIES_HUMAN
+
+/obj/item/clothing/mask/rubber/species/New()
+	..()
+	visible_name = species
+	var/datum/species/S = all_species[species]
+	if(istype(S))
+		visible_name = S.get_random_name(pick(MALE,FEMALE))
+
+/obj/item/clothing/mask/rubber/species/tajaran
+	name = "tajara mask"
+	desc = "A rubber tajara mask."
+	icon_state = "catmet"
+	species = SPECIES_TAJARA
+
+/obj/item/clothing/mask/rubber/species/unathi
+	name = "unathi mask"
+	desc = "A rubber unathi mask."
+	icon_state = "lizmet"
+	species = SPECIES_UNATHI
+
+/obj/item/clothing/mask/rubber/species/skrell
+	name = "skrell mask"
+	desc = "A rubber skrell mask."
+	icon_state = "skrelmet"
+	species = SPECIES_SKRELL

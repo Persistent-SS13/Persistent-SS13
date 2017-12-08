@@ -5,8 +5,8 @@
 	initial_icon = "gygax"
 	step_in = 3
 	dir_in = 1 //Facing North.
-	health = 250
-	deflect_chance = 5
+	health = 300
+	deflect_chance = 15
 	damage_absorption = list("brute"=0.75,"fire"=1,"bullet"=0.8,"laser"=0.7,"energy"=0.85,"bomb"=1)
 	max_temperature = 25000
 	infra_luminosity = 6
@@ -15,37 +15,26 @@
 	wreckage = /obj/effect/decal/mecha_wreckage/gygax
 	internal_damage_threshold = 35
 	max_equip = 3
-	maxsize = 2
-	step_energy_drain = 3
-
-/obj/mecha/combat/gygax/loaded/New()
-	..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/energy/taser
-	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/flashbang
-	ME.attach(src)
-	return
 
 /obj/mecha/combat/gygax/dark
-	desc = "A lightweight exosuit, painted in a dark scheme. This model appears to have some modifications."
+	desc = "A lightweight exosuit used by Heavy Asset Protection. A significantly upgraded Gygax security mech."
 	name = "Dark Gygax"
 	icon_state = "darkgygax"
 	initial_icon = "darkgygax"
-	health = 300
-	deflect_chance = 15
+	health = 400
+	deflect_chance = 25
 	damage_absorption = list("brute"=0.6,"fire"=0.8,"bullet"=0.6,"laser"=0.5,"energy"=0.65,"bomb"=0.8)
-	max_temperature = 35000
+	max_temperature = 45000
 	overload_coeff = 1
-	operation_req_access = list(access_syndicate)
 	wreckage = /obj/effect/decal/mecha_wreckage/gygax/dark
 	max_equip = 4
-	maxsize = 2
+	step_energy_drain = 5
 
-/obj/mecha/combat/gygax/dark/loaded/New()
+/obj/mecha/combat/gygax/dark/New()
 	..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine
+	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/flashbang
+	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/flashbang/clusterbang
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/teleporter
 	ME.attach(src)
@@ -53,15 +42,8 @@
 	ME.attach(src)
 	return
 
-/obj/mecha/combat/gygax/dark/add_cell(var/obj/item/weapon/stock_parts/cell/C=null)
-	if(C)
-		C.forceMove(src)
-		cell = C
-		return
-	cell = new(src)
-	cell.charge = 30000
-	cell.maxcharge = 30000
-
+/obj/mecha/combat/gygax/dark/add_cell()
+	cell = new /obj/item/weapon/cell/hyper(src)
 
 /obj/mecha/combat/gygax/verb/overload()
 	set category = "Exosuit Interface"
@@ -83,7 +65,7 @@
 	src.log_message("Toggled leg actuators overload.")
 	return
 
-/obj/mecha/combat/gygax/dyndomove(direction)
+/obj/mecha/combat/gygax/do_move(direction)
 	if(!..()) return
 	if(overload)
 		health--
@@ -113,6 +95,6 @@
 
 /obj/mecha/combat/gygax/Topic(href, href_list)
 	..()
-	if(href_list["toggle_leg_overload"])
+	if (href_list["toggle_leg_overload"])
 		src.overload()
 	return

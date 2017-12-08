@@ -1,7 +1,7 @@
 /datum/wires/autolathe
 
 	holder_type = /obj/machinery/autolathe
-	wire_count = 10
+	wire_count = 6
 
 var/const/AUTOLATHE_HACK_WIRE = 1
 var/const/AUTOLATHE_SHOCK_WIRE = 2
@@ -10,7 +10,9 @@ var/const/AUTOLATHE_DISABLE_WIRE = 4
 /datum/wires/autolathe/GetInteractWindow()
 	var/obj/machinery/autolathe/A = holder
 	. += ..()
-	. += text("<BR>The red light is [A.disabled ? "off" : "on"].<BR>The green light is [A.shocked ? "off" : "on"].<BR>The blue light is [A.hacked ? "off" : "on"].<BR>")
+	. += "<BR>The red light is [A.disabled ? "off" : "on"]."
+	. += "<BR>The green light is [A.shocked ? "off" : "on"]."
+	. += "<BR>The blue light is [A.hacked ? "off" : "on"].<BR>"
 
 /datum/wires/autolathe/CanUse()
 	var/obj/machinery/autolathe/A = holder
@@ -27,7 +29,7 @@ var/const/AUTOLATHE_DISABLE_WIRE = 4
 	var/obj/machinery/autolathe/A = holder
 	switch(index)
 		if(AUTOLATHE_HACK_WIRE)
-			A.adjust_hacked(!mended)
+			A.hacked = !mended
 		if(AUTOLATHE_SHOCK_WIRE)
 			A.shocked = !mended
 		if(AUTOLATHE_DISABLE_WIRE)
@@ -39,10 +41,10 @@ var/const/AUTOLATHE_DISABLE_WIRE = 4
 	var/obj/machinery/autolathe/A = holder
 	switch(index)
 		if(AUTOLATHE_HACK_WIRE)
-			A.adjust_hacked(!A.hacked)
+			A.hacked = !A.hacked
 			spawn(50)
 				if(A && !IsIndexCut(index))
-					A.adjust_hacked(0)
+					A.hacked = 0
 					Interact(usr)
 		if(AUTOLATHE_SHOCK_WIRE)
 			A.shocked = !A.shocked

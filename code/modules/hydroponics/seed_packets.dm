@@ -5,8 +5,8 @@ var/global/list/plant_seed_sprites = list()
 	name = "packet of seeds"
 	icon = 'icons/obj/seeds.dmi'
 	icon_state = "blank"
-	w_class = 2
-	burn_state = FLAMMABLE
+	w_class = ITEM_SIZE_SMALL
+
 	var/seed_type
 	var/datum/seed/seed
 	var/modified = 0
@@ -60,7 +60,7 @@ var/global/list/plant_seed_sprites = list()
 		src.desc = "It's labelled as coming from [seed.display_name]."
 
 /obj/item/seeds/examine(mob/user)
-	..(user)
+	. = ..(user)
 	if(seed && !seed.roundstart)
 		to_chat(user, "It's tagged as variety #[seed.uid].")
 
@@ -101,14 +101,17 @@ var/global/list/plant_seed_sprites = list()
 /obj/item/seeds/cabbageseed
 	seed_type = "cabbage"
 
-/obj/item/seeds/comfreyseed
-	seed_type = "comfrey"
+/obj/item/seeds/shandseed
+	seed_type = "shand"
 
-/obj/item/seeds/aloeseed
-	seed_type = "aloe"
+/obj/item/seeds/mtearseed
+	seed_type = "mtear"
 
 /obj/item/seeds/berryseed
 	seed_type = "berries"
+
+/obj/item/seeds/blueberryseed
+	seed_type = "blueberries"
 
 /obj/item/seeds/glowberryseed
 	seed_type = "glowberries"
@@ -179,9 +182,6 @@ var/global/list/plant_seed_sprites = list()
 /obj/item/seeds/glowshroom
 	seed_type = "glowshroom"
 
-/obj/item/seeds/glowcap
-	seed_type = "glowcap"
-
 /obj/item/seeds/plumpmycelium
 	seed_type = "plumphelmet"
 
@@ -203,6 +203,9 @@ var/global/list/plant_seed_sprites = list()
 /obj/item/seeds/sunflowerseed
 	seed_type = "sunflowers"
 
+/obj/item/seeds/lavenderseed
+	seed_type = "lavender"
+
 /obj/item/seeds/brownmold
 	seed_type = "mold"
 
@@ -220,9 +223,6 @@ var/global/list/plant_seed_sprites = list()
 
 /obj/item/seeds/ambrosiadeusseed
 	seed_type = "ambrosiadeus"
-
-/obj/item/seeds/ambrosiavulgarisseed/cruciatus
-	seed_type = "ambrosia"
 
 /obj/item/seeds/whitebeetseed
 	seed_type = "whitebeet"
@@ -265,51 +265,3 @@ var/global/list/plant_seed_sprites = list()
 
 /obj/item/seeds/kudzuseed
 	seed_type = "kudzu"
-
-/obj/item/seeds/jurlmah
-	seed_type = "jurlmah"
-
-/obj/item/seeds/amauri
-	seed_type = "amauri"
-
-/obj/item/seeds/gelthi
-	seed_type = "gelthi"
-
-/obj/item/seeds/vale
-	seed_type = "vale"
-
-/obj/item/seeds/surik
-	seed_type = "surik"
-
-/obj/item/seeds/telriis
-	seed_type = "telriis"
-
-/obj/item/seeds/thaadra
-	seed_type = "thaadra"
-
-/obj/item/seeds/clown
-	seed_type = "clown"
-
-/obj/item/seeds/test
-	seed_type = "test"
-
-/obj/item/seeds/test2
-	seed_type = "test2"
-
-/obj/item/seeds/stobaccoseed
-	seed_type = "stobacco"
-
-/obj/item/seeds/teaasperaseed
-	seed_type = "teaaspera"
-
-/obj/item/seeds/teaastraseed
-	seed_type = "teaastra"
-
-/obj/item/seeds/coffeeaseed
-	seed_type = "coffeea"
-
-/obj/item/seeds/coffeerseed
-	seed_type = "coffeer"
-
-/obj/item/seeds/cash
-	seed_type = "cashtree"

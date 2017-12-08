@@ -3,14 +3,11 @@
 /obj/machinery/computer/aiupload
 	name = "\improper AI upload console"
 	desc = "Used to upload laws to the AI."
+	icon_keyboard = "rd_key"
 	icon_screen = "command"
-	icon_keyboard = "med_key"
 	circuit = /obj/item/weapon/circuitboard/aiupload
 	var/mob/living/silicon/ai/current = null
 	var/opened = 0
-
-	light_color = LIGHT_COLOR_WHITE
-	light_range_on = 2
 
 
 	verb/AccessInternals()
@@ -22,24 +19,19 @@
 
 		opened = !opened
 		if(opened)
-			to_chat(usr, "\blue The access panel is now open.")
+			to_chat(usr, "<span class='notice'>The access panel is now open.</span>")
 		else
-			to_chat(usr, "\blue The access panel is now closed.")
+			to_chat(usr, "<span class='notice'>The access panel is now closed.</span>")
 		return
 
 
-	attackby(obj/item/weapon/O as obj, mob/user as mob, params)
-		if(is_away_level(user.z))
-			to_chat(user, "<span class='danger'>Unable to establish a connection</span>: You're too far away from the station!")
+	attackby(obj/item/weapon/O as obj, mob/user as mob)
+		if (user.z > 6)
+			to_chat(user, "<span class='danger'>Unable to establish a connection:</span> You're too far away from the [station_name()]!")
 			return
 		if(istype(O, /obj/item/weapon/aiModule))
-			var/datum/game_mode/nations/mode = get_nations_mode()
-			if(!mode)
-				var/obj/item/weapon/aiModule/M = O
-				M.install(src)
-			else
-				if(mode.kickoff)
-					to_chat(user, "<span class='warning'>You have been locked out from modifying the AI's laws!</span>")
+			var/obj/item/weapon/aiModule/M = O
+			M.install(src)
 		else
 			..()
 
@@ -54,7 +46,7 @@
 
 		src.current = select_active_ai(user)
 
-		if(!src.current)
+		if (!src.current)
 			to_chat(usr, "No active AIs detected.")
 		else
 			to_chat(usr, "[src.current.name] selected for law changes.")
@@ -63,23 +55,19 @@
 	attack_ghost(user as mob)
 		return 1
 
+
 /obj/machinery/computer/borgupload
 	name = "cyborg upload console"
 	desc = "Used to upload laws to Cyborgs."
+	icon_keyboard = "rd_key"
 	icon_screen = "command"
-	icon_keyboard = "med_key"
 	circuit = /obj/item/weapon/circuitboard/borgupload
 	var/mob/living/silicon/robot/current = null
 
 
-	attackby(obj/item/weapon/aiModule/module as obj, mob/user as mob, params)
+	attackby(obj/item/weapon/aiModule/module as obj, mob/user as mob)
 		if(istype(module, /obj/item/weapon/aiModule))
-			var/datum/game_mode/nations/mode = get_nations_mode()
-			if(!mode)
-				module.install(src)
-			else
-				if(mode.kickoff)
-					to_chat(user, "<span class='warning'>You have been locked out from modifying the borg's laws!</span>")
+			module.install(src)
 		else
 			return ..()
 
@@ -94,7 +82,7 @@
 
 		src.current = freeborg()
 
-		if(!src.current)
+		if (!src.current)
 			to_chat(usr, "No free cyborgs detected.")
 		else
 			to_chat(usr, "[src.current.name] selected for law changes.")

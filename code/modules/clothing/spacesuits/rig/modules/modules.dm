@@ -13,6 +13,7 @@
 	desc = "It looks pretty sciency."
 	icon = 'icons/obj/rig_modules.dmi'
 	icon_state = "module"
+	matter = list(DEFAULT_WALL_MATERIAL = 20000, "plastic" = 30000, "glass" = 5000)
 
 	var/damage = 0
 	var/obj/item/weapon/rig/holder
@@ -31,6 +32,7 @@
 	var/active                          // Basic module status
 	var/disruptable                     // Will deactivate if some other powers are used.
 
+	// Now in joules/watts!
 	var/use_power_cost = 0              // Power used when single-use ability called.
 	var/active_power_cost = 0           // Power used when turned on.
 	var/passive_power_cost = 0          // Power used when turned off.
@@ -54,7 +56,7 @@
 	var/list/stat_rig_module/stat_modules = new()
 
 /obj/item/rig_module/examine()
-	..()
+	. = ..()
 	switch(damage)
 		if(0)
 			to_chat(usr, "It is undamaged.")
@@ -73,7 +75,7 @@
 
 		to_chat(user, "You start mending the damaged portions of \the [src]...")
 
-		if(!do_after(user,30, target = src) || !W || !src)
+		if(!do_after(user,30,src) || !W || !src)
 			return
 
 		var/obj/item/stack/nanopaste/paste = W
@@ -98,7 +100,7 @@
 			return
 
 		to_chat(user, "You start mending the damaged portions of \the [src]...")
-		if(!do_after(user, 30, target = src) || !W || !src)
+		if(!do_after(user,30,src) || !W || !src)
 			return
 
 		damage = 1
@@ -149,7 +151,7 @@
 		to_chat(usr, "<span class='warning'>You cannot use the [interface_name] again so soon.</span>")
 		return 0
 
-	if(!holder || (!(holder.flags & NODROP)))
+	if(!holder || holder.canremove)
 		to_chat(usr, "<span class='warning'>The suit is not initialized.</span>")
 		return 0
 
@@ -225,8 +227,15 @@
 /obj/item/rig_module/proc/accepts_item(var/obj/item/input_device)
 	return 0
 
+/mob/living/carbon/human/Stat()
+	. = ..()
+
+	if(. && istype(back,/obj/item/weapon/rig))
+		var/obj/item/weapon/rig/R = back
+		SetupStat(R)
+
 /mob/proc/SetupStat(var/obj/item/weapon/rig/R)
-	if(R && (R.flags & NODROP) && R.installed_modules.len && statpanel("Hardsuit Modules"))
+	if(R && !R.canremove && R.installed_modules.len && statpanel("Hardsuit Modules"))
 		var/cell_status = R.cell ? "[R.cell.charge]/[R.cell.maxcharge]" : "ERROR"
 		stat("Suit charge", cell_status)
 		for(var/obj/item/rig_module/module in R.installed_modules)

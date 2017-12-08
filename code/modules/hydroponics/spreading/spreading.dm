@@ -3,27 +3,20 @@
 
 /proc/spacevine_infestation(var/potency_min=70, var/potency_max=100, var/maturation_min=5, var/maturation_max=15)
 	spawn() //to stop the secrets panel hanging
-		var/list/turf/simulated/floor/turfs = list() //list of all the empty floor turfs in the hallway areas
-		for(var/areapath in typesof(/area/hallway))
-			var/area/A = locate(areapath)
-			for(var/turf/simulated/floor/F in A.contents)
-				if(turf_clear(F))
-					turfs += F
-
-		if(turfs.len) //Pick a turf to spawn at if we can
-			var/turf/simulated/floor/T = pick(turfs)
+		var/turf/T = pick_subarea_turf(/area/hallway , list(/proc/is_station_turf, /proc/not_turf_contains_dense_objects))
+		if(T)
 			var/datum/seed/seed = plant_controller.create_random_seed(1)
 			seed.set_trait(TRAIT_SPREAD,2)             // So it will function properly as vines.
 			seed.set_trait(TRAIT_POTENCY,rand(potency_min, potency_max)) // 70-100 potency will help guarantee a wide spread and powerful effects.
 			seed.set_trait(TRAIT_MATURATION,rand(maturation_min, maturation_max))
+			seed.display_name = "strange plants" //more thematic for the vine infestation event
 
 			//make vine zero start off fully matured
-			var/obj/effect/plant/vine = new(T,seed)
-			vine.health = vine.max_health
-			vine.mature_time = 0
-			vine.process()
+			new /obj/effect/plant(T,seed, start_matured = 1)
 
-			message_admins("<span class='notice'>Event: Spacevines spawned at [T.loc] ([T.x],[T.y],[T.z])</span>")
+			log_and_message_admins("Spacevines spawned in \the [get_area(T)]", location = T)
+			return
+		log_and_message_admins("<span class='notice'>Event: Spacevines failed to find a viable turf.</span>")
 
 /obj/effect/dead_plant
 	anchored = 1
@@ -47,31 +40,29 @@
 	density = 0
 	icon = 'icons/obj/hydroponics_growing.dmi'
 	icon_state = "bush4-1"
-	layer = 3
+	plane = OBJ_PLANE
+	layer = OBJ_LAYER
 	pass_flags = PASSTABLE
+	mouse_opacity = 2
 
 	var/health = 10
 	var/max_health = 100
 	var/growth_threshold = 0
 	var/growth_type = 0
 	var/max_growth = 0
-
 	var/list/neighbors = list()
 	var/obj/effect/plant/parent
 	var/datum/seed/seed
+	var/sampled = 0
 	var/floor = 0
 	var/spread_chance = 40
 	var/spread_distance = 3
 	var/evolve_chance = 2
-	var/mature_time
+	var/mature_time		//minimum maturation time
 	var/last_tick = 0
 	var/obj/machinery/portable_atmospherics/hydroponics/soil/invisible/plant
 
-	var/movable = 0
-
 /obj/effect/plant/Destroy()
-	if(buckled_mob)
-		unbuckle_mob()
 	if(plant_controller)
 		plant_controller.remove_plant(src)
 	for(var/obj/effect/plant/neighbor in range(1,src))
@@ -81,7 +72,7 @@
 /obj/effect/plant/single
 	spread_chance = 0
 
-/obj/effect/plant/New(var/newloc, var/datum/seed/newseed, var/obj/effect/plant/newparent)
+/obj/effect/plant/New(var/newloc, var/datum/seed/newseed, var/obj/effect/plant/newparent, var/start_matured = 0)
 	..()
 
 	if(!newparent)
@@ -90,9 +81,10 @@
 		parent = newparent
 
 	if(!plant_controller)
-		sleep(250) // ugly hack, should mean roundstart plants are fine.
+		sleep(250) // ugly hack, should mean roundstart plants are fine. TODO initialize perhaps?
 	if(!plant_controller)
-		to_chat(world, "<span class='danger'>Plant controller does not exist and [src] requires it. Aborting.</span>")
+		log_error("<span class='danger'>Plant controller does not exist and [src] requires it. Aborting.</span>")
+
 		qdel(src)
 		return
 
@@ -126,22 +118,22 @@
 
 	mature_time = world.time + seed.get_trait(TRAIT_MATURATION) + 15 //prevent vines from maturing until at least a few seconds after they've been created.
 	spread_chance = seed.get_trait(TRAIT_POTENCY)
-	if(growth_type == 0)							//These don't spread far at all (glowshroom, glowberries, brown mold)
-		spread_distance = round(spread_chance*0.1)
-	else if(growth_type == 2 || growth_type == 3)	//Vines and biomass can go further than worms and mold
-		spread_distance = round(spread_chance*0.6)
-	else											//Worms and mold go a moderate distance
-		spread_distance = round(spread_chance*0.3)
+	spread_distance = ((growth_type>0) ? round(spread_chance*0.6) : round(spread_chance*0.3))
 	update_icon()
+	if(start_matured)
+		mature_time = 0
+		health = max_health
+		process()
 
-	spawn(1) // Plants will sometimes be spawned in the turf adjacent to the one they need to end up in, for the sake of correct dir/etc being set.
-		set_dir(calc_dir())
-		update_icon()
-		plant_controller.add_plant(src)
-		// Some plants eat through plating.
-		if(!isnull(seed.chems["facid"]))
-			var/turf/T = get_turf(src)
-			T.ex_act(prob(80) ? 3 : 2)
+// Plants will sometimes be spawned in the turf adjacent to the one they need to end up in, for the sake of correct dir/etc being set.
+/obj/effect/plant/proc/finish_spreading()
+	set_dir(calc_dir())
+	update_icon()
+	plant_controller.add_plant(src)
+	// Some plants eat through plating.
+	if(islist(seed.chems) && !isnull(seed.chems["pacid"]))
+		var/turf/T = get_turf(src)
+		T.ex_act(prob(80) ? 3 : 2)
 
 /obj/effect/plant/update_icon()
 	//TODO: should really be caching this.
@@ -195,25 +187,27 @@
 		icon_state = "[seed.get_trait(TRAIT_PLANT_ICON)]-[growth]"
 
 	if(growth>2 && growth == max_growth)
-		layer = 5
-		if(seed.get_trait(TRAIT_SPREAD) == 2)
-			opacity = 1
-		if(!isnull(seed.chems["woodpulp"]))
-			density = 1
+		layer = (seed && seed.force_layer) ? seed.force_layer : ABOVE_OBJ_LAYER
+		set_opacity(1)
+		if(islist(seed.chems) && !isnull(seed.chems["woodpulp"]))
+			set_density(1)
 	else
-		layer = 3
-		density = 0
+		layer = (seed && seed.force_layer) ? seed.force_layer : ABOVE_OBJ_LAYER
+		set_density(0)
 
-/obj/effect/plant/proc/calc_dir(turf/location = loc)
+/obj/effect/plant/proc/calc_dir()
 	set background = 1
+	var/turf/T = get_turf(src)
+	if(!istype(T)) return
+
 	var/direction = 16
 
-	for(var/wallDir in cardinal)
-		var/turf/newTurf = get_step(location,wallDir)
+	for(var/wallDir in GLOB.cardinal)
+		var/turf/newTurf = get_step(T,wallDir)
 		if(newTurf.density)
 			direction |= wallDir
 
-	for(var/obj/effect/plant/shroom in location)
+	for(var/obj/effect/plant/shroom in T.contents)
 		if(shroom == src)
 			continue
 		if(shroom.floor) //special
@@ -239,19 +233,58 @@
 
 /obj/effect/plant/attackby(var/obj/item/weapon/W, var/mob/user)
 
+	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 	plant_controller.add_plant(src)
 
 	if(istype(W, /obj/item/weapon/wirecutters) || istype(W, /obj/item/weapon/scalpel))
-		if(!seed)
-			to_chat(user, "There is nothing to take a sample from.")
+		if(sampled)
+			to_chat(user, "<span class='warning'>\The [src] has already been sampled recently.</span>")
 			return
+		if(!is_mature())
+			to_chat(user, "<span class='warning'>\The [src] is not mature enough to yield a sample yet.</span>")
+			return
+		if(!seed)
+			to_chat(user, "<span class='warning'>There is nothing to take a sample from.</span>")
+			return
+		if(sampled)
+			to_chat(user, "<span class='danger'>You cannot take another sample from \the [src].</span>")
+			return
+		if(prob(70))
+			sampled = 1
 		seed.harvest(user,0,1)
-		health -= (rand(3,5)*10)
+		health -= (rand(3,5)*5)
+		sampled = 1
 	else
 		..()
 		if(W.force)
 			health -= W.force
 	check_health()
+
+//handles being overrun by vines - note that attacker_parent may be null in some cases
+/obj/effect/plant/proc/vine_overrun(datum/seed/attacker_seed, obj/effect/plant/attacker_parent)
+	var/aggression = 0
+	aggression += (attacker_seed.get_trait(TRAIT_CARNIVOROUS) - seed.get_trait(TRAIT_CARNIVOROUS))
+	aggression += (attacker_seed.get_trait(TRAIT_SPREAD) - seed.get_trait(TRAIT_SPREAD))
+
+	var/resiliance
+	if(is_mature())
+		resiliance = 0
+		switch(seed.get_trait(TRAIT_ENDURANCE))
+			if(30 to 70)
+				resiliance = 1
+			if(70 to 95)
+				resiliance = 2
+			if(95 to INFINITY)
+				resiliance = 3
+	else
+		resiliance = -2
+		if(seed.get_trait(TRAIT_ENDURANCE) >= 50)
+			resiliance = -1
+	aggression -= resiliance
+
+	if(aggression > 0)
+		health -= aggression*5
+		check_health()
 
 /obj/effect/plant/ex_act(severity)
 	switch(severity)
@@ -259,11 +292,11 @@
 			die_off()
 			return
 		if(2.0)
-			if(prob(50))
+			if (prob(50))
 				die_off()
 				return
 		if(3.0)
-			if(prob(5))
+			if (prob(5))
 				die_off()
 				return
 		else

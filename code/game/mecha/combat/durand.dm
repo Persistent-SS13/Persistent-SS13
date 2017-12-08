@@ -1,10 +1,9 @@
 /obj/mecha/combat/durand
-	desc = "It's time to light some fires and kick some tires."
-	name = "Durand Mk. II"
+	desc = "An aging combat exosuit utilized by many corporations. Originally developed to combat hostile alien lifeforms."
+	name = "Durand"
 	icon_state = "durand"
 	initial_icon = "durand"
 	step_in = 4
-	dir_in = 1 //Facing North.
 	health = 400
 	deflect_chance = 20
 	damage_absorption = list("brute"=0.5,"fire"=1.1,"bullet"=0.65,"laser"=0.85,"energy"=0.9,"bomb"=0.8)
@@ -12,18 +11,17 @@
 	infra_luminosity = 8
 	force = 40
 	var/defence = 0
-	var/defence_deflect = 35
+	var/def_boost = 15
 	wreckage = /obj/effect/decal/mecha_wreckage/durand
 
-
-/obj/mecha/combat/durand/loaded/New()
+/*
+/obj/mecha/combat/durand/New()
 	..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy
-	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack
-	ME.attach(src)
+	weapons += new /datum/mecha_weapon/ballistic/lmg(src)
+	weapons += new /datum/mecha_weapon/ballistic/scattershot(src)
+	selected_weapon = weapons[1]
 	return
-
+*/
 
 /obj/mecha/combat/durand/relaymove(mob/user,direction)
 	if(defence)
@@ -44,10 +42,10 @@
 		return
 	defence = !defence
 	if(defence)
-		deflect_chance = defence_deflect
+		deflect_chance += def_boost
 		src.occupant_message("<font color='blue'>You enable [src] defence mode.</font>")
 	else
-		deflect_chance = initial(deflect_chance)
+		deflect_chance -= def_boost
 		src.occupant_message("<font color='red'>You disable [src] defence mode.</font>")
 	src.log_message("Toggled defence mode.")
 	return
@@ -71,21 +69,6 @@
 
 /obj/mecha/combat/durand/Topic(href, href_list)
 	..()
-	if(href_list["toggle_defence_mode"])
+	if (href_list["toggle_defence_mode"])
 		src.defence_mode()
 	return
-
-/obj/mecha/combat/durand/old
-	desc = "A retired, third-generation combat exosuit utilized by the Nanotrasen corporation. Originally developed to combat hostile alien lifeforms."
-	name = "Durand"
-	icon_state = "old_durand"
-	initial_icon = "old_durand"
-	step_in = 4
-	dir_in = 1 //Facing North.
-	health = 400
-	deflect_chance = 20
-	damage_absorption = list("brute"=0.5,"fire"=1.1,"bullet"=0.65,"laser"=0.85,"energy"=0.9,"bomb"=0.8)
-	max_temperature = 30000
-	infra_luminosity = 8
-	force = 40
-	wreckage = /obj/effect/decal/mecha_wreckage/durand/old

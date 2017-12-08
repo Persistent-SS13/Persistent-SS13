@@ -1,941 +1,351 @@
-//This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:31
-
-/*
- * GAMEMODES (by Rastaf0)
- *
- * In the new mode system all special roles are fully supported.
- * You can have proper wizards/traitors/changelings/cultists during any mode.
- * Only two things really depends on gamemode:
- * 1. Starting roles, equipment and preparations
- * 2. Conditions of finishing the round.
- *
- */
-
+var/global/antag_add_finished // Used in antag type voting.
+var/global/list/additional_antag_types = list()
 
 /datum/game_mode
 	var/name = "invalid"
+	var/round_description = "How did you even vote this in?"
+	var/extended_round_description = "This roundtype should not be spawned, let alone votable. Someone contact a developer and tell them the game's broken again."
 	var/config_tag = null
-	var/intercept_hacked = 0
 	var/votable = 1
 	var/probability = 0
-	var/station_was_nuked = 0 //see nuclearbomb.dm and malfunction.dm
-	var/explosion_in_progress = 0 //sit back and relax
-	var/list/datum/mind/modePlayer = new
-	var/list/restricted_jobs = list()	// Jobs it doesn't make sense to be.  I.E chaplain or AI cultist
-	var/list/protected_jobs = list()	// Jobs that can't be traitors
-	var/list/protected_species = list() // Species that can't be traitors
-	var/required_players = 0
-	var/required_enemies = 0
-	var/recommended_enemies = 0
+
+	var/required_players = 0                 // Minimum players for round to start if voted in.
+	var/required_enemies = 0                 // Minimum antagonists for round to start.
 	var/newscaster_announcements = null
-	var/ert_disabled = 0
-	var/uplink_welcome = "Syndicate Uplink Console:"
-	var/uplink_uses = 20
-	var/list/job_messages = list()
-	var/const/waittime_l = 600  //lower bound on time before intercept arrives (in tenths of seconds)
-	var/const/waittime_h = 1800 //upper bound on time before intercept arrives (in tenths of seconds)
-	var/list/medicalplayers = list()
-	var/list/securityplayers = list()
-	var/list/cargoplayers = list()
-	var/list/scienceplayers = list()
-	var/list/commandplayers = list()
-	var/list/engineeringplayers = list()
-	
-	
-/datum/game_mode/proc/announce() //to be calles when round starts
-	to_chat(world, "<B>Notice</B>: [src] did not define announce()")
+	var/end_on_antag_death = 0               // Round will end when all antagonists are dead.
+	var/ert_disabled = 0                     // ERT cannot be called.
+	var/deny_respawn = 0	                 // Disable respawn during this round.
 
+	var/list/disabled_jobs = list()           // Mostly used for Malf.  This check is performed in job_controller so it doesn't spawn a regular AI.
 
-///can_start()
-///Checks to see if the game can be setup and ran with the current number of players or whatnot.
-/datum/game_mode/proc/can_start()
+	var/shuttle_delay = 1                    // Shuttle transit time is multiplied by this.
+	var/auto_recall_shuttle = 0              // Will the shuttle automatically be recalled?
+
+	var/list/antag_tags = list()             // Core antag templates to spawn.
+	var/list/antag_templates                 // Extra antagonist types to include.
+	var/list/latejoin_antag_tags = list()        // Antags that may auto-spawn, latejoin or otherwise come in midround.
+	var/round_autoantag = 0                  // Will this round attempt to periodically spawn more antagonists?
+	var/antag_scaling_coeff = 5              // Coefficient for scaling max antagonists to player count.
+	var/require_all_templates = 0            // Will only start if all templates are checked and can spawn.
+	var/addantag_allowed = ADDANTAG_ADMIN | ADDANTAG_AUTO
+
+	var/station_was_nuked = 0                // See nuclearbomb.dm and malfunction.dm.
+	var/explosion_in_progress = 0            // Sit back and relax
+
+	var/event_delay_mod_moderate             // Modifies the timing of random events.
+	var/event_delay_mod_major                // As above.
+
+	var/waittime_l = 60 SECONDS				 // Lower bound on time before start of shift report
+	var/waittime_h = 180 SECONDS		     // Upper bounds on time before start of shift report
+
+/datum/game_mode/New()
+	..()
+	// Enforce some formatting.
+	// This will probably break something.
+	name = capitalize(lowertext(name))
+	config_tag = lowertext(config_tag)
+
+	if(round_autoantag && !latejoin_antag_tags.len)
+		latejoin_antag_tags = antag_tags.Copy()
+	else if(!round_autoantag && latejoin_antag_tags.len)
+		round_autoantag = TRUE
+
+/datum/game_mode/Topic(href, href_list[])
+	if(..())
+		return
+	if(href_list["toggle"])
+		switch(href_list["toggle"])
+			if("respawn")
+				deny_respawn = !deny_respawn
+			if("ert")
+				ert_disabled = !ert_disabled
+				announce_ert_disabled()
+			if("shuttle_recall")
+				auto_recall_shuttle = !auto_recall_shuttle
+			if("autotraitor")
+				round_autoantag = !round_autoantag
+		message_admins("Admin [key_name_admin(usr)] toggled game mode option '[href_list["toggle"]]'.")
+	else if(href_list["set"])
+		var/choice = ""
+		switch(href_list["set"])
+			if("shuttle_delay")
+				choice = input("Enter a new shuttle delay multiplier") as num
+				if(!choice || choice < 1 || choice > 20)
+					return
+				shuttle_delay = choice
+			if("antag_scaling")
+				choice = input("Enter a new antagonist cap scaling coefficient.") as num
+				if(isnull(choice) || choice < 0 || choice > 100)
+					return
+				antag_scaling_coeff = choice
+			if("event_modifier_moderate")
+				choice = input("Enter a new moderate event time modifier.") as num
+				if(isnull(choice) || choice < 0 || choice > 100)
+					return
+				event_delay_mod_moderate = choice
+				refresh_event_modifiers()
+			if("event_modifier_severe")
+				choice = input("Enter a new moderate event time modifier.") as num
+				if(isnull(choice) || choice < 0 || choice > 100)
+					return
+				event_delay_mod_major = choice
+				refresh_event_modifiers()
+		message_admins("Admin [key_name_admin(usr)] set game mode option '[href_list["set"]]' to [choice].")
+	else if(href_list["debug_antag"])
+		if(href_list["debug_antag"] == "self")
+			usr.client.debug_variables(src)
+			return
+		var/datum/antagonist/antag = all_antag_types()[href_list["debug_antag"]]
+		if(antag)
+			usr.client.debug_variables(antag)
+			message_admins("Admin [key_name_admin(usr)] is debugging the [antag.role_text] template.")
+	else if(href_list["remove_antag_type"])
+		if(antag_tags && (href_list["remove_antag_type"] in antag_tags))
+			to_chat(usr, "Cannot remove core mode antag type.")
+			return
+		var/datum/antagonist/antag = all_antag_types()[href_list["remove_antag_type"]]
+		if(antag_templates && antag_templates.len && antag && (antag in antag_templates) && (antag.id in additional_antag_types))
+			antag_templates -= antag
+			additional_antag_types -= antag.id
+			message_admins("Admin [key_name_admin(usr)] removed [antag.role_text] template from game mode.")
+	else if(href_list["add_antag_type"])
+		var/choice = input("Which type do you wish to add?") as null|anything in all_antag_types()
+		if(!choice)
+			return
+		var/datum/antagonist/antag = all_antag_types()[choice]
+		if(antag)
+			if(!islist(ticker.mode.antag_templates))
+				ticker.mode.antag_templates = list()
+			ticker.mode.antag_templates |= antag
+			message_admins("Admin [key_name_admin(usr)] added [antag.role_text] template to game mode.")
+
+	// I am very sure there's a better way to do this, but I'm not sure what it might be. ~Z
+	spawn(1)
+		for(var/datum/admins/admin in world)
+			if(usr.client == admin.owner)
+				admin.show_game_mode(usr)
+				return
+
+/datum/game_mode/proc/announce() //to be called when round starts
+	to_world("<B>The current game mode is [capitalize(name)]!</B>")
+	if(round_description) to_world("[round_description]")
+	if(round_autoantag) to_world("Antagonists will be added to the round automagically as needed.")
+	if(antag_templates && antag_templates.len)
+		var/antag_summary = "<b>Possible antagonist types:</b> "
+		var/i = 1
+		for(var/datum/antagonist/antag in antag_templates)
+			if(i > 1)
+				if(i == antag_templates.len)
+					antag_summary += " and "
+				else
+					antag_summary += ", "
+			antag_summary += "[antag.role_text_plural]"
+			i++
+		antag_summary += "."
+		if(antag_templates.len > 1 && master_mode != "secret")
+			to_world("[antag_summary]")
+		else
+			message_admins("[antag_summary]")
+
+// startRequirements()
+// Checks to see if the game can be setup and ran with the current number of players or whatnot.
+// Returns 0 if the mode can start and a message explaining the reason why it can't otherwise.
+/datum/game_mode/proc/startRequirements()
 	var/playerC = 0
-	for(var/mob/new_player/player in player_list)
+	for(var/mob/new_player/player in GLOB.player_list)
 		if((player.client)&&(player.ready))
 			playerC++
 
-	if(playerC >= required_players)
-		return 1
-	return 0
+	if(playerC < required_players)
+		return "Not enough players, [src.required_players] players needed."
 
-//pre_pre_setup() For when you really don't want certain jobs ingame.
-/datum/game_mode/proc/pre_pre_setup()
-	return 1
+	var/enemy_count = 0
+	var/list/all_antag_types = all_antag_types()
+	if(antag_tags && antag_tags.len)
+		for(var/antag_tag in antag_tags)
+			var/datum/antagonist/antag = all_antag_types[antag_tag]
+			if(!antag)
+				continue
+			var/list/potential = list()
+			if(antag_templates && antag_templates.len)
+				if(antag.flags & ANTAG_OVERRIDE_JOB)
+					potential = antag.pending_antagonists
+				else
+					potential = antag.candidates
+			else
+				potential = antag.get_potential_candidates(src)
+			if(islist(potential))
+				if(require_all_templates && potential.len < antag.initial_spawn_req)
+					return "Not enough antagonists ([antag.role_text]), [antag.initial_spawn_req] required and [potential.len] available."
+				enemy_count += potential.len
+				if(enemy_count >= required_enemies)
+					return 0
+		return "Not enough antagonists, [required_enemies] required and [enemy_count] available."
+	else
+		return 0
 
-///pre_setup()
-///Attempts to select players for special roles the mode might have.
+/datum/game_mode/proc/refresh_event_modifiers()
+	if(event_delay_mod_moderate || event_delay_mod_major)
+		GLOB.event_manager.report_at_round_end = 1
+		if(event_delay_mod_moderate)
+			var/datum/event_container/EModerate = GLOB.event_manager.event_containers[EVENT_LEVEL_MODERATE]
+			EModerate.delay_modifier = event_delay_mod_moderate
+		if(event_delay_mod_moderate)
+			var/datum/event_container/EMajor = GLOB.event_manager.event_containers[EVENT_LEVEL_MAJOR]
+			EMajor.delay_modifier = event_delay_mod_major
+
 /datum/game_mode/proc/pre_setup()
-	return 1
+	for(var/datum/antagonist/antag in antag_templates)
+		antag.update_current_antag_max()
+		antag.build_candidate_list() //compile a list of all eligible candidates
 
+		//antag roles that replace jobs need to be assigned before the job controller hands out jobs.
+		if(antag.flags & ANTAG_OVERRIDE_JOB)
+			antag.attempt_spawn() //select antags to be spawned
 
 ///post_setup()
-///Everyone should now be on the station and have their normal gear.  This is the place to give the special roles extra things
 /datum/game_mode/proc/post_setup()
+
+	next_spawn = world.time + rand(min_autotraitor_delay, max_autotraitor_delay)
+
+	refresh_event_modifiers()
+
 	spawn (ROUNDSTART_LOGOUT_REPORT_TIME)
 		display_roundstart_logout_report()
+
+	spawn (rand(waittime_l, waittime_h))
+		GLOB.using_map.send_welcome()
+		sleep(rand(100,150))
+		announce_ert_disabled()
+
+	//Assign all antag types for this game mode. Any players spawned as antags earlier should have been removed from the pending list, so no need to worry about those.
+	for(var/datum/antagonist/antag in antag_templates)
+		if(!(antag.flags & ANTAG_OVERRIDE_JOB))
+			antag.attempt_spawn() //select antags to be spawned
+		antag.finalize_spawn() //actually spawn antags
+
+	//Finally do post spawn antagonist stuff.
+	for(var/datum/antagonist/antag in antag_templates)
+		antag.post_spawn()
+
+	if(evacuation_controller && auto_recall_shuttle)
+		evacuation_controller.recall = 1
 
 	feedback_set_details("round_start","[time2text(world.realtime)]")
 	if(ticker && ticker.mode)
 		feedback_set_details("game_mode","[ticker.mode]")
-//	if(revdata)
-//		feedback_set_details("revision","[revdata.revision]")
 	feedback_set_details("server_ip","[world.internet_address]:[world.port]")
-	start_state = new /datum/station_state()
-	start_state.count()
 	return 1
 
+/datum/game_mode/proc/fail_setup()
+	for(var/datum/antagonist/antag in antag_templates)
+		antag.reset_antag_selection()
 
-///process()
-///Called by the gameticker
-/datum/game_mode/proc/process()
-	return 0
+/datum/game_mode/proc/announce_ert_disabled()
+	if(!ert_disabled)
+		return
 
-//Called by the gameticker
-/datum/game_mode/proc/process_job_tasks()
-	var/obj/machinery/message_server/useMS = null
-	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
-			if(MS.active)
-				useMS = MS
-				break
-	for(var/mob/M in player_list)
-		if(M.mind)
-			var/obj/item/device/pda/P=null
-			for(var/obj/item/device/pda/check_pda in PDAs)
-				if(check_pda.owner==M.name)
-					P=check_pda
-					break
-			var/count=0
-			for(var/datum/job_objective/objective in M.mind.job_objectives)
-				count++
-				var/msg=""
-				var/pay=0
-				if(objective.per_unit && objective.units_compensated<objective.units_completed)
-					var/newunits = objective.units_completed - objective.units_compensated
-					msg="We see that you completed [newunits] new unit[newunits>1?"s":""] for Task #[count]! "
-					pay=objective.completion_payment * newunits
-					objective.units_compensated += newunits
-					objective.is_completed() // So we don't get many messages regarding completion
-				else if(!objective.completed)
-					if(objective.is_completed())
-						pay=objective.completion_payment
-						msg="Task #[count] completed! "
-				if(pay>0)
-					if(M.mind.initial_account)
-						M.mind.initial_account.money += pay
-						var/datum/transaction/T = new()
-						T.target_name = "[command_name()] Payroll"
-						T.purpose = "Payment"
-						T.amount = pay
-						T.date = current_date_string
-						T.time = worldtime2text()
-						T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-						M.mind.initial_account.transaction_log.Add(T)
-						msg += "You have been sent the $[pay], as agreed."
-					else
-						msg += "However, we were unable to send you the $[pay] you're entitled."
-					if(useMS && P)
-						useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-					
-					
-/datum/game_mode/proc/process_medical_tasks() // all these should be called at the end of the round
-	var/deadamount = 0
-	var/escapedalive = 0
-	var/perfecthealth = 0
-	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(MEDICAL)
-	var/obj/machinery/message_server/useMS = null
-	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
-			if(MS.active)
-				useMS = MS
-				break
-				
-	for(var/datum/mind/employee in ticker.minds)
-		if(!istype(employee.current))
-			return 0
-		var/mob/living/carbon/human/I = employee.current
-		if(I && I.mind)
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
+	var/list/reasons = list(
+		"political instability",
+		"quantum fluctuations",
+		"hostile raiders",
+		"derelict station debris",
+		"REDACTED",
+		"ancient alien artillery",
+		"solar magnetic storms",
+		"sentient time-travelling killbots",
+		"gravitational anomalies",
+		"wormholes to another dimension",
+		"a telescience mishap",
+		"radiation flares",
+		"supermatter dust",
+		"leaks into a negative reality",
+		"antiparticle clouds",
+		"residual bluespace energy",
+		"suspected criminal operatives",
+		"malfunctioning von Neumann probe swarms",
+		"shadowy interlopers",
+		"a stranded Vox arkship",
+		"haywire IPC constructs",
+		"rogue Unathi exiles",
+		"artifacts of eldritch horror",
+		"a brain slug infestation",
+		"killer bugs that lay eggs in the husks of the living",
+		"a deserted transport carrying xenomorph specimens",
+		"an emissary for the gestalt requesting a security detail",
+		"a Tajaran slave rebellion",
+		"radical Skrellian transevolutionaries",
+		"classified security operations"
+		)
+	command_announcement.Announce("The presence of [pick(reasons)] in the region is tying up all available local emergency resources; emergency response teams cannot be called at this time, and post-evacuation recovery efforts will be substantially delayed.","Emergency Transmission")
 
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				if(I.stat != DEAD)
-					escapedalive += 1
-					if(I.health >= I.maxHealth)
-						perfecthealth += 1
-				else
-					deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						if(I.stat != DEAD)
-							escapedalive += 1
-							if(I.health >= I.maxHealth)
-								perfecthealth += 1
-						else
-							deadamount += 1
-					else
-						lostamount += 1
-		else
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						deadamount += 1
-					else
-						lostamount += 1
-					// now pay them i guess
-	var/datum/job_objective/department/medical/extract_crewmembers/jet = medicaldep.objectives[1]
-	for(var/datum/mind/M in medicalplayers)
-		if(istype(medicalplayers[M], /obj/item/device/pda))
-			var/obj/item/device/pda/P=medicalplayers[M]
-			if(P)
-				message_admins("PDA found for [M.name]")
-			var/completed = 0
-			var/msg = ""
-			var/pay = 0
-			var/basepay = 0
-			var/bonus = 0
-			if(1)//lostamount<startingplayers/2)
-				completed = 1
-				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
-			else
-				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
-			if(deadamount)
-				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
-			else
-				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
-			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
-				pay = jet.calculate_pay(perfecthealth, M)
-				basepay = jet.calculate_basepay(M)
-				bonus = pay - basepay
-			if(M.initial_account)
-				M.initial_account.money += pay
-				var/datum/transaction/T = new()
-				T.target_name = "[command_name()] Payroll"
-				T.purpose = "Payment"
-				T.amount = pay
-				T.date = current_date_string
-				T.time = worldtime2text()
-				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-				M.initial_account.transaction_log.Add(T)
-				if(completed)
-					if(bonus)
-						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
-					else	
-						msg += "You have been sent $[pay] for fufilling your quota. "
-			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
-
-			if(useMS && P)
-				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-			break
-				
-/datum/game_mode/proc/process_security_tasks() // all these should be called at the end of the round
-	var/deadamount = 0
-	var/escapedalive = 0
-	var/perfecthealth = 0
-	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(SECURITY)
-	var/obj/machinery/message_server/useMS = null
-	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
-			if(MS.active)
-				useMS = MS
-				break
-				
-	for(var/datum/mind/employee in ticker.minds)
-		if(!istype(employee.current))
-			return 0
-		var/mob/living/carbon/human/I = employee.current
-		if(I && I.mind)
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				if(I.stat != DEAD)
-					escapedalive += 1
-					if(I.health >= I.maxHealth)
-						perfecthealth += 1
-				else
-					deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						if(I.stat != DEAD)
-							escapedalive += 1
-							if(I.health >= I.maxHealth)
-								perfecthealth += 1
-						else
-							deadamount += 1
-					else
-						lostamount += 1
-		else
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						deadamount += 1
-					else
-						lostamount += 1
-					// now pay them i guess
-	var/datum/job_objective/department/jet = medicaldep.objectives[1]
-	for(var/datum/mind/M in securityplayers)
-		if(istype(securityplayers[M], /obj/item/device/pda))
-			var/obj/item/device/pda/P=securityplayers[M]
-			var/completed = 0
-			var/msg = ""
-			var/pay = 0
-			var/basepay = 0
-			var/bonus = 0
-			if(1)//lostamount<startingplayers/2)
-				completed = 1
-				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
-			else
-				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
-			if(deadamount)
-				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
-			else
-				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
-			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
-				
-				pay = jet.calculate_pay(perfecthealth, M)
-				basepay = jet.calculate_basepay(M)
-				bonus = pay - basepay
-			if(M.initial_account)
-				M.initial_account.money += pay
-				var/datum/transaction/T = new()
-				T.target_name = "[command_name()] Payroll"
-				T.purpose = "Payment"
-				T.amount = pay
-				T.date = current_date_string
-				T.time = worldtime2text()
-				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-				M.initial_account.transaction_log.Add(T)
-				if(completed)
-					if(bonus)
-						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
-					else	
-						msg += "You have been sent $[pay] for fufilling your quota. "
-			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
-
-			if(useMS && P)
-				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-			break
-			
-/datum/game_mode/proc/process_engineering_tasks() // all these should be called at the end of the round
-	var/deadamount = 0
-	var/escapedalive = 0
-	var/perfecthealth = 0
-	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(ENGINEERING)
-	var/obj/machinery/message_server/useMS = null
-	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
-			if(MS.active)
-				useMS = MS
-				break
-				
-	for(var/datum/mind/employee in ticker.minds)
-		if(!istype(employee.current))
-			return 0
-		var/mob/living/carbon/human/I = employee.current
-		if(I && I.mind)
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				if(I.stat != DEAD)
-					escapedalive += 1
-					if(I.health >= I.maxHealth)
-						perfecthealth += 1
-				else
-					deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						if(I.stat != DEAD)
-							escapedalive += 1
-							if(I.health >= I.maxHealth)
-								perfecthealth += 1
-						else
-							deadamount += 1
-					else
-						lostamount += 1
-		else
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						deadamount += 1
-					else
-						lostamount += 1
-					// now pay them i guess
-	var/datum/job_objective/department/jet = medicaldep.objectives[1]
-	for(var/datum/mind/M in engineeringplayers)
-		if(istype(engineeringplayers[M], /obj/item/device/pda))
-			var/obj/item/device/pda/P=engineeringplayers[M]
-			var/completed = 0
-			var/msg = ""
-			var/pay = 0
-			var/basepay = 0
-			var/bonus = 0
-			if(1)//lostamount<startingplayers/2)
-				completed = 1
-				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
-			else
-				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
-			if(deadamount)
-				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
-			else
-				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
-			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
-				
-				pay = jet.calculate_pay(perfecthealth, M)
-				basepay = jet.calculate_basepay(M)
-				bonus = pay - basepay
-			if(M.initial_account)
-				M.initial_account.money += pay
-				var/datum/transaction/T = new()
-				T.target_name = "[command_name()] Payroll"
-				T.purpose = "Payment"
-				T.amount = pay
-				T.date = current_date_string
-				T.time = worldtime2text()
-				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-				M.initial_account.transaction_log.Add(T)
-				if(completed)
-					if(bonus)
-						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
-					else	
-						msg += "You have been sent $[pay] for fufilling your quota. "
-			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
-
-			if(useMS && P)
-				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-			break
-
-
-/datum/game_mode/proc/process_command_tasks() // all these should be called at the end of the round
-	var/deadamount = 0
-	var/escapedalive = 0
-	var/perfecthealth = 0
-	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(COMMAND)
-	var/obj/machinery/message_server/useMS = null
-	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
-			if(MS.active)
-				useMS = MS
-				break
-				
-	for(var/datum/mind/employee in ticker.minds)
-		if(!istype(employee.current))
-			return 0
-		var/mob/living/carbon/human/I = employee.current
-		if(I && I.mind)
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				if(I.stat != DEAD)
-					escapedalive += 1
-					if(I.health >= I.maxHealth)
-						perfecthealth += 1
-				else
-					deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						if(I.stat != DEAD)
-							escapedalive += 1
-							if(I.health >= I.maxHealth)
-								perfecthealth += 1
-						else
-							deadamount += 1
-					else
-						lostamount += 1
-		else
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						deadamount += 1
-					else
-						lostamount += 1
-					// now pay them i guess
-	var/datum/job_objective/department/jet = medicaldep.objectives[1]
-	for(var/datum/mind/M in commandplayers)
-		if(istype(commandplayers[M], /obj/item/device/pda))
-			var/obj/item/device/pda/P=commandplayers[M]
-			var/completed = 0
-			var/msg = ""
-			var/pay = 0
-			var/basepay = 0
-			var/bonus = 0
-			if(1)//lostamount<startingplayers/2)
-				completed = 1
-				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
-			else
-				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
-			if(deadamount)
-				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
-			else
-				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
-			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
-				
-				pay = jet.calculate_pay(perfecthealth, M)
-				basepay = jet.calculate_basepay(M)
-				bonus = pay - basepay
-			if(M.initial_account)
-				M.initial_account.money += pay
-				var/datum/transaction/T = new()
-				T.target_name = "[command_name()] Payroll"
-				T.purpose = "Payment"
-				T.amount = pay
-				T.date = current_date_string
-				T.time = worldtime2text()
-				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-				M.initial_account.transaction_log.Add(T)
-				if(completed)
-					if(bonus)
-						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
-					else	
-						msg += "You have been sent $[pay] for fufilling your quota. "
-			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
-
-			if(useMS && P)
-				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-			break
-
-
-			
-			
-/datum/game_mode/proc/process_science_tasks() // all these should be called at the end of the round
-	var/deadamount = 0
-	var/escapedalive = 0
-	var/perfecthealth = 0
-	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(SCIENCE)
-	var/obj/machinery/message_server/useMS = null
-	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
-			if(MS.active)
-				useMS = MS
-				break
-				
-	for(var/datum/mind/employee in ticker.minds)
-		if(!istype(employee.current))
-			return 0
-		var/mob/living/carbon/human/I = employee.current
-		if(I && I.mind)
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				if(I.stat != DEAD)
-					escapedalive += 1
-					if(I.health >= I.maxHealth)
-						perfecthealth += 1
-				else
-					deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						if(I.stat != DEAD)
-							escapedalive += 1
-							if(I.health >= I.maxHealth)
-								perfecthealth += 1
-						else
-							deadamount += 1
-					else
-						lostamount += 1
-		else
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						deadamount += 1
-					else
-						lostamount += 1
-					// now pay them i guess
-	var/datum/job_objective/department/jet = medicaldep.objectives[1]
-	for(var/datum/mind/M in scienceplayers)
-		if(istype(scienceplayers[M], /obj/item/device/pda))
-			var/obj/item/device/pda/P=scienceplayers[M]
-			var/completed = 0
-			var/msg = ""
-			var/pay = 0
-			var/basepay = 0
-			var/bonus = 0
-			if(1)//lostamount<startingplayers/2)
-				completed = 1
-				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
-			else
-				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
-			if(deadamount)
-				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
-			else
-				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
-			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
-				
-				pay = jet.calculate_pay(perfecthealth, M)
-				basepay = jet.calculate_basepay(M)
-				bonus = pay - basepay
-			if(M.initial_account)
-				M.initial_account.money += pay
-				var/datum/transaction/T = new()
-				T.target_name = "[command_name()] Payroll"
-				T.purpose = "Payment"
-				T.amount = pay
-				T.date = current_date_string
-				T.time = worldtime2text()
-				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-				M.initial_account.transaction_log.Add(T)
-				if(completed)
-					if(bonus)
-						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
-					else	
-						msg += "You have been sent $[pay] for fufilling your quota. "
-			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
-
-			if(useMS && P)
-				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-			break
-
-			
-/datum/game_mode/proc/process_cargo_tasks() // all these should be called at the end of the round
-	var/deadamount = 0
-	var/escapedalive = 0
-	var/perfecthealth = 0
-	var/lostamount = 0
-	var/datum/department/medicaldep = get_department_datum(CARGO)
-	var/obj/machinery/message_server/useMS = null
-	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
-			if(MS.active)
-				useMS = MS
-				break
-				
-	for(var/datum/mind/employee in ticker.minds)
-		if(!istype(employee.current))
-			return 0
-		var/mob/living/carbon/human/I = employee.current
-		if(I && I.mind)
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				if(I.stat != DEAD)
-					escapedalive += 1
-					if(I.health >= I.maxHealth)
-						perfecthealth += 1
-				else
-					deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						if(I.stat != DEAD)
-							escapedalive += 1
-							if(I.health >= I.maxHealth)
-								perfecthealth += 1
-						else
-							deadamount += 1
-					else
-						lostamount += 1
-		else
-			var/turf/location = get_turf(I.loc)
-			if(!location)
-				lostamount += 1
-
-			if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-				deadamount += 1
-
-			else
-				switch(location.loc.type)
-					if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-						deadamount += 1
-					else
-						lostamount += 1
-					// now pay them i guess
-	var/datum/job_objective/department/jet = medicaldep.objectives[1]
-	for(var/datum/mind/M in cargoplayers)
-		if(istype(cargoplayers[M], /obj/item/device/pda))
-			var/obj/item/device/pda/P=cargoplayers[M]
-			var/completed = 0
-			var/msg = ""
-			var/pay = 0
-			var/basepay = 0
-			var/bonus = 0
-			if(1)//lostamount<startingplayers/2)
-				completed = 1
-				msg += "CENTCOM acknowledges that over two quarters of valued crewmembers have been extracted. Good work! "
-			else
-				msg += "CENTCOM reports that [lostamount] valued crewmembers have not been recovered. Your pay has been garnished. "
-			if(deadamount)
-				msg += "[escapedalive] left the station alive in a humanoid body, with an additional [deadamount] corpses/nonhumanoids extracted. "
-			else
-				msg += "[escapedalive] left the station alive, and there were no dead crewmembers extracted. "
-			if(completed && perfecthealth)
-				msg += "Additionally, [perfecthealth] crewmembers had perfect health when they arrived at CENTCOM"
-				
-				pay = jet.calculate_pay(perfecthealth, M)
-				basepay = jet.calculate_basepay(M)
-				bonus = pay - basepay
-			if(M.initial_account)
-				M.initial_account.money += pay
-				var/datum/transaction/T = new()
-				T.target_name = "[command_name()] Payroll"
-				T.purpose = "Payment"
-				T.amount = pay
-				T.date = current_date_string
-				T.time = worldtime2text()
-				T.source_terminal = "\[CLASSIFIED\] Terminal #[rand(111,333)]"
-				M.initial_account.transaction_log.Add(T)
-				if(completed)
-					if(bonus)
-						msg += "You have been sent $[basepay] for fufilling your quota plus [bonus] for the crewmembers in perfect health. "
-					else	
-						msg += "You have been sent $[pay] for fufilling your quota. "
-			else
-				msg += "However, we were unable to send you the $[pay] you are entitled. Contact a CENTCOM representitve about this as soon as possible about this. "
-
-			if(useMS && P)
-				useMS.send_pda_message("[P.owner]", "[command_name()] Payroll", msg)
-
-				var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
-				PM.notify("<b>Message from [command_name()] (Payroll), </b>\"[msg]\" (<i>Unable to Reply</i>)", 0)
-			break
-			
-
-	
-//THIS IS THE PERSISTANCE EDIT
-
-/datum/game_mode/proc/calculate_pay(var/amount, var/rank)
-														// each rank represents 20 percent of the pay the head of the department gets
-	
-
-/datum/game_mode/proc/process_all_tasks()
-	process_medical_tasks()
-	process_security_tasks()
-	process_cargo_tasks()
-	process_science_tasks()
-	process_command_tasks()
-	process_engineering_tasks()
-/datum/game_mode/proc/populate_department_lists()
-
-	medicalplayers = list()
-	securityplayers = list()
-	cargoplayers = list()
-	scienceplayers = list()
-	commandplayers = list()
-	engineeringplayers = list()
-	startingplayers = 0
-	for(var/mob/M in player_list)
-		if(M.mind && M.mind.assigned_job)
-			if(!M.player_logged)
-				startingplayers++
-			var/mob/living/I = M
-			if(I && I.mind)
-				var/turf/location = get_turf(I.loc)
-				if(!location)
-					continue
-				if(location.loc.type == shuttle_master.emergency.areaInstance.type) //didn't work in the switch for some reason
-					sleep(0)
-				else
-					switch(location.loc.type)
-						if(/area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom, /area/centcom, /area/shuttle/transport1, /area/shuttle/administration/centcom/, /area/shuttle/specops/centcom)
-							sleep(0)
-						else
-							continue
-			else
-				continue
-			if(M.mind.assigned_job.department_flag == MEDICAL)		
-				var/obj/item/device/pda/P=null
-				for(var/obj/item/device/pda/check_pda in PDAs)
-					if(check_pda.owner==M.name)
-						P=check_pda	
-						break
-				if(P)
-					medicalplayers[M.mind] = P
-				else
-					medicalplayers += M.mind
-			if(M.mind.assigned_job.department_flag == SECURITY)		
-				var/obj/item/device/pda/P=null
-				for(var/obj/item/device/pda/check_pda in PDAs)
-					if(check_pda.owner==M.name)
-						P=check_pda	
-						break
-				if(P)
-					securityplayers[M.mind] = P
-				else
-					securityplayers += M.mind
-					
-			if(M.mind.assigned_job.department_flag == SCIENCE)		
-				var/obj/item/device/pda/P=null
-				for(var/obj/item/device/pda/check_pda in PDAs)
-					if(check_pda.owner==M.name)
-						P=check_pda	
-						break
-				if(P)
-					scienceplayers[M.mind] = P
-				else
-					scienceplayers += M.mind	
-					
-			if(M.mind.assigned_job.department_flag == CARGO)		
-				var/obj/item/device/pda/P=null
-				for(var/obj/item/device/pda/check_pda in PDAs)
-					if(check_pda.owner==M.name)
-						P=check_pda	
-						break
-				if(P)
-					cargoplayers[M.mind] = P
-				else
-					cargoplayers += M.mind		
-			if(M.mind.assigned_job.department_flag == COMMAND)		
-				var/obj/item/device/pda/P=null
-				for(var/obj/item/device/pda/check_pda in PDAs)
-					if(check_pda.owner==M.name)
-						P=check_pda	
-						break
-				if(P)
-					commandplayers[M.mind] = P
-				else
-					commandplayers += M.mind		
-			if(M.mind.assigned_job.department_flag == ENGINEERING)		
-				var/obj/item/device/pda/P=null
-				for(var/obj/item/device/pda/check_pda in PDAs)
-					if(check_pda.owner==M.name)
-						P=check_pda	
-						break
-				if(P)
-					engineeringplayers[M.mind] = P
-				else
-					engineeringplayers += M.mind		
-			
-				
-					
-		
-/datum/game_mode/proc/check_finished() //to be called by ticker
-	if(shuttle_master.emergency.mode >= SHUTTLE_ENDGAME || station_was_nuked)
+/datum/game_mode/proc/check_finished()
+	if(evacuation_controller.round_over() || station_was_nuked)
 		return 1
+	if(end_on_antag_death && antag_templates && antag_templates.len)
+		var/has_antags = 0
+		for(var/datum/antagonist/antag in antag_templates)
+			if(!antag.antags_are_dead())
+				has_antags = 1
+				break
+		if(!has_antags)
+			evacuation_controller.recall = 0
+			return 1
 	return 0
 
 /datum/game_mode/proc/cleanup()	//This is called when the round has ended but not the game, if any cleanup would be necessary in that case.
 	return
 
 /datum/game_mode/proc/declare_completion()
+	set waitfor = FALSE
+
+	check_victory()
+	sleep(2)
+
+	var/list/all_antag_types = all_antag_types()
+	for(var/datum/antagonist/antag in antag_templates)
+		antag.check_victory()
+		antag.print_player_summary()
+		sleep(2)
+	for(var/antag_type in all_antag_types)
+		var/datum/antagonist/antag = all_antag_types[antag_type]
+		if(!antag.current_antagonists.len || (antag in antag_templates))
+			continue
+		sleep(2)
+		antag.print_player_summary()
+	sleep(2)
+
+	uplink_purchase_repository.print_entries()
+
 	var/clients = 0
 	var/surviving_humans = 0
 	var/surviving_total = 0
 	var/ghosts = 0
 	var/escaped_humans = 0
 	var/escaped_total = 0
-	var/escaped_on_pod_1 = 0
-	var/escaped_on_pod_2 = 0
-	var/escaped_on_pod_3 = 0
-	var/escaped_on_pod_5 = 0
-	var/escaped_on_shuttle = 0
 
-	var/list/area/escape_locations = list(/area/shuttle/escape, /area/shuttle/escape_pod1/centcom, /area/shuttle/escape_pod2/centcom, /area/shuttle/escape_pod3/centcom, /area/shuttle/escape_pod5/centcom)
-
-	if(shuttle_master.emergency.mode < SHUTTLE_ENDGAME) //shuttle didn't get to centcom
-		escape_locations -= /area/shuttle/escape
-
-	for(var/mob/M in player_list)
+	for(var/mob/M in GLOB.player_list)
 		if(M.client)
 			clients++
-			if(ishuman(M))
-				if(!M.stat)
-					surviving_humans++
-					if(M.loc && M.loc.loc && M.loc.loc.type in escape_locations)
-						escaped_humans++
-			if(!M.stat)
+			if(M.stat != DEAD)
 				surviving_total++
-				if(M.loc && M.loc.loc && M.loc.loc.type in escape_locations)
+				if(ishuman(M))
+					surviving_humans++
+				var/area/A = get_area(M)
+				if(A && is_type_in_list(A, GLOB.using_map.post_round_safe_areas))
 					escaped_total++
-
-				if(M.loc && M.loc.loc && M.loc.loc.type == shuttle_master.emergency.areaInstance.type && shuttle_master.emergency.mode >= SHUTTLE_ENDGAME)
-					escaped_on_shuttle++
-
-				if(M.loc && M.loc.loc && M.loc.loc.type == /area/shuttle/escape_pod1/centcom)
-					escaped_on_pod_1++
-				if(M.loc && M.loc.loc && M.loc.loc.type == /area/shuttle/escape_pod2/centcom)
-					escaped_on_pod_2++
-				if(M.loc && M.loc.loc && M.loc.loc.type == /area/shuttle/escape_pod3/centcom)
-					escaped_on_pod_3++
-				if(M.loc && M.loc.loc && M.loc.loc.type == /area/shuttle/escape_pod5/centcom)
-					escaped_on_pod_5++
-
-			if(isobserver(M))
+					if(ishuman(M))
+						escaped_humans++
+			else if(isghost(M))
 				ghosts++
+
+	var/text = ""
+	if(surviving_total > 0)
+		text += "<br>There [surviving_total>1 ? "were <b>[surviving_total] survivors</b>" : "was <b>one survivor</b>"]"
+		text += " (<b>[escaped_total>0 ? escaped_total : "none"] [evacuation_controller.emergency_evacuation ? "escaped" : "transferred"]</b>) and <b>[ghosts] ghosts</b>.<br>"
+	else
+		text += "There were <b>no survivors</b> (<b>[ghosts] ghosts</b>)."
+	to_world(text)
 
 	if(clients > 0)
 		feedback_set("round_end_clients",clients)
@@ -949,163 +359,117 @@
 		feedback_set("escaped_human",escaped_humans)
 	if(escaped_total > 0)
 		feedback_set("escaped_total",escaped_total)
-	if(escaped_on_shuttle > 0)
-		feedback_set("escaped_on_shuttle",escaped_on_shuttle)
-	if(escaped_on_pod_1 > 0)
-		feedback_set("escaped_on_pod_1",escaped_on_pod_1)
-	if(escaped_on_pod_2 > 0)
-		feedback_set("escaped_on_pod_2",escaped_on_pod_2)
-	if(escaped_on_pod_3 > 0)
-		feedback_set("escaped_on_pod_3",escaped_on_pod_3)
-	if(escaped_on_pod_5 > 0)
-		feedback_set("escaped_on_pod_5",escaped_on_pod_5)
 
-	send2mainirc("A round of [src.name] has ended - [surviving_total] survivors, [ghosts] ghosts.")
+	send2mainirc("A round of [src.name] has ended - [surviving_total] survivor\s, [ghosts] ghost\s.")
+
 	return 0
-
 
 /datum/game_mode/proc/check_win() //universal trigger to be called at mob death, nuke explosion, etc. To be called from everywhere.
 	return 0
 
-/datum/game_mode/proc/get_players_for_role(var/role, override_jobbans=0)
+/datum/game_mode/proc/get_players_for_role(var/role, var/antag_id)
 	var/list/players = list()
 	var/list/candidates = list()
-	//var/list/drafted = list()
-	//var/datum/mind/applicant = null
 
-	var/roletext = get_roletext(role)
+	var/list/all_antag_types = all_antag_types()
+	var/datum/antagonist/antag_template = all_antag_types[antag_id]
+	if(!antag_template)
+		return candidates
 
-	// Assemble a list of active players without jobbans.
-	for(var/mob/new_player/player in player_list)
-		if(player.client && player.ready)
-			if(!jobban_isbanned(player, "Syndicate") && !jobban_isbanned(player, roletext))
-				if(player_old_enough_antag(player.client,role))
-					players += player
+	// If this is being called post-roundstart then it doesn't care about ready status.
+	if(ticker && ticker.current_state == GAME_STATE_PLAYING)
+		for(var/mob/player in GLOB.player_list)
+			if(!player.client)
+				continue
+			if(istype(player, /mob/new_player))
+				continue
+			if(!role || (role in player.client.prefs.be_special_role))
+				log_debug("[player.key] had [antag_id] enabled, so we are drafting them.")
+				candidates += player.mind
+	else
+		// Assemble a list of active players without jobbans.
+		for(var/mob/new_player/player in GLOB.player_list)
+			if( player.client && player.ready )
+				players += player
 
-	// Shuffle the players list so that it becomes ping-independent.
-	players = shuffle(players)
+		// Get a list of all the people who want to be the antagonist for this round
+		for(var/mob/new_player/player in players)
+			if(!role || (role in player.client.prefs.be_special_role))
+				log_debug("[player.key] had [antag_id] enabled, so we are drafting them.")
+				candidates += player.mind
+				players -= player
 
-	// Get a list of all the people who want to be the antagonist for this round, except those with incompatible species
-	for(var/mob/new_player/player in players)
-		if((role in player.client.prefs.be_special) && !(player.client.prefs.species in protected_species))
-			log_debug("[player.key] had [roletext] enabled, so we are drafting them.")
-			candidates += player.mind
-			players -= player
-
-	// If we don't have enough antags, draft people who voted for the round.
-	if(candidates.len < recommended_enemies)
-		for(var/key in round_voters)
+		// If we don't have enough antags, draft people who voted for the round.
+		if(candidates.len < required_enemies)
 			for(var/mob/new_player/player in players)
-				if(player.ckey == key)
-					log_debug("[player.key] voted for this round, so we are drafting them.")
+				if(!role || !(role in player.client.prefs.never_be_special_role))
+					log_debug("[player.key] has not selected never for this role, so we are drafting them.")
 					candidates += player.mind
 					players -= player
-					break
+					if(candidates.len == required_enemies || players.len == 0)
+						break
 
-	// Remove candidates who want to be antagonist but have a job that precludes it
-	if(restricted_jobs)
-		for(var/datum/mind/player in candidates)
-			for(var/job in restricted_jobs)
-				if(player.assigned_role == job)
-					candidates -= player
-
-
-	return candidates		// Returns: The number of people who had the antagonist role set to yes, regardless of recomended_enemies, if that number is greater than recommended_enemies
-							//			recommended_enemies if the number of people with that role set to yes is less than recomended_enemies,
-							//			Less if there are not enough valid players in the game entirely to make recommended_enemies.
-
-
-/datum/game_mode/proc/latespawn(var/mob)
-
-/*
-/datum/game_mode/proc/check_player_role_pref(var/role, var/mob/player)
-	if(player.preferences.be_special & role)
-		return 1
-	return 0
-*/
+	return candidates		// Returns: The number of people who had the antagonist role set to yes, regardless of recomended_enemies, if that number is greater than required_enemies
+							//			required_enemies if the number of people with that role set to yes is less than recomended_enemies,
+							//			Less if there are not enough valid players in the game entirely to make required_enemies.
 
 /datum/game_mode/proc/num_players()
 	. = 0
-	for(var/mob/new_player/P in player_list)
+	for(var/mob/new_player/P in GLOB.player_list)
 		if(P.client && P.ready)
-			.++
-
-/datum/game_mode/proc/num_players_started()
-	. = 0
-	for(var/mob/living/carbon/human/H in player_list)
-		if(H.client)
-			.++
-
-///////////////////////////////////
-//Keeps track of all living heads//
-///////////////////////////////////
-/datum/game_mode/proc/get_living_heads()
-	. = list()
-	for(var/mob/living/carbon/human/player in mob_list)
-		if(player.stat != DEAD && player.mind && (player.mind.assigned_role in command_positions))
-			. |= player.mind
-
-
-////////////////////////////
-//Keeps track of all heads//
-////////////////////////////
-/datum/game_mode/proc/get_all_heads()
-	. = list()
-	for(var/mob/player in mob_list)
-		if(player.mind && (player.mind.assigned_role in command_positions))
-			. |= player.mind
-
-//////////////////////////////////////////////
-//Keeps track of all living security members//
-//////////////////////////////////////////////
-/datum/game_mode/proc/get_living_sec()
-	. = list()
-	for(var/mob/living/carbon/human/player in mob_list)
-		if(player.stat != DEAD && player.mind && (player.mind.assigned_role in security_positions))
-			. |= player.mind
-
-////////////////////////////////////////
-//Keeps track of all  security members//
-////////////////////////////////////////
-/datum/game_mode/proc/get_all_sec()
-	. = list()
-	for(var/mob/living/carbon/human/player in mob_list)
-		if(player.mind && (player.mind.assigned_role in security_positions))
-			. |= player.mind
+			. ++
 
 /datum/game_mode/proc/check_antagonists_topic(href, href_list[])
 	return 0
 
-/datum/game_mode/New()
+/datum/game_mode/proc/create_antagonists()
+
+	if(!config.traitor_scaling)
+		antag_scaling_coeff = 0
+
+	var/list/all_antag_types = all_antag_types()
+	if(antag_tags && antag_tags.len)
+		antag_templates = list()
+		for(var/antag_tag in antag_tags)
+			var/datum/antagonist/antag = all_antag_types[antag_tag]
+			if(antag)
+				antag_templates |= antag
+
+	if(additional_antag_types && additional_antag_types.len)
+		if(!antag_templates)
+			antag_templates = list()
+		for(var/antag_type in additional_antag_types)
+			var/datum/antagonist/antag = all_antag_types[antag_type]
+			if(antag)
+				antag_templates |= antag
+
+	shuffle(antag_templates) //In the case of multiple antag types
 	newscaster_announcements = pick(newscaster_standard_feeds)
+
+/datum/game_mode/proc/check_victory()
+	return
 
 //////////////////////////
 //Reports player logouts//
 //////////////////////////
 proc/display_roundstart_logout_report()
-	var/msg = "<span class='notice'>Roundstart logout report</span>\n\n"
-	for(var/mob/living/L in mob_list)
+	var/msg = "<span class='notice'><b>Roundstart logout report</b>\n\n"
+	for(var/mob/living/L in GLOB.mob_list)
 
 		if(L.ckey)
 			var/found = 0
-			for(var/client/C in clients)
+			for(var/client/C in GLOB.clients)
 				if(C.ckey == L.ckey)
 					found = 1
 					break
 			if(!found)
 				msg += "<b>[L.name]</b> ([L.ckey]), the [L.job] (<font color='#ffcc00'><b>Disconnected</b></font>)\n"
 
-
 		if(L.ckey && L.client)
 			if(L.client.inactivity >= (ROUNDSTART_LOGOUT_REPORT_TIME / 2))	//Connected, but inactive (alt+tabbed or something)
 				msg += "<b>[L.name]</b> ([L.ckey]), the [L.job] (<font color='#ffcc00'><b>Connected, Inactive</b></font>)\n"
 				continue //AFK client
 			if(L.stat)
-				if(L.suiciding)	//Suicider
-					msg += "<b>[L.name]</b> ([L.ckey]), the [L.job] (<font color='red'><b>Suicide</b></font>)\n"
-					job_master.FreeRole(L.job)
-					message_admins("<b>[key_name_admin(L)]</b>, the [L.job] has been freed due to (<font color='#ffcc00'><b>Early Round Suicide</b></font>)\n")
-					continue //Disconnected client
 				if(L.stat == UNCONSCIOUS)
 					msg += "<b>[L.name]</b> ([L.ckey]), the [L.job] (Dying)\n"
 					continue //Unconscious
@@ -1114,107 +478,62 @@ proc/display_roundstart_logout_report()
 					continue //Dead
 
 			continue //Happy connected client
-		for(var/mob/dead/observer/D in mob_list)
+		for(var/mob/observer/ghost/D in GLOB.mob_list)
 			if(D.mind && (D.mind.original == L || D.mind.current == L))
 				if(L.stat == DEAD)
-					if(L.suiciding)	//Suicider
-						msg += "<b>[L.name]</b> ([ckey(D.mind.key)]), the [L.job] (<font color='red'><b>Suicide</b></font>)\n"
-						continue //Disconnected client
-					else
-						msg += "<b>[L.name]</b> ([ckey(D.mind.key)]), the [L.job] (Dead)\n"
-						continue //Dead mob, ghost abandoned
+					msg += "<b>[L.name]</b> ([ckey(D.mind.key)]), the [L.job] (Dead)\n"
+					continue //Dead mob, ghost abandoned
 				else
 					if(D.can_reenter_corpse)
-						msg += "<b>[L.name]</b> ([ckey(D.mind.key)]), the [L.job] (<font color='red'><b>This shouldn't appear.</b></font>)\n"
+						msg += "<b>[L.name]</b> ([ckey(D.mind.key)]), the [L.job] (<font color='red'><b>Adminghosted</b></font>)\n"
 						continue //Lolwhat
 					else
 						msg += "<b>[L.name]</b> ([ckey(D.mind.key)]), the [L.job] (<font color='red'><b>Ghosted</b></font>)\n"
-						job_master.FreeRole(L.job)
-						message_admins("<b>[key_name_admin(L)]</b>, the [L.job] has been freed due to (<font color='#ffcc00'><b>Early Round Ghosted While Alive</b></font>)\n")
 						continue //Ghosted while alive
 
+	msg += "</span>" // close the span from right at the top
 
-
-	for(var/mob/M in mob_list)
+	for(var/mob/M in GLOB.mob_list)
 		if(M.client && M.client.holder)
 			to_chat(M, msg)
-
-
 proc/get_nt_opposed()
 	var/list/dudes = list()
-	for(var/mob/living/carbon/human/man in player_list)
+	for(var/mob/living/carbon/human/man in GLOB.player_list)
 		if(man.client)
-			if(man.client.prefs.nanotrasen_relation == "Opposed")
+			if(man.client.prefs.nanotrasen_relation == COMPANY_OPPOSED)
 				dudes += man
-			else if(man.client.prefs.nanotrasen_relation == "Skeptical" && prob(50))
+			else if(man.client.prefs.nanotrasen_relation == COMPANY_SKEPTICAL && prob(50))
 				dudes += man
 	if(dudes.len == 0) return null
 	return pick(dudes)
 
-//Announces objectives/generic antag text.
-/proc/show_generic_antag_text(var/datum/mind/player)
-	if(player.current)
-		to_chat(player.current, "You are an antagonist! <font color=blue>Within the rules,</font> \
-		try to act as an opposing force to the crew. Further RP and try to make sure \
-		other players have <i>fun</i>! If you are confused or at a loss, always adminhelp, \
-		and before taking extreme actions, please try to also contact the administration! \
-		Think through your actions and make the roleplay immersive! <b>Please remember all \
-		rules aside from those without explicit exceptions apply to antagonists.</b>")
-
 /proc/show_objectives(var/datum/mind/player)
+
 	if(!player || !player.current) return
 
+	if(config.objectives_disabled == CONFIG_OBJECTIVE_NONE || !player.objectives.len)
+		return
+
 	var/obj_count = 1
-	to_chat(player.current, "\blue Your current objectives:")
+	to_chat(player.current, "<span class='notice'>Your current objectives:</span>")
 	for(var/datum/objective/objective in player.objectives)
 		to_chat(player.current, "<B>Objective #[obj_count]</B>: [objective.explanation_text]")
 		obj_count++
 
-/proc/get_roletext(var/role)
-	return role
+/mob/verb/check_round_info()
+	set name = "Check Round Info"
+	set category = "OOC"
 
-/proc/get_nuke_code()
-	var/nukecode = "ERROR"
-	for(var/obj/machinery/nuclearbomb/bomb in world)
-		if(bomb && bomb.r_code && is_station_level(bomb.z))
-			nukecode = bomb.r_code
-	return nukecode
+	if(!ticker || !ticker.mode)
+		to_chat(usr, "Something is terribly wrong; there is no gametype.")
+		return
 
-/datum/game_mode/proc/replace_jobbaned_player(mob/living/M, role_type)
-	var/list/mob/dead/observer/candidates = pollCandidates("Do you want to play as a [role_type]?", role_type, 0, 100)
-	var/mob/dead/observer/theghost = null
-	if(candidates.len)
-		theghost = pick(candidates)
-		to_chat(M, "<span class='userdanger'>Your mob has been taken over by a ghost! Appeal your job ban if you want to avoid this in the future!</span>")
-		message_admins("[key_name_admin(theghost)] has taken control of ([key_name_admin(M)]) to replace a jobbanned player.")
-		M.ghostize()
-		M.key = theghost.key
+	if(!ticker.hide_mode)
+		to_chat(usr, "<b>The roundtype is [capitalize(ticker.mode.name)]</b>")
+		if(ticker.mode.round_description)
+			to_chat(usr, "<i>[ticker.mode.round_description]</i>")
+		if(ticker.mode.extended_round_description)
+			to_chat(usr, "[ticker.mode.extended_round_description]")
 	else
-		message_admins("[M] ([M.key] has been converted into [role_type] with an active antagonist jobban for said role since no ghost has volunteered to take their place.")
-		to_chat(M, "<span class='biggerdanger'>You have been converted into [role_type] with an active jobban. Any further violations of the rules on your part are likely to result in a permanent ban.</span>")
-
-/datum/game_mode/proc/printplayer(datum/mind/ply, fleecheck)
-	var/text = "<br><b>[ply.key]</b> was <b>[ply.name]</b> the <b>[ply.assigned_role]</b> and"
-	if(ply.current)
-		if(ply.current.stat == DEAD)
-			text += " <span class='boldannounce'>died</span>"
-		else
-			text += " <span class='greenannounce'>survived</span>"
-		if(fleecheck && !is_station_level(ply.current.z))
-			text += " while <span class='boldannounce'>fleeing the station</span>"
-		if(ply.current.real_name != ply.name)
-			text += " as <b>[ply.current.real_name]</b>"
-	else
-		text += " <span class='boldannounce'>had their body destroyed</span>"
-	return text
-
-/datum/game_mode/proc/printobjectives(datum/mind/ply)
-	var/text = ""
-	var/count = 1
-	for(var/datum/objective/objective in ply.objectives)
-		if(objective.check_completion())
-			text += "<br><b>Objective #[count]</b>: [objective.explanation_text] <span class='greenannounce'>Success!</span>"
-		else
-			text += "<br><b>Objective #[count]</b>: [objective.explanation_text] <span class='boldannounce'>Fail.</span>"
-		count++
-	return text
+		to_chat(usr, "<i>Shhhh</i>. It's a secret.")
+	return

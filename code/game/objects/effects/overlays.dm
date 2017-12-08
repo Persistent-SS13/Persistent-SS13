@@ -1,75 +1,24 @@
-
 /obj/effect/overlay
 	name = "overlay"
 	unacidable = 1
 	var/i_attached//Added for possible image attachments to objects. For hallucinations and the like.
 
-/obj/effect/overlay/singularity_act()
-	return
-
-/obj/effect/overlay/singularity_pull()
-	return
-
 /obj/effect/overlay/beam//Not actually a projectile, just an effect.
 	name="beam"
 	icon='icons/effects/beam.dmi'
-	icon_state="b_beam"
+	icon_state= "b_beam"
 	var/tmp/atom/BeamSource
 	New()
 		..()
 		spawn(10) qdel(src)
-
-
-/obj/effect/overlay/temp
-	anchored = 1
-	layer = 4.1
-	mouse_opacity = 0
-	var/duration = 10
-	var/randomdir = 1
-
-/obj/effect/overlay/temp/New()
-	if(randomdir)
-		dir = pick(cardinal)
-	spawn(duration)
-		qdel(src)
-
-/obj/effect/overlay/temp/revenant
-	name = "spooky lights"
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "purplesparkles"
-
-/obj/effect/overlay/temp/revenant/cracks
-	name = "glowing cracks"
-	icon_state = "purplecrack"
-	duration = 6
-
-/obj/effect/overlay/temp/guardian
-	randomdir = 0
-
-/obj/effect/overlay/temp/guardian/phase
-	duration = 5
-	icon_state = "phasein"
-
-/obj/effect/overlay/temp/guardian/phase/out
-	icon_state = "phaseout"
-
-/obj/effect/overlay/temp/emp
-	name = "emp sparks"
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "empdisable"
-
-/obj/effect/overlay/temp/emp/pulse
-	name = "emp pulse"
-	icon_state = "emp pulse"
-	duration = 8
-	randomdir = 0
 
 /obj/effect/overlay/palmtree_r
 	name = "Palm tree"
 	icon = 'icons/misc/beach2.dmi'
 	icon_state = "palm1"
 	density = 1
-	layer = 5
+	plane = ABOVE_HUMAN_PLANE
+	layer = ABOVE_HUMAN_LAYER
 	anchored = 1
 
 /obj/effect/overlay/palmtree_l
@@ -77,7 +26,8 @@
 	icon = 'icons/misc/beach2.dmi'
 	icon_state = "palm2"
 	density = 1
-	layer = 5
+	plane = ABOVE_HUMAN_PLANE
+	layer = ABOVE_HUMAN_LAYER
 	anchored = 1
 
 /obj/effect/overlay/coconut
@@ -85,8 +35,50 @@
 	icon = 'icons/misc/beach.dmi'
 	icon_state = "coconuts"
 
-/obj/effect/overlay/adminoverlay
-	name = "adminoverlay"
+/obj/effect/overlay/bluespacify
+	name = "Bluespace"
+	icon = 'icons/turf/space.dmi'
+	icon_state = "bluespacify"
+	plane = EFFECTS_ABOVE_LIGHTING_PLANE
+	layer = SUPERMATTER_WALL_LAYER
+
+/obj/effect/overlay/wallrot
+	name = "wallrot"
+	desc = "Ick..."
+	icon = 'icons/effects/wallrot.dmi'
+	anchored = 1
+	density = 1
+	plane = ABOVE_TURF_PLANE
+	layer = ABOVE_TILE_LAYER
+	mouse_opacity = 0
+
+/obj/effect/overlay/wallrot/New()
+	..()
+	pixel_x += rand(-10, 10)
+	pixel_y += rand(-10, 10)
+
+/obj/effect/overlay/cult/cultwall
+	name = "Corrupting glow"
+	desc = "You find yourself carrying an overwhelming urge to report the observability of this overlay to the bug tracker. Mention a \"cultwall\"."
 	icon = 'icons/effects/effects.dmi'
-	icon_state = "admin"
-	layer = 4.1
+	icon_state = "cultwall"
+	plane = ABOVE_TURF_PLANE
+	layer = ABOVE_TILE_LAYER
+	mouse_opacity = 0
+/obj/effect/overlay/cult/wallspawn/New()
+	..()
+	spawn(1)
+	qdel(src)
+
+/obj/effect/overlay/cult/cultfloor
+	icon = 'icons/effects/effects.dmi'
+	desc = "You find yourself carrying an overwhelming urge to report the observability of this overlay to the bug tracker. Mention a \"cultfloor\"."
+	icon_state = "cultfloor"
+	plane = ABOVE_TURF_PLANE
+	layer = ABOVE_TILE_LAYER
+	mouse_opacity = 0
+
+/obj/effect/overlay/cult/floorspawn/New()
+	..()
+	spawn(1)
+	qdel(src)

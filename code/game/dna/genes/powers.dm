@@ -5,172 +5,191 @@
 /datum/dna/gene/basic/nobreath
 	name="No Breathing"
 	activation_messages=list("You feel no need to breathe.")
-	deactivation_messages=list("You feel the need to breathe, once more.")
-	instability = GENE_INSTABILITY_MODERATE
-	mutation=NO_BREATH
-	activation_prob=10
+	mutation=mNobreath
 
-/datum/dna/gene/basic/nobreath/New()
-	block=NOBREATHBLOCK
+	New()
+		block=NOBREATHBLOCK
 
+/datum/dna/gene/basic/remoteview
+	name="Remote Viewing"
+	activation_messages=list("Your mind expands.")
+	mutation=mRemote
+
+	New()
+		block=REMOTEVIEWBLOCK
+
+	activate(var/mob/M, var/connected, var/flags)
+		..(M,connected,flags)
+		M.verbs += /mob/living/carbon/human/proc/remoteobserve
 
 /datum/dna/gene/basic/regenerate
 	name="Regenerate"
-	activation_messages=list("Your wounds start healing.")
-	deactivation_messages=list("Your regenerative powers feel like they've vanished.")
-	instability = GENE_INSTABILITY_MINOR
-	mutation=REGEN
+	activation_messages=list("You feel better.")
+	mutation=mRegen
 
-/datum/dna/gene/basic/regenerate/New()
-	block=REGENERATEBLOCK
+	New()
+		block=REGENERATEBLOCK
 
 /datum/dna/gene/basic/increaserun
 	name="Super Speed"
-	activation_messages=list("You feel swift and unencumbered.")
-	deactivation_messages=list("You feel slow.")
-	instability = GENE_INSTABILITY_MINOR
-	mutation=RUN
+	activation_messages=list("Your leg muscles pulsate.")
+	mutation=mRun
 
-/datum/dna/gene/basic/increaserun/New()
-	block=INCREASERUNBLOCK
+	New()
+		block=INCREASERUNBLOCK
 
-/datum/dna/gene/basic/increaserun/can_activate(var/mob/M,var/flags)
-	if(!..())
-		return 0
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		if(H.species && H.species.slowdown && !(flags & MUTCHK_FORCED))
-			return 0
-	return 1
+/datum/dna/gene/basic/remotetalk
+	name="Telepathy"
+	activation_messages=list("You expand your mind outwards.")
+	mutation=mRemotetalk
 
+	New()
+		block=REMOTETALKBLOCK
+
+	activate(var/mob/M, var/connected, var/flags)
+		..(M,connected,flags)
+		M.verbs += /mob/living/carbon/human/proc/remotesay
+
+/datum/dna/gene/basic/morph
+	name="Morph"
+	activation_messages=list("Your skin feels strange.")
+	mutation=mMorph
+
+	New()
+		block=MORPHBLOCK
+
+	activate(var/mob/M)
+		..(M)
+		M.verbs += /mob/living/carbon/human/proc/morph
+
+/* Not used on bay
 /datum/dna/gene/basic/heat_resist
 	name="Heat Resistance"
 	activation_messages=list("Your skin is icy to the touch.")
-	deactivation_messages=list("Your skin no longer feels icy to the touch.")
-	instability = GENE_INSTABILITY_MODERATE
-	mutation=RESIST_HEAT
+	mutation=mHeatres
 
-/datum/dna/gene/basic/heat_resist/New()
-	block=COLDBLOCK
+	New()
+		block=COLDBLOCK
 
-/datum/dna/gene/basic/heat_resist/OnDrawUnderlays(var/mob/M,var/g,var/fat)
-	return "cold[fat]_s"
+	can_activate(var/mob/M,var/flags)
+		if(flags & MUTCHK_FORCED)
+			return !(/datum/dna/gene/basic/cold_resist in M.active_genes)
+		// Probability check
+		var/_prob = 15
+		if(COLD_RESISTANCE in M.mutations)
+			_prob=5
+		if(probinj(_prob,(flags&MUTCHK_FORCED)))
+			return 1
+
+	OnDrawUnderlays(var/mob/M,var/g,var/fat)
+		return "cold[fat]_s"
+*/
 
 /datum/dna/gene/basic/cold_resist
 	name="Cold Resistance"
 	activation_messages=list("Your body is filled with warmth.")
-	deactivation_messages=list("Your body is no longer filled with warmth.")
-	instability = GENE_INSTABILITY_MODERATE
-	mutation=RESIST_COLD
+	mutation=COLD_RESISTANCE
 
-/datum/dna/gene/basic/cold_resist/New()
-	block=FIREBLOCK
+	New()
+		block=FIREBLOCK
 
-/datum/dna/gene/basic/cold_resist/OnDrawUnderlays(var/mob/M,var/g,var/fat)
-	return "fire[fat]_s"
+	can_activate(var/mob/M,var/flags)
+		if(flags & MUTCHK_FORCED)
+			return 1
+		//	return !(/datum/dna/gene/basic/heat_resist in M.active_genes)
+		// Probability check
+		var/_prob=30
+		//if(mHeatres in M.mutations)
+		//	_prob=5
+		if(probinj(_prob,(flags&MUTCHK_FORCED)))
+			return 1
+
+	OnDrawUnderlays(var/mob/M,var/g,var/fat)
+		return "fire[fat]_s"
 
 /datum/dna/gene/basic/noprints
 	name="No Prints"
 	activation_messages=list("Your fingers feel numb.")
-	deactivation_messages=list("your fingers no longer feel numb.")
-	instability = GENE_INSTABILITY_MINOR
-	mutation=FINGERPRINTS
+	mutation=mFingerprints
 
-/datum/dna/gene/basic/noprints/New()
-	block=NOPRINTSBLOCK
+	New()
+		block=NOPRINTSBLOCK
 
 /datum/dna/gene/basic/noshock
 	name="Shock Immunity"
-	activation_messages=list("Your skin feels dry and unreactive.")
-	deactivation_messages=list("Your skin no longer feels dry and unreactive.")
-	instability = GENE_INSTABILITY_MODERATE
-	mutation=NO_SHOCK
+	activation_messages=list("Your skin feels strange.")
+	mutation=mShock
 
-/datum/dna/gene/basic/noshock/New()
-	block=SHOCKIMMUNITYBLOCK
+	New()
+		block=SHOCKIMMUNITYBLOCK
 
 /datum/dna/gene/basic/midget
 	name="Midget"
-	activation_messages=list("Everything around you seems bigger now...")
-	deactivation_messages = list("Everything around you seems to shrink...")
-	instability = GENE_INSTABILITY_MINOR
-	mutation=DWARF
+	activation_messages=list("Your skin feels rubbery.")
+	mutation=mSmallsize
 
-/datum/dna/gene/basic/midget/New()
-	block=SMALLSIZEBLOCK
+	New()
+		block=SMALLSIZEBLOCK
 
-/datum/dna/gene/basic/midget/activate(var/mob/M, var/connected, var/flags)
-	..(M,connected,flags)
-	M.pass_flags |= PASSTABLE
-	M.resize = 0.8
+	can_activate(var/mob/M,var/flags)
+		// Can't be big and small.
+		if(HULK in M.mutations)
+			return 0
+		return ..(M,flags)
 
-/datum/dna/gene/basic/midget/deactivate(var/mob/M, var/connected, var/flags)
-	..()
-	M.pass_flags &= ~PASSTABLE
-	M.resize = 1.25
+	activate(var/mob/M, var/connected, var/flags)
+		..(M,connected,flags)
+		M.pass_flags |= 1
 
-// OLD HULK BEHAVIOR
+	deactivate(var/mob/M, var/connected, var/flags)
+		..(M,connected,flags)
+		M.pass_flags &= ~1 //This may cause issues down the track, but offhand I can't think of any other way for humans to get passtable short of varediting so it should be fine. ~Z
+
 /datum/dna/gene/basic/hulk
 	name="Hulk"
 	activation_messages=list("Your muscles hurt.")
-	deactivation_messages=list("Your muscles shrink.")
-	instability = GENE_INSTABILITY_MAJOR
 	mutation=HULK
-	activation_prob=5
 
-/datum/dna/gene/basic/hulk/New()
-	block=HULKBLOCK
+	New()
+		block=HULKBLOCK
 
-/datum/dna/gene/basic/hulk/activate(var/mob/M, var/connected, var/flags)
-	..()
-	var/status = CANSTUN | CANWEAKEN | CANPARALYSE | CANPUSH
-	M.status_flags &= ~status
+	can_activate(var/mob/M,var/flags)
+		// Can't be big and small.
+		if(mSmallsize in M.mutations)
+			return 0
+		return ..(M,flags)
 
-/datum/dna/gene/basic/hulk/deactivate(var/mob/M, var/connected, var/flags)
-	..()
-	M.status_flags |= CANSTUN | CANWEAKEN | CANPARALYSE | CANPUSH
-
-/datum/dna/gene/basic/hulk/OnDrawUnderlays(var/mob/M,var/g,var/fat)
-	if(HULK in M.mutations)
+	OnDrawUnderlays(var/mob/M,var/g,var/fat)
 		if(fat)
 			return "hulk_[fat]_s"
 		else
 			return "hulk_[g]_s"
-	return 0
+		return 0
 
-/datum/dna/gene/basic/hulk/OnMobLife(var/mob/living/carbon/human/M)
-	if(!istype(M))
-		return
-	if((HULK in M.mutations) && M.health <= 0)
-		M.mutations.Remove(HULK)
-		M.dna.SetSEState(HULKBLOCK,0)
-		genemutcheck(M, HULKBLOCK,null,MUTCHK_FORCED)
-		M.update_mutations()		//update our mutation overlays
-		M.update_body()
-		M.status_flags |= CANSTUN | CANWEAKEN | CANPARALYSE | CANPUSH //temporary fix until the problem can be solved.
-		to_chat(M, "<span class='danger'>You suddenly feel very weak.</span>")
+	OnMobLife(var/mob/living/carbon/human/M)
+		if(!istype(M)) return
+		if(M.health <= 25)
+			M.mutations.Remove(HULK)
+			M.update_mutations()		//update our mutation overlays
+			to_chat(M, "<span class='warning'>You suddenly feel very weak.</span>")
+			M.Weaken(3)
+			M.emote("collapse")
 
 /datum/dna/gene/basic/xray
 	name="X-Ray Vision"
 	activation_messages=list("The walls suddenly disappear.")
-	deactivation_messages=list("the walls around you re-appear.")
-	instability = GENE_INSTABILITY_MAJOR
 	mutation=XRAY
-	activation_prob=10
 
-/datum/dna/gene/basic/xray/New()
-	block=XRAYBLOCK
+	New()
+		block=XRAYBLOCK
 
 /datum/dna/gene/basic/tk
 	name="Telekenesis"
-	activation_messages = list("You feel smarter.")
-	deactivation_messages = list("You feel dumber.")
-	instability = GENE_INSTABILITY_MAJOR
+	activation_messages=list("You feel smarter.")
 	mutation=TK
-	activation_prob=10
+	activation_prob=15
 
-/datum/dna/gene/basic/tk/New()
-	block=TELEBLOCK
-
-/datum/dna/gene/basic/tk/OnDrawUnderlays(var/mob/M,var/g,var/fat)
-	return "telekinesishead[fat]_s"
+	New()
+		block=TELEBLOCK
+	OnDrawUnderlays(var/mob/M,var/g,var/fat)
+		return "telekinesishead[fat]_s"

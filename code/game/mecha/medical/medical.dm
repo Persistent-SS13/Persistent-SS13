@@ -1,13 +1,12 @@
-/obj/mecha/medical/New()
-	..()
-	new /obj/item/mecha_parts/mecha_tracking(src)
-	return
+/obj/mecha/medical/Initialize()
+	. = ..()
+	var/turf/T = get_turf(src)
+	if(isPlayerLevel(T.z))
+		new /obj/item/mecha_parts/mecha_tracking(src)
 
 
 /obj/mecha/medical/mechturn(direction)
-	dir = direction
-	if(buckled_mob !=null)
-		riding_datum.handle_vehicle_offsets()
+	set_dir(direction)
 	playsound(src,'sound/mecha/mechmove01.ogg',40,1)
 	return 1
 

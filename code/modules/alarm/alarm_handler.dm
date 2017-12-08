@@ -50,11 +50,16 @@
 /datum/alarm_handler/proc/major_alarms()
 	return alarms
 
+/datum/alarm_handler/proc/has_major_alarms()
+	if(alarms && alarms.len)
+		return 1
+	return 0
+
 /datum/alarm_handler/proc/minor_alarms()
 	return alarms
 
 /datum/alarm_handler/proc/check_alarm_cleared(var/datum/alarm/alarm)
-	if((alarm.end_time && world.time > alarm.end_time) || !alarm.sources.len)
+	if ((alarm.end_time && world.time > alarm.end_time) || !alarm.sources.len)
 		alarms -= alarm
 		alarms_assoc -= alarm.origin
 		on_alarm_change(alarm, ALARM_CLEARED)
@@ -64,9 +69,9 @@
 /datum/alarm_handler/proc/on_alarm_change(var/datum/alarm/alarm, var/was_raised)
 	for(var/obj/machinery/camera/C in alarm.cameras())
 		if(was_raised)
-			C.network.Add(category)
+			C.add_network(category)
 		else
-			C.network.Remove(category)
+			C.remove_network(category)
 	notify_listeners(alarm, was_raised)
 
 /datum/alarm_handler/proc/get_alarm_severity_for_origin(var/atom/origin)
@@ -84,13 +89,12 @@
 	return src
 
 /turf/get_alarm_origin()
-	var/area/area = get_area(src)
-	return area	// Very important to get area.master, as dynamic lightning can and will split areas.
+	return get_area(src)
 
-/datum/alarm_handler/proc/register(var/object, var/procName)
+/datum/alarm_handler/proc/register_alarm(var/object, var/procName)
 	listeners[object] = procName
 
-/datum/alarm_handler/proc/unregister(var/object)
+/datum/alarm_handler/proc/unregister_alarm(var/object)
 	listeners -= object
 
 /datum/alarm_handler/proc/notify_listeners(var/alarm, var/was_raised)

@@ -1,4 +1,4 @@
-/var/global/datum/topic_state/default/default_state = new()
+GLOBAL_DATUM_INIT(default_state, /datum/topic_state/default, new)
 
 /datum/topic_state/default/href_list(var/mob/user)
 	return list()
@@ -8,15 +8,16 @@
 
 /mob/proc/default_can_use_topic(var/src_object)
 	return STATUS_CLOSE // By default no mob can do anything with NanoUI
-/mob/new_player/default_can_use_topic(var/src_object)
-	return STATUS_INTERACTIVE
-/mob/dead/observer/default_can_use_topic()
+
+/mob/observer/ghost/default_can_use_topic(var/src_object)
 	if(can_admin_interact())
-		return STATUS_INTERACTIVE				// Admins are more equal
-	return STATUS_UPDATE						// Ghosts can view updates
+		return STATUS_INTERACTIVE							// Admins are more equal
+	if(!client || get_dist(src_object, src)	> client.view)	// Preventing ghosts from having a million windows open by limiting to objects in range
+		return STATUS_CLOSE
+	return STATUS_UPDATE									// Ghosts can view updates
 
 /mob/living/silicon/pai/default_can_use_topic(var/src_object)
-	if(src_object == src && !stat)
+	if((src_object == src || src_object == radio) && !stat)
 		return STATUS_INTERACTIVE
 	else
 		return ..()
@@ -33,16 +34,13 @@
 
 /mob/living/silicon/ai/default_can_use_topic(var/src_object)
 	. = shared_nano_interaction()
-	// Fix the weird hacking blurb to actually let them restore power
-	if(aiRestorePowerRoutine == 3 && istype(src_object, /obj/machinery/power/apc))
-		return STATUS_INTERACTIVE
 	if(. != STATUS_INTERACTIVE)
 		return
 
 	// Prevents the AI from using Topic on admin levels (by for example viewing through the court/thunderdome cameras)
 	// unless it's on the same level as the object it's interacting with.
 	var/turf/T = get_turf(src_object)
-	if(!T || !(atoms_share_level(src,T) || is_level_reachable(T.z)))
+	if(!T || !(z == T.z || (T.z in GLOB.using_map.player_levels)))
 		return STATUS_CLOSE
 
 	// If an object is in view then we can interact with it
@@ -52,7 +50,7 @@
 	// If we're installed in a chassi, rather than transfered to an inteliCard or other container, then check if we have camera view
 	if(is_in_chassis())
 		//stop AIs from leaving windows open and using then after they lose vision
-		if(cameranet && !cameranet.checkTurfVis(get_turf(src_object)))
+		if(cameranet && !cameranet.is_turf_visible(get_turf(src_object)))
 			return STATUS_CLOSE
 		return STATUS_INTERACTIVE
 	else if(get_dist(src_object, src) <= client.view)	// View does not return what one would expect while installed in an inteliCard
@@ -65,15 +63,17 @@
 	return user.shared_living_nano_distance(src_object)
 
 /mob/living/proc/shared_living_nano_distance(var/atom/movable/src_object)
-	if(!(src_object in view(4, src))) 	// If the src object is not in visable, disable updates
+	if (!(src_object in view(4, src))) 	// If the src object is not visable, disable updates
 		return STATUS_CLOSE
 
 	var/dist = get_dist(src_object, src)
-	if(dist <= 1)
-		return STATUS_INTERACTIVE	// interactive (green visibility)
-	else if(dist <= 2)
+	if (dist <= 1) // interactive (green visibility)
+		// Checking adjacency even when distance is 0 because get_dist() doesn't include Z-level differences and
+		// the client might have its eye shifted up/down thus putting src_object in view.
+		return Adjacent(src_object) ? STATUS_INTERACTIVE : STATUS_UPDATE
+	else if (dist <= 2)
 		return STATUS_UPDATE 		// update only (orange visibility)
-	else if(dist <= 4)
+	else if (dist <= 4)
 		return STATUS_DISABLED 		// no updates, completely disabled (red visibility)
 	return STATUS_CLOSE
 
@@ -85,30 +85,12 @@
 	if(STATUS_INTERACTIVE)
 		return STATUS_UPDATE
 
-/mob/living/carbon/brain/default_can_use_topic(var/src_object)
+/mob/living/carbon/human/default_can_use_topic(var/src_object)
 	. = shared_nano_interaction(src_object)
 	if(. != STATUS_CLOSE)
 		if(loc)
 			. = min(., loc.contents_nano_distance(src_object, src))
-	if(STATUS_INTERACTIVE)
-		return STATUS_INTERACTIVE
-
-/mob/living/carbon/human/default_can_use_topic(var/src_object)
-	. = shared_nano_interaction(src_object)
-	if(. != STATUS_CLOSE)
-		. = min(., shared_living_nano_distance(src_object))
+		else
+			. = min(., shared_living_nano_distance(src_object))
 		if(. == STATUS_UPDATE && (TK in mutations))	// If we have telekinesis and remain close enough, allow interaction.
 			return STATUS_INTERACTIVE
-
-/mob/living/carbon/alien/default_can_use_topic(var/src_object)
-	. = shared_nano_interaction(src_object)
-	if(. != STATUS_CLOSE)
-		. = min(., shared_living_nano_distance(src_object))
-		if(!IsAdvancedToolUser())
-			. = STATUS_CLOSE
-
-/mob/living/simple_animal/bot/default_can_use_topic(var/src_object)
-	. = shared_nano_interaction(src_object)
-	if(. != STATUS_CLOSE)
-		if(!(src_object in contents))
-			. = STATUS_CLOSE

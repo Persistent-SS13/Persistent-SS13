@@ -7,11 +7,11 @@
 			return
 
 	// Pass repair items on to the chestpiece.
-	if(chest && (istype(W,/obj/item/stack) || istype(W, /obj/item/weapon/weldingtool)))
+	if(chest && (istype(W,/obj/item/stack/material) || istype(W, /obj/item/weapon/weldingtool)))
 		return chest.attackby(W,user)
 
 	// Lock or unlock the access panel.
-	if(W.GetID())
+	if(W.GetIdCard())
 		if(subverted)
 			locked = 0
 			to_chat(user, "<span class='danger'>It looks like the locking system has been shorted out.</span>")
@@ -56,7 +56,7 @@
 				to_chat(user, "\The [src] already has a tank installed.")
 				return
 
-			user.unEquip(W)
+			if(!user.unEquip(W)) return
 			air_supply = W
 			W.forceMove(src)
 			to_chat(user, "You slot [W] into [src] and tighten the connecting valve.")
@@ -80,22 +80,22 @@
 
 			var/obj/item/rig_module/mod = W
 			to_chat(user, "You begin installing \the [mod] into \the [src].")
-			if(!do_after(user,40, target = src))
+			if(!do_after(user,40,src))
 				return
 			if(!user || !W)
 				return
+			if(!user.unEquip(mod)) return
 			to_chat(user, "You install \the [mod] into \the [src].")
-			user.unEquip(mod)
 			installed_modules |= mod
 			mod.forceMove(src)
 			mod.installed(src)
 			update_icon()
 			return 1
 
-		else if(!cell && istype(W,/obj/item/weapon/stock_parts/cell))
+		else if(!cell && istype(W,/obj/item/weapon/cell))
 
+			if(!user.unEquip(W)) return
 			to_chat(user, "You jack \the [W] into \the [src]'s battery mount.")
-			user.unEquip(W)
 			W.forceMove(src)
 			src.cell = W
 			return
@@ -106,10 +106,7 @@
 				to_chat(user, "There is not tank to remove.")
 				return
 
-			if(user.r_hand && user.l_hand)
-				air_supply.forceMove(get_turf(user))
-			else
-				user.put_in_hands(air_supply)
+			user.put_in_hands(air_supply)
 			to_chat(user, "You detach and remove \the [air_supply].")
 			air_supply = null
 			return
@@ -135,13 +132,10 @@
 				if("cell")
 
 					if(cell)
-						to_chat(user, "You detatch \the [cell] from \the [src]'s battery mount.")
+						to_chat(user, "You detach \the [cell] from \the [src]'s battery mount.")
 						for(var/obj/item/rig_module/module in installed_modules)
 							module.deactivate()
-						if(user.r_hand && user.l_hand)
-							cell.forceMove(get_turf(user))
-						else
-							cell.forceMove(user.put_in_hands(cell))
+						user.put_in_hands(cell)
 						cell = null
 					else
 						to_chat(user, "There is nothing loaded in that mount.")
@@ -163,7 +157,7 @@
 						return
 
 					var/obj/item/rig_module/removed = possible_removals[removal_choice]
-					to_chat(user, "You detatch \the [removed] from \the [src].")
+					to_chat(user, "You detach \the [removed] from \the [src].")
 					removed.forceMove(get_turf(src))
 					removed.removed()
 					installed_modules -= removed

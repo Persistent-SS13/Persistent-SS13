@@ -12,7 +12,7 @@
 			icon_state = "cpaper_words"
 			return
 		icon_state = "cpaper"
-	else if(copied)
+	else if (copied)
 		if(info)
 			icon_state = "paper_words"
 			return
@@ -30,10 +30,11 @@
 	set category = "Object"
 	set src in usr
 
-	if(copied == 0)
+	if (copied == 0)
 		var/obj/item/weapon/paper/carbon/c = src
 		var/copycontents = html_decode(c.info)
 		var/obj/item/weapon/paper/carbon/copy = new /obj/item/weapon/paper/carbon (usr.loc)
+		// <font>
 		copycontents = replacetext(copycontents, "<font face=\"[c.deffont]\" color=", "<font face=\"[c.deffont]\" nocolor=")	//state of the art techniques in action
 		copycontents = replacetext(copycontents, "<font face=\"[c.crayonfont]\" color=", "<font face=\"[c.crayonfont]\" nocolor=")	//This basically just breaks the existing color tag, which we need to do because the innermost tag takes priority.
 		copy.info += copycontents

@@ -14,9 +14,9 @@
 		for(var/obj/structure/target_stake/T in view(3,src))
 			if(T.pinned_target == src)
 				T.pinned_target = null
-				T.density = 1
+				T.set_density(1)
 				break
-		return ..() // delete target
+		..() // delete target
 
 	Move()
 		..()
@@ -32,8 +32,8 @@
 
 
 
-	attackby(obj/item/W as obj, mob/user as mob, params)
-		if(istype(W, /obj/item/weapon/weldingtool))
+	attackby(obj/item/W as obj, mob/user as mob)
+		if (istype(W, /obj/item/weapon/weldingtool))
 			var/obj/item/weapon/weldingtool/WT = W
 			if(WT.remove_fuel(0, user))
 				overlays.Cut()
@@ -51,11 +51,11 @@
 
 		if(stake)
 			if(stake.pinned_target)
-				stake.density = 1
-				density = 0
+				stake.set_density(1)
+				set_density(0)
 				layer = OBJ_LAYER
 
-				loc = user.loc
+				forceMove(user.loc)
 				if(ishuman(user))
 					if(!user.get_active_hand())
 						user.put_in_hands(src)
@@ -72,11 +72,11 @@
 
 	syndicate
 		icon_state = "target_s"
-		desc = "A shooting target that looks like a syndicate scum."
+		desc = "A shooting target that looks like a hostile agent."
 		hp = 2600 // i guess syndie targets are sturdier?
 	alien
 		icon_state = "target_q"
-		desc = "A shooting target that looks like a xenomorphic alien."
+		desc = "A shooting target with a threatening silhouette."
 		hp = 2350 // alium onest too kinda
 
 /obj/item/target/bullet_act(var/obj/item/projectile/Proj)
@@ -95,8 +95,8 @@
 		hp -= Proj.damage
 		if(hp <= 0)
 			for(var/mob/O in oviewers())
-				if((O.client && !( O.blinded )))
-					to_chat(O, "\red [src] breaks into tiny pieces and collapses!")
+				if ((O.client && !( O.blinded )))
+					to_chat(O, "<span class='warning'>\The [src] breaks into tiny pieces and collapses!</span>")
 			qdel(src)
 
 		// Create a temporary object to represent the damage
@@ -104,7 +104,8 @@
 		bmark.pixel_x = p_x
 		bmark.pixel_y = p_y
 		bmark.icon = 'icons/effects/effects.dmi'
-		bmark.layer = 3.5
+		bmark.plane = OBJ_PLANE
+		bmark.layer = ABOVE_OBJ_LAYER
 		bmark.icon_state = "scorch"
 
 		if(decaltype == 1)
@@ -116,7 +117,7 @@
 
 			if(Proj.damage >= 20 || istype(Proj, /obj/item/projectile/beam/practice))
 				bmark.icon_state = "scorch"
-				bmark.dir = pick(NORTH,SOUTH,EAST,WEST) // random scorch design
+				bmark.set_dir(pick(NORTH,SOUTH,EAST,WEST)) // random scorch design
 
 
 			else
@@ -146,7 +147,7 @@
 
 		return
 
-	return -1 // the bullet/projectile goes through the target! Ie, you missed
+	return PROJECTILE_CONTINUE // the bullet/projectile goes through the target!
 
 
 // Small memory holder entity for transparent bullet holes

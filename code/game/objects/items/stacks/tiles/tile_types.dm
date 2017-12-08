@@ -1,55 +1,56 @@
-/* Different misc types of tiles
+/* Diffrent misc types of tiles
  * Contains:
+ *		Prototype
  *		Grass
  *		Wood
  *		Carpet
- *		Plasteel
- *		Light
- *		Fakespace
- *		High-traction
- \\ If you don't update the contains list, I'm going to shank you
+ *		Linoleum
  */
+
 /obj/item/stack/tile
-	name = "broken tile"
-	singular_name = "broken tile"
-	desc = "A broken tile. This should not exist."
-	icon = 'icons/obj/items.dmi'
-	icon_state = "tile"
-	item_state = "tile"
-	w_class = 3
-	force = 1
-	throwforce = 1
-	throw_speed = 5
-	throw_range = 20
-	max_amount = 60
-	flags = CONDUCT
-	var/turf_type = null
-	var/mineralType = null
+	name = "tile"
+	singular_name = "tile"
+	desc = "A non-descript floor tile."
+	randpixel = 7
+	w_class = ITEM_SIZE_NORMAL
+	max_amount = 100
 
 /*
  * Grass
  */
 /obj/item/stack/tile/grass
-	name = "grass tiles"
-	gender = PLURAL
+	name = "grass tile"
 	singular_name = "grass floor tile"
-	desc = "A patch of grass like they often use on golf courses"
+	desc = "A patch of grass like they often use on golf courses."
 	icon_state = "tile_grass"
-	origin_tech = "biotech=1"
-	turf_type = /turf/simulated/floor/grass
-	burn_state = FLAMMABLE
+	force = 1.0
+	throwforce = 1.0
+	throw_speed = 5
+	throw_range = 20
+	flags = 0
+	origin_tech = list(TECH_BIO = 1)
 
 /*
  * Wood
  */
 /obj/item/stack/tile/wood
-	name = "wood floor tiles"
-	gender = PLURAL
+	name = "wood floor tile"
 	singular_name = "wood floor tile"
-	desc = "an easy to fit wood floor tile"
+	desc = "An easy to fit wooden floor tile."
 	icon_state = "tile-wood"
-	turf_type = /turf/simulated/floor/wood
-	burn_state = FLAMMABLE
+	force = 1.0
+	throwforce = 1.0
+	throw_speed = 5
+	throw_range = 20
+	flags = 0
+
+/obj/item/stack/tile/wood/cyborg
+	name = "wood floor tile synthesizer"
+	desc = "A device that makes wood floor tiles."
+	uses_charge = 1
+	charge_costs = list(250)
+	stacktype = /obj/item/stack/tile/wood
+	build_type = /obj/item/stack/tile/wood
 
 /*
  * Carpets
@@ -57,75 +58,76 @@
 /obj/item/stack/tile/carpet
 	name = "carpet"
 	singular_name = "carpet"
-	desc = "A piece of carpet. It is the same size as a floor tile"
+	desc = "A piece of carpet. It is the same size as a normal floor tile!"
 	icon_state = "tile-carpet"
-	turf_type = /turf/simulated/floor/carpet
-	burn_state = FLAMMABLE
+	force = 1.0
+	throwforce = 1.0
+	throw_speed = 5
+	throw_range = 20
+	flags = 0
 
-/*
- * Plasteel
- */
-/obj/item/stack/tile/plasteel
-	name = "floor tiles"
-	gender = PLURAL
-	singular_name = "floor tile"
-	desc = "Those could work as a pretty decent throwing weapon."
+/obj/item/stack/tile/carpet/fifty
+	amount = 50
+
+/obj/item/stack/tile/floor
+	name = "steel floor tile"
+	singular_name = "steel floor tile"
+	desc = "Those could work as a pretty decent throwing weapon." //why?
 	icon_state = "tile"
-	force = 6
-	materials = list(MAT_METAL=500)
-	throwforce = 10
-	throw_speed = 3
-	throw_range = 7
+	force = 6.0
+	matter = list(DEFAULT_WALL_MATERIAL = 937.5)
+	throwforce = 15.0
+	throw_speed = 5
+	throw_range = 20
 	flags = CONDUCT
-	turf_type = /turf/simulated/floor/plasteel
-	mineralType = "metal"
 
-/*
- * Light
- */
-/obj/item/stack/tile/light
-	name = "light tiles"
-	gender = PLURAL
-	singular_name = "light floor tile"
-	desc = "A floor tile, made out off glass. Use a multitool on it to change its color."
-	icon_state = "tile_light blue"
-	force = 3
-	throwforce = 5
-	attack_verb = list("bashed", "battered", "bludgeoned", "thrashed", "smashed")
-	turf_type = /turf/simulated/floor/light
+/obj/item/stack/tile/floor_white
+	name = "white floor tile"
+	singular_name = "white floor tile"
+	icon_state = "tile_white"
+	matter = list("plastic" = 937.5)
 
-/*
- * Fakespace
- */
-/obj/item/stack/tile/fakespace
-	name = "astral carpet"
-	singular_name = "astral carpet"
-	desc = "A piece of carpet with a convincing star pattern."
-	icon_state = "tile_space"
-	turf_type = /turf/simulated/floor/fakespace
-	burn_state = FLAMMABLE
+/obj/item/stack/tile/floor_white/fifty
+	amount = 50
 
-/obj/item/stack/tile/fakespace/loaded
-	amount = 30
+/obj/item/stack/tile/floor_dark
+	name = "dark floor tile"
+	singular_name = "dark floor tile"
+	icon_state = "fr_tile"
+	matter = list("plasteel" = 937.5)
 
-//High-traction
-/obj/item/stack/tile/noslip
-	name = "high-traction floor tile"
-	singular_name = "high-traction floor tile"
-	desc = "A high-traction floor tile. It feels rubbery in your hand."
-	icon_state = "tile_noslip"
-	turf_type = /turf/simulated/floor/noslip
-	origin_tech = "materials=3"
+/obj/item/stack/tile/floor_dark/fifty
+	amount = 50
 
-/obj/item/stack/tile/noslip/loaded
-	amount = 20
+/obj/item/stack/tile/floor_freezer
+	name = "freezer floor tile"
+	singular_name = "freezer floor tile"
+	icon_state = "tile_freezer"
+	matter = list("plastic" = 937.5)
 
-/obj/item/stack/tile/silent
-	name = "silent tile"
-	singular_name = "silent floor tile"
-	desc = "A tile made out of tranquillite, SHHHHHHHHH!"
-	icon_state = "tile-silent"
-	origin_tech = "materials=1"
-	turf_type = /turf/simulated/floor/silent
-	mineralType = "tranquillite"
-	materials = list(MAT_TRANQUILLITE=500)
+/obj/item/stack/tile/floor_freezer/fifty
+	amount = 50
+
+/obj/item/stack/tile/floor/cyborg
+	name = "floor tile synthesizer"
+	desc = "A device that makes floor tiles."
+	gender = NEUTER
+	matter = null
+	uses_charge = 1
+	charge_costs = list(250)
+	stacktype = /obj/item/stack/tile/floor
+	build_type = /obj/item/stack/tile/floor
+
+/obj/item/stack/tile/linoleum
+	name = "linoleum"
+	singular_name = "linoleum"
+	desc = "A piece of linoleum. It is the same size as a normal floor tile!"
+	icon_state = "tile-linoleum"
+	force = 1.0
+	throwforce = 1.0
+	throw_speed = 5
+	throw_range = 20
+	flags = 0
+
+/obj/item/stack/tile/linoleum/fifty
+	amount = 50

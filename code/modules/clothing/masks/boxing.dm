@@ -1,41 +1,34 @@
 /obj/item/clothing/mask/balaclava
 	name = "balaclava"
-	desc = "LOADSAMONEY"
+	desc = "Designed to both hide identities and keep your face comfy and warm."
 	icon_state = "balaclava"
 	item_state = "balaclava"
-	flags = BLOCKHAIR
-	flags_inv = HIDEFACE
-	w_class = 2
-	actions_types = list(/datum/action/item_action/adjust)
-	adjusted_flags = SLOT_HEAD
-	species_fit = list("Vox", "Unathi", "Tajaran", "Vulpkanin")
+	flags_inv = HIDEFACE|BLOCKHAIR
+	body_parts_covered = FACE|HEAD
+	down_body_parts_covered = HEAD
+	down_item_flags = BLOCKHAIR
+	down_icon_state = "balaclava_r"
+	pull_mask = 1
+	w_class = ITEM_SIZE_SMALL
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi',
-		"Drask" = 'icons/mob/species/drask/mask.dmi'
+		SPECIES_TAJARA = 'icons/mob/species/tajaran/mask.dmi',
+		SPECIES_UNATHI = 'icons/mob/species/unathi/mask.dmi',
 		)
 
-/obj/item/clothing/mask/balaclava/attack_self(var/mob/user)
-	adjustmask(user)
+/obj/item/clothing/mask/balaclava/tactical
+	name = "green balaclava"
+	icon_state = "swatclava"
+	down_icon_state = "swatclava_r"
 
 /obj/item/clothing/mask/luchador
 	name = "Luchador Mask"
 	desc = "Worn by robust fighters, flying high to defeat their foes!"
 	icon_state = "luchag"
 	item_state = "luchag"
-	flags = BLOCKHAIR
-	flags_inv = HIDEFACE
-	w_class = 2
-	species_fit = list("Vox", "Unathi", "Tajaran", "Vulpkanin")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi',
-		"Drask" = 'icons/mob/species/drask/mask.dmi'
-		)
+	flags_inv = HIDEFACE|BLOCKHAIR
+	body_parts_covered = HEAD|FACE
+	w_class = ITEM_SIZE_SMALL
+	siemens_coefficient = 3.0
 
 /obj/item/clothing/mask/luchador/tecnicos
 	name = "Tecnicos Mask"

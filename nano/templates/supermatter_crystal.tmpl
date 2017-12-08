@@ -20,6 +20,12 @@
 		Pressure:
 	</span>
 	<span class="itemContent">
-		{{:helper.smoothRound(data.ambient_pressure)}} kPa
+		{{:data.ambient_pressure}} kPa
+	</span>
+	<span class="itemLabel">
+		Relative EER:
+	</span>
+	<span class="itemContent">
+		{{:data.energy}}
 	</span>
 {{/if}}

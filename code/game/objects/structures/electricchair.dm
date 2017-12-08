@@ -1,31 +1,21 @@
-/obj/structure/stool/bed/chair/e_chair
+/obj/structure/bed/chair/e_chair
 	name = "electric chair"
 	desc = "Looks absolutely SHOCKING!"
 	icon_state = "echair0"
+	var/on = 0
 	var/obj/item/assembly/shock_kit/part = null
 	var/last_time = 1.0
-	var/delay_time = 50
 
-/obj/structure/stool/bed/chair/e_chair/New()
+/obj/structure/bed/chair/e_chair/New()
 	..()
 	overlays += image('icons/obj/objects.dmi', src, "echair_over", MOB_LAYER + 1, dir)
-	spawn(2)
-		if(isnull(part)) //This e-chair was not custom built
-			part = new(src)
-			var/obj/item/clothing/head/helmet/part1 = new(part)
-			var/obj/item/device/radio/electropack/part2 = new(part)
-			part2.frequency = 1445
-			part2.code = 6
-			part2.master = part
-			part.part1 = part1
-			part.part2 = part2
 	return
 
-/obj/structure/stool/bed/chair/e_chair/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
+/obj/structure/bed/chair/e_chair/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/wrench))
-		var/obj/structure/stool/bed/chair/C = new /obj/structure/stool/bed/chair(loc)
+		var/obj/structure/bed/chair/C = new /obj/structure/bed/chair(loc)
 		playsound(loc, 'sound/items/Ratchet.ogg', 50, 1)
-		C.dir = dir
+		C.set_dir(dir)
 		part.loc = loc
 		part.master = null
 		part = null
@@ -33,33 +23,32 @@
 		return
 	return
 
-/obj/structure/stool/bed/chair/e_chair/verb/activate_e_chair()
-	set name = "Activate Electric Chair"
+/obj/structure/bed/chair/e_chair/verb/toggle()
+	set name = "Toggle Electric Chair"
 	set category = "Object"
 	set src in oview(1)
-	if(usr.stat || !usr.canmove || usr.restrained())
-		return
-	if(last_time + delay_time > world.time)
-		to_chat(usr, "<span class='warning'>\The [src] is not ready yet!</span>")
-		return
-	to_chat(usr, "<span class='notice'>You activate \the [src].</span>")
-	shock()
+
+	if(on)
+		on = 0
+		icon_state = "echair0"
+	else
+		on = 1
+		icon_state = "echair1"
+	to_chat(usr, "<span class='notice'>You switch [on ? "on" : "off"] [src].</span>")
 	return
 
-/obj/structure/stool/bed/chair/e_chair/rotate()
+/obj/structure/bed/chair/e_chair/rotate()
 	..()
 	overlays.Cut()
 	overlays += image('icons/obj/objects.dmi', src, "echair_over", MOB_LAYER + 1, dir)	//there's probably a better way of handling this, but eh. -Pete
 	return
 
-/obj/structure/stool/bed/chair/e_chair/proc/shock()
-	if(last_time + delay_time > world.time)
+/obj/structure/bed/chair/e_chair/proc/shock()
+	if(!on)
+		return
+	if(last_time + 50 > world.time)
 		return
 	last_time = world.time
-
-	icon_state = "echair1"
-	spawn(delay_time)
-		icon_state = "echair0"
 
 	// special power handling
 	var/area/A = get_area(src)
@@ -67,20 +56,22 @@
 		return
 	if(!A.powered(EQUIP))
 		return
-	A.use_power(5000, EQUIP)
+	A.use_power(EQUIP, 5000)
 	var/light = A.power_light
-	A.updateicon()
+	A.update_icon()
 
-	flick("echair_shock", src)
-	var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
+	flick("echair1", src)
+	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 	s.set_up(12, 1, src)
 	s.start()
-	visible_message("<span class='danger'>The electric chair went off!</span>", "<span class='danger'>You hear a deep sharp shock!</span>")
 	if(buckled_mob)
-		buckled_mob.electrocute_act(110, src, 1)
+		buckled_mob.burn_skin(85)
 		to_chat(buckled_mob, "<span class='danger'>You feel a deep shock course through your body!</span>")
-		spawn(1)
-			buckled_mob.electrocute_act(110, src, 1)
+		sleep(1)
+		buckled_mob.burn_skin(85)
+		buckled_mob.Stun(600)
+	visible_message("<span class='danger'>The electric chair went off!</span>", "<span class='danger'>You hear a deep sharp shock!</span>")
+
 	A.power_light = light
-	A.updateicon()
+	A.update_icon()
 	return

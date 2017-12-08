@@ -1,207 +1,147 @@
-/obj/item/clothing/under/color
-	desc = "A standard issue colored jumpsuit. Variety is the spice of life!"
-	easy_femme = 1
-
-/obj/item/clothing/under/color/random/New()
-	..()
-	var/list/excluded = list(/obj/item/clothing/under/color/random, /obj/item/clothing/under/color/blackf, /obj/item/clothing/under/color/blue/dodgeball, /obj/item/clothing/under/color/orange/prison, /obj/item/clothing/under/color/red/dodgeball, /obj/item/clothing/under/color/red/jersey, /obj/item/clothing/under/color/blue/jersey)
-	var/obj/item/clothing/under/color/C = pick(subtypesof(/obj/item/clothing/under/color) - excluded)
-	name = initial(C.name)
-	icon_state = initial(C.icon_state)
-	item_state = initial(C.item_state)
-	item_color = initial(C.item_color)
-
 /obj/item/clothing/under/color/black
 	name = "black jumpsuit"
 	icon_state = "black"
 	item_state = "bl_suit"
-	item_color = "black"
-	flags_size = ONESIZEFITSALL
-	burn_state = FIRE_PROOF
+	worn_state = "black"
 
 /obj/item/clothing/under/color/blackf
 	name = "feminine black jumpsuit"
 	desc = "It's very smart and in a ladies-size!"
 	icon_state = "black"
 	item_state = "bl_suit"
-	item_color = "blackf"
+	worn_state = "blackf"
 
 /obj/item/clothing/under/color/blue
 	name = "blue jumpsuit"
 	icon_state = "blue"
 	item_state = "b_suit"
-	item_color = "blue"
-	flags_size = ONESIZEFITSALL
-
-/obj/item/clothing/under/color/blue/dodgeball
-	flags = NODROP
-	flags_size = ONESIZEFITSALL
+	worn_state = "blue"
 
 /obj/item/clothing/under/color/green
 	name = "green jumpsuit"
 	icon_state = "green"
 	item_state = "g_suit"
-	item_color = "green"
-	flags_size = ONESIZEFITSALL
+	worn_state = "green"
 
 /obj/item/clothing/under/color/grey
 	name = "grey jumpsuit"
-	desc = "A tasteful grey jumpsuit that reminds you of the good old days."
 	icon_state = "grey"
 	item_state = "gy_suit"
-	item_color = "grey"
-	flags_size = ONESIZEFITSALL
-
-/obj/item/clothing/under/color/grey/greytide
-	flags = NODROP
-	flags_size = ONESIZEFITSALL
-
-/obj/item/clothing/under/color/grey/glorf
-	name = "ancient jumpsuit"
-	desc = "A terribly ragged and frayed grey jumpsuit. It looks like it hasn't been washed in over a decade."
-
-/obj/item/clothing/under/color/grey/glorf/hit_reaction(mob/living/carbon/human/owner)
-	owner.forcesay(hit_appends)
-	return 0
+	worn_state = "grey"
 
 /obj/item/clothing/under/color/orange
 	name = "orange jumpsuit"
-	desc = "Don't wear this near paranoid security officers"
+	desc = "It's standardised prisoner-wear. Its suit sensor controls are permanently set to the \"Fully On\" position."
 	icon_state = "orange"
 	item_state = "o_suit"
-	item_color = "orange"
-	flags_size = ONESIZEFITSALL
-
-/obj/item/clothing/under/color/orange/prison
-	name = "orange jumpsuit"
-	desc = "It's standardised Nanotrasen prisoner-wear. Its suit sensors are stuck in the \"Fully On\" position."
-	icon_state = "orange"
-	item_state = "o_suit"
-	item_color = "orange"
+	worn_state = "orange"
 	has_sensor = 2
 	sensor_mode = 3
-	flags_size = ONESIZEFITSALL
 
 /obj/item/clothing/under/color/pink
 	name = "pink jumpsuit"
-	desc = "Just looking at this makes you feel <i>fabulous</i>."
 	icon_state = "pink"
 	item_state = "p_suit"
-	item_color = "pink"
-	flags_size = ONESIZEFITSALL
+	worn_state = "pink"
 
 /obj/item/clothing/under/color/red
 	name = "red jumpsuit"
 	icon_state = "red"
 	item_state = "r_suit"
-	item_color = "red"
-	flags_size = ONESIZEFITSALL
-
-/obj/item/clothing/under/color/red/dodgeball
-	flags = NODROP
-	flags_size = ONESIZEFITSALL
+	worn_state = "red"
 
 /obj/item/clothing/under/color/white
 	name = "white jumpsuit"
 	icon_state = "white"
 	item_state = "w_suit"
-	item_color = "white"
-	flags_size = ONESIZEFITSALL
+	worn_state = "white"
 
 /obj/item/clothing/under/color/yellow
 	name = "yellow jumpsuit"
 	icon_state = "yellow"
 	item_state = "y_suit"
-	item_color = "yellow"
-	flags_size = ONESIZEFITSALL
+	worn_state = "yellow"
 
 /obj/item/clothing/under/psyche
 	name = "psychedelic jumpsuit"
 	desc = "Groovy!"
 	icon_state = "psyche"
-	item_color = "psyche"
-	species_fit = list("Vox")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/uniform.dmi'
-		)
+	item_state = "psyche"
+	worn_state = "psyche"
 
 /obj/item/clothing/under/color/lightblue
-	name = "light blue jumpsuit"
+	name = "lightblue jumpsuit"
+	desc = "A lightblue jumpsuit."
 	icon_state = "lightblue"
-	item_color = "lightblue"
+	item_state = "b_suit"
+	worn_state = "lightblue"
 
 /obj/item/clothing/under/color/aqua
 	name = "aqua jumpsuit"
+	desc = "An aqua jumpsuit."
 	icon_state = "aqua"
-	item_color = "aqua"
-	flags_size = ONESIZEFITSALL
+	item_state = "b_suit"
+	worn_state = "aqua"
 
-/obj/item/clothing/under/color/purple
+/obj/item/clothing/under/color
 	name = "purple jumpsuit"
+	desc = "The latest in space fashion."
 	icon_state = "purple"
 	item_state = "p_suit"
-	item_color = "purple"
+	worn_state = "purple"
 
 /obj/item/clothing/under/color/lightpurple
-	name = "light purple jumpsuit"
+	name = "lightpurple jumpsuit"
+	desc = "A lightpurple jumpsuit."
 	icon_state = "lightpurple"
-	item_color = "lightpurple"
+	item_state = "p_suit"
+	worn_state = "lightpurple"
 
 /obj/item/clothing/under/color/lightgreen
-	name = "light green jumpsuit"
+	name = "lightgreen jumpsuit"
+	desc = "A lightgreen jumpsuit."
 	icon_state = "lightgreen"
-	item_color = "lightgreen"
-
-/obj/item/clothing/under/color/lightblue
-	name = "light blue jumpsuit"
-	icon_state = "lightblue"
-	item_color = "lightblue"
+	item_state = "g_suit"
+	worn_state = "lightgreen"
 
 /obj/item/clothing/under/color/lightbrown
-	name = "light brown jumpsuit"
+	name = "lightbrown jumpsuit"
+	desc = "A lightbrown jumpsuit."
 	icon_state = "lightbrown"
-	item_color = "lightbrown"
-	flags_size = ONESIZEFITSALL
+	item_state = "lb_suit"
+	worn_state = "lightbrown"
 
 /obj/item/clothing/under/color/brown
 	name = "brown jumpsuit"
+	desc = "A brown jumpsuit."
 	icon_state = "brown"
-	item_color = "brown"
+	item_state = "lb_suit"
+	worn_state = "brown"
 
 /obj/item/clothing/under/color/yellowgreen
-	name = "yellow green jumpsuit"
+	name = "yellowgreen jumpsuit"
+	desc = "A yellowgreen jumpsuit."
 	icon_state = "yellowgreen"
-	item_color = "yellowgreen"
+	item_state = "y_suit"
+	worn_state = "yellowgreen"
 
 /obj/item/clothing/under/color/darkblue
-	name = "dark blue jumpsuit"
+	name = "darkblue jumpsuit"
+	desc = "A darkblue jumpsuit."
 	icon_state = "darkblue"
-	item_color = "darkblue"
-	flags_size = ONESIZEFITSALL
+	item_state = "b_suit"
+	worn_state = "darkblue"
 
 /obj/item/clothing/under/color/lightred
-	name = "light red jumpsuit"
+	name = "lightred jumpsuit"
+	desc = "Alightred jumpsuit."
 	icon_state = "lightred"
-	item_color = "lightred"
+	item_state = "r_suit"
+	worn_state = "lightred"
 
 /obj/item/clothing/under/color/darkred
-	name = "dark red jumpsuit"
+	name = "darkred jumpsuit"
+	desc = "A darkred jumpsuit."
 	icon_state = "darkred"
-	item_color = "darkred"
-	flags_size = ONESIZEFITSALL
-
-/obj/item/clothing/under/color/red/jersey
-	name = "red team jersey"
-	desc = "The jersey of the Nanotrasen Phi-ghters!"
-	icon_state = "redjersey"
 	item_state = "r_suit"
-	item_color = "redjersey"
-	flags_size = ONESIZEFITSALL
-
-/obj/item/clothing/under/color/blue/jersey
-	name = "blue team jersey"
-	desc = "The jersey of the Nanotrasen Pi-rates!"
-	icon_state = "bluejersey"
-	item_state = "b_suit"
-	item_color = "bluejersey"
-	flags_size = ONESIZEFITSALL
+	worn_state = "darkred"

@@ -2,10 +2,10 @@
 	holder_type = /obj/machinery/power/apc
 	wire_count = 4
 
-var/const/APC_WIRE_IDSCAN = 1
-var/const/APC_WIRE_MAIN_POWER1 = 2
-var/const/APC_WIRE_MAIN_POWER2 = 4
-var/const/APC_WIRE_AI_CONTROL = 8
+#define APC_WIRE_IDSCAN 1
+#define APC_WIRE_MAIN_POWER1 2
+#define APC_WIRE_MAIN_POWER2 4
+#define APC_WIRE_AI_CONTROL 8
 
 /datum/wires/apc/GetInteractWindow()
 	var/obj/machinery/power/apc/A = holder
@@ -31,27 +31,22 @@ var/const/APC_WIRE_AI_CONTROL = 8
 			spawn(300)
 				if(A)
 					A.locked = 1
-					A.updateDialog()
 
-		if(APC_WIRE_MAIN_POWER1, APC_WIRE_MAIN_POWER2)
+		if (APC_WIRE_MAIN_POWER1, APC_WIRE_MAIN_POWER2)
 			if(A.shorted == 0)
 				A.shorted = 1
 
 				spawn(1200)
 					if(A && !IsIndexCut(APC_WIRE_MAIN_POWER1) && !IsIndexCut(APC_WIRE_MAIN_POWER2))
 						A.shorted = 0
-						A.updateDialog()
 
-		if(APC_WIRE_AI_CONTROL)
-			if(A.aidisabled == 0)
+		if (APC_WIRE_AI_CONTROL)
+			if (A.aidisabled == 0)
 				A.aidisabled = 1
 
 				spawn(10)
 					if(A && !IsIndexCut(APC_WIRE_AI_CONTROL))
 						A.aidisabled = 0
-						A.updateDialog()
-
-	A.updateDialog()
 
 /datum/wires/apc/UpdateCut(var/index, var/mended)
 	var/obj/machinery/power/apc/A = holder
@@ -70,9 +65,8 @@ var/const/APC_WIRE_AI_CONTROL = 8
 		if(APC_WIRE_AI_CONTROL)
 
 			if(!mended)
-				if(A.aidisabled == 0)
+				if (A.aidisabled == 0)
 					A.aidisabled = 1
 			else
-				if(A.aidisabled == 1)
+				if (A.aidisabled == 1)
 					A.aidisabled = 0
-	A.updateDialog()

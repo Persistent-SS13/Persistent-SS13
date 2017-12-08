@@ -1,37 +1,34 @@
 //This is the proc for gibbing a mob. Cannot gib ghosts.
 //added different sort of gibs and animations. N
-/mob/proc/gib()
+/mob/proc/gib(anim="gibbed-m",do_gibs)
 	death(1)
-	var/atom/movable/overlay/animation = null
-	notransform = 1
+	transforming = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
+	update_canmove()
+	remove_from_dead_mob_list()
 
-	playsound(src.loc, 'sound/goonstation/effects/gib.ogg', 50, 1)
-
+	var/atom/movable/overlay/animation = null
 	animation = new(loc)
 	animation.icon_state = "blank"
 	animation.icon = 'icons/mob/mob.dmi'
 	animation.master = src
 
-//	flick("gibbed-m", animation)
-	gibs(loc, viruses, dna)
-	dead_mob_list -= src
-	if(client)
-		respawnable_list += src
+	flick(anim, animation)
+	if(do_gibs) gibs(loc, dna)
+
 	spawn(15)
 		if(animation)	qdel(animation)
 		if(src)			qdel(src)
-
 
 //This is the proc for turning a mob into ash. Mostly a copy of gib code (above).
 //Originally created for wizard disintegrate. I've removed the virus code since it's irrelevant here.
 //Dusting robots does not eject the MMI, so it's a bit more powerful than gib() /N
-/mob/proc/dust()
+/mob/proc/dust(anim="dust-m",remains=/obj/effect/decal/cleanable/ash)
 	death(1)
 	var/atom/movable/overlay/animation = null
-	notransform = 1
+	transforming = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
@@ -41,54 +38,56 @@
 	animation.icon = 'icons/mob/mob.dmi'
 	animation.master = src
 
-//	flick("dust-m", animation)
-	new /obj/effect/decal/cleanable/ash(loc)
+	flick(anim, animation)
+	new remains(loc)
 
-	dead_mob_list -= src
-	if(client)
-		respawnable_list += src
+	remove_from_dead_mob_list()
 	spawn(15)
 		if(animation)	qdel(animation)
 		if(src)			qdel(src)
 
-/mob/proc/melt()
-	death(1)
-	var/atom/movable/overlay/animation = null
-	notransform = 1
-	canmove = 0
-	icon = null
-	invisibility = 101
 
-	animation = new(loc)
-	animation.icon_state = "blank"
-	animation.icon = 'icons/mob/mob.dmi'
-	animation.master = src
+/mob/proc/death(gibbed,deathmessage="seizes up and falls limp...", show_dead_message = "You have died.")
 
-//	flick("liquify", animation)
-//	new /obj/effect/decal/cleanable/ash(loc)
+	if(stat == DEAD)
+		return 0
 
-	dead_mob_list -= src
-	if(client)
-		respawnable_list += src
-	spawn(15)
-		if(animation)	qdel(animation)
-		if(src)			qdel(src)
+	facing_dir = null
 
-/mob/proc/death(gibbed)
+	if(!gibbed && deathmessage != "no message") // This is gross, but reliable. Only brains use it.
+		src.visible_message("<b>\The [src.name]</b> [deathmessage]")
 
-	//Makes it so gib/dust/melt all unbuckle their victims from anything they may be buckled to to avoid breaking beds/chairs/etc
-	if(gibbed && buckled)
-		buckled.unbuckle_mob()
+	set_stat(DEAD)
+	reset_plane_and_layer()
+	update_canmove()
 
-	//Quick fix for corpses kept propped up in chairs. ~Z
+	dizziness = 0
+	jitteriness = 0
+
+	set_sight(sight|SEE_TURFS|SEE_MOBS|SEE_OBJS)
+	set_see_in_dark(8)
+	set_see_invisible(SEE_INVISIBLE_LEVEL_TWO)
+
 	drop_r_hand()
 	drop_l_hand()
-	//End of fix.
+
+	//TODO:  Change death state to health_dead for all these icon files.  This is a stop gap.
+
+	if(healths)
+		healths.overlays = null // This is specific to humans but the relevant code is here; shouldn't mess with other mobs.
+		if("health7" in icon_states(healths.icon))
+			healths.icon_state = "health7"
+		else
+			healths.icon_state = "health6"
+			log_debug("[src] ([src.type]) died but does not have a valid health7 icon_state (using health6 instead). report this error to Ccomp5950 or your nearest Developer")
 
 	timeofdeath = world.time
+	if(mind) mind.store_memory("Time of death: [stationtime2text()]", 0)
+	switch_from_living_to_dead_mob_list()
 
-	living_mob_list -= src
-	dead_mob_list += src
-	if(client)
-		respawnable_list += src
-	return ..(gibbed)
+	update_icon()
+
+	if(ticker && ticker.mode)
+		ticker.mode.check_win()
+	to_chat(src,"<span class='deadsay'>[show_dead_message]</span>")
+	return 1

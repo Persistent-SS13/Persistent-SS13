@@ -1,88 +1,87 @@
 /obj/item/weapon/implanter
 	name = "implanter"
-	desc = "A sterile automatic implant injector."
 	icon = 'icons/obj/items.dmi'
 	icon_state = "implanter0"
 	item_state = "syringe_0"
-	throw_speed = 3
+	throw_speed = 1
 	throw_range = 5
-	w_class = 2
-	origin_tech = "materials=1;biotech=3;programming=2"
-	materials = list(MAT_METAL=600, MAT_GLASS=200)
+	w_class = ITEM_SIZE_SMALL
 	var/obj/item/weapon/implant/imp = null
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;imp"
-
-/obj/item/weapon/implanter/update_icon()
-	if(imp)
-		icon_state = "implanter1"
-		origin_tech = imp.origin_tech
-	else
-		icon_state = "implanter0"
-		origin_tech = initial(origin_tech)
-
-
-/obj/item/weapon/implanter/attack(mob/living/carbon/M, mob/user)
-	if(!iscarbon(M))
-		return
-	if(user && imp)
-		if(M != user)
-			M.visible_message("<span class='warning'>[user] is attemping to implant [M].</span>")
-
-		var/turf/T = get_turf(M)
-		if(T && (M == user || do_after(user, 50, target = M)))
-			if(user && M && (get_turf(M) == T) && src && imp)
-				if(imp.implant(M, user))
-					if(M == user)
-						to_chat(user, "<span class='notice'>You implant yourself.</span>")
-					else
-						M.visible_message("[user] has implanted [M].", "<span class='notice'>[user] implants you.</span>")
-					imp = null
-					update_icon()
-
-/obj/item/weapon/implanter/attackby(obj/item/weapon/W, mob/user, params)
-	..()
-	if(istype(W, /obj/item/weapon/pen))
-		var/t = stripped_input(user, "What would you like the label to be?", name, null)
-		if(user.get_active_hand() != W)
-			return
-		if(!in_range(src, user) && loc != user)
-			return
-		if(t)
-			name = "implanter ([t])"
-		else
-			name = "implanter"
 
 /obj/item/weapon/implanter/New()
+	if(ispath(imp))
+		imp = new imp(src)
 	..()
-	spawn(1)
+	update_icon()
+
+/obj/item/weapon/implanter/update_icon()
+	if (imp)
+		icon_state = "implanter1"
+	else
+		icon_state = "implanter0"
+
+/obj/item/weapon/implanter/verb/remove_implant()
+	set category = "Object"
+	set name = "Remove implant"
+	set src in usr
+
+	if(issilicon(usr))
+		return
+
+	if(can_use(usr))
+		if(!imp)
+			to_chat(usr, "<span class='notice'>There is no implant to remove.</span>")
+			return
+		imp.forceMove(get_turf(src))
+		usr.put_in_hands(imp)
+		to_chat(usr, "<span class='notice'>You remove \the [imp] from \the [src].</span>")
+		name = "implanter"
+		imp = null
 		update_icon()
+		return
+	else
+		to_chat(usr, "<span class='notice'>You cannot do this in your current condition.</span>")
 
+/obj/item/weapon/implanter/proc/can_use()
 
-/obj/item/weapon/implanter/adrenalin
-	name = "implanter (adrenalin)"
+	if(!ismob(loc))
+		return 0
 
-/obj/item/weapon/implanter/adrenalin/New()
-	imp = new /obj/item/weapon/implant/adrenalin(src)
-	..()
+	var/mob/M = loc
 
+	if(M.incapacitated())
+		return 0
+	if((src in M.contents) || (istype(loc, /turf) && in_range(src, M)))
+		return 1
+	return 0
 
-/obj/item/weapon/implanter/emp
-	name = "implanter (EMP)"
+/obj/item/weapon/implanter/attackby(obj/item/weapon/I, mob/user)
+	if(!imp && istype(I, /obj/item/weapon/implant))
+		to_chat(usr, "<span class='notice'>You slide \the [I] into \the [src].</span>")
+		user.drop_from_inventory(I,src)
+		imp = I
+		update_icon()
+	else
+		..()
 
-/obj/item/weapon/implanter/emp/New()
-	imp = new /obj/item/weapon/implant/emp(src)
-	..()
+/obj/item/weapon/implanter/attack(mob/M as mob, mob/user as mob)
+	if (!istype(M, /mob/living/carbon))
+		return
+	if (user && src.imp)
+		M.visible_message("<span class='warning'>[user] is attemping to implant [M].</span>")
 
-/obj/item/weapon/implanter/traitor
-	name = "implanter (Mindslave)"
+		user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
+		user.do_attack_animation(M)
 
-/obj/item/weapon/implanter/traitor/New()
-	imp = new /obj/item/weapon/implant/traitor(src)
-	..()
+		var/target_zone = user.zone_sel.selecting
+		if(src.imp.can_implant(M, user, target_zone))
+			var/imp_name = imp.name
 
-/obj/item/weapon/implanter/death_alarm
-	name = "implanter (Death Alarm)"
+			if(do_after(user, 50, M) && src.imp.implant_in_mob(M, target_zone))
+				M.visible_message("<span class='warning'>[M] has been implanted by [user].</span>")
+				admin_attack_log(user, M, "Implanted using \the [src] ([imp_name])", "Implanted with \the [src] ([imp_name])", "used an implanter, \the [src] ([imp_name]), on")
 
-/obj/item/weapon/implanter/death_alarm/New()
-	imp = new /obj/item/weapon/implant/death_alarm(src)
-	..()
+				src.imp = null
+				update_icon()
+
+	return

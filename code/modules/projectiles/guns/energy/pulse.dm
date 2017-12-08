@@ -1,72 +1,57 @@
-/obj/item/weapon/gun/energy/pulse
+/obj/item/weapon/gun/energy/pulse_rifle
 	name = "pulse rifle"
-	desc = "A heavy-duty, multifaceted energy rifle with three modes. Preferred by front-line combat personnel."
+	desc = "A weapon that uses advanced pulse-based beam generation technology to emit powerful laser blasts. Because of its complexity and cost, it is rarely seen in use except by specialists."
 	icon_state = "pulse"
-	item_state = null
-	w_class = 4
-	force = 10
-	flags =  CONDUCT
-	slot_flags = SLOT_BACK
-	ammo_type = list(/obj/item/ammo_casing/energy/laser/pulse, /obj/item/ammo_casing/energy/electrode, /obj/item/ammo_casing/energy/laser)
-	cell_type = /obj/item/weapon/stock_parts/cell/pulse
-
-/obj/item/weapon/gun/energy/pulse/emp_act(severity)
-	return
-
-/obj/item/weapon/gun/energy/pulse/isHandgun()
-	return 0
-
-/obj/item/weapon/gun/energy/pulse/cyborg
-
-/obj/item/weapon/gun/energy/pulse/cyborg/newshot()
-	..()
-	robocharge()
-
-/obj/item/weapon/gun/energy/pulse/carbine
-	name = "pulse carbine"
-	desc = "A compact variant of the pulse rifle with less firepower but easier storage."
-	w_class = 3
-	slot_flags = SLOT_BELT
-	icon_state = "pulse_carbine"
 	item_state = "pulse"
-	cell_type = /obj/item/weapon/stock_parts/cell/pulse/carbine
-	can_flashlight = 1
-	flight_x_offset = 18
-	flight_y_offset = 12
+	slot_flags = SLOT_BACK
+	force = 12
+	projectile_type = /obj/item/projectile/beam/pulse/heavy
+	max_shots = 36
+	w_class = ITEM_SIZE_HUGE
+	one_hand_penalty=6
+	multi_aim = 1
+	burst_delay = 3
+	burst = 3
+	move_delay = 4
+	accuracy = -1
 
-/obj/item/weapon/gun/energy/pulse/pistol
+/obj/item/weapon/gun/energy/pulse_rifle/carbine
+	name = "pulse carbine"
+	desc = "A weapon that uses advanced pulse-based beam generation technology to emit powerful laser blasts. Less bulky than the full-sized rifle."
+	icon_state = "pulse_carbine"
+	slot_flags = SLOT_BACK|SLOT_BELT
+	force = 8
+	projectile_type = /obj/item/projectile/beam/pulse/mid
+	max_shots = 24
+	w_class = ITEM_SIZE_LARGE
+	one_hand_penalty=3
+	burst_delay = 2
+	move_delay = 2
+
+/obj/item/weapon/gun/energy/pulse_rifle/pistol
 	name = "pulse pistol"
-	desc = "A pulse rifle in an easily concealed handgun package with low capacity."
-	w_class = 2
-	slot_flags = SLOT_BELT
+	desc = "A weapon that uses advanced pulse-based beam generation technology to emit powerful laser blasts. Even smaller than the carbine."
 	icon_state = "pulse_pistol"
-	item_state = "gun"
-	cell_type = /obj/item/weapon/stock_parts/cell/pulse/pistol
-	can_charge = 0
+	slot_flags = SLOT_BELT|SLOT_HOLSTER
+	force = 6
+	projectile_type = /obj/item/projectile/beam/pulse
+	max_shots = 21
+	w_class = ITEM_SIZE_NORMAL
+	one_hand_penalty=1 //a bit heavy
+	burst_delay = 1
+	move_delay = 1
 
-/obj/item/weapon/gun/energy/pulse/pistol/isHandgun()
-	return 1
+/obj/item/weapon/gun/energy/pulse_rifle/mounted
+	self_recharge = 1
+	use_external_power = 1
 
-/obj/item/weapon/gun/energy/pulse/destroyer
+/obj/item/weapon/gun/energy/pulse_rifle/destroyer
 	name = "pulse destroyer"
-	desc = "A heavy-duty, pulse-based energy weapon."
-	cell_type = /obj/item/weapon/stock_parts/cell/infinite
-	ammo_type = list(/obj/item/ammo_casing/energy/laser/pulse)
+	desc = "A heavy-duty, pulse-based energy weapon. Because of its complexity and cost, it is rarely seen in use except by specialists."
+	cell_type = /obj/item/weapon/cell/super
+	fire_delay = 25
+	projectile_type=/obj/item/projectile/beam/pulse/destroy
+	charge_cost=40
 
-/obj/item/weapon/gun/energy/pulse/destroyer/attack_self(mob/living/user)
-	to_chat(user, "<span class='danger'>[name] has three settings, and they are all DESTROY.</span>")
-
-/obj/item/weapon/gun/energy/pulse/destroyer/annihilator
-	name = "pulse ANNIHILATOR"
-	desc = "For when the situation calls for a little more than a pulse destroyer."
-	ammo_type = list(/obj/item/ammo_casing/energy/laser/scatter/pulse)
-
-/obj/item/weapon/gun/energy/pulse/pistol/m1911
-	name = "\improper M1911-P"
-	desc = "A compact pulse core in a classic handgun frame for Nanotrasen officers. It's not the size of the gun, it's the size of the hole it puts through people."
-	icon_state = "m1911"
-	item_state = "gun"
-	cell_type = /obj/item/weapon/stock_parts/cell/infinite
-
-/obj/item/weapon/gun/energy/pulse/pistol/m1911/isHandgun()
-	return 1
+/obj/item/weapon/gun/energy/pulse_rifle/destroyer/attack_self(mob/living/user as mob)
+	to_chat(user, "<span class='warning'>[src.name] has three settings, and they are all DESTROY.</span>")

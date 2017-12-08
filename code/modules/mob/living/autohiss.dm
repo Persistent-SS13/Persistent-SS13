@@ -18,8 +18,8 @@
 	var/autohiss_mode = AUTOHISS_OFF
 
 /client/verb/toggle_autohiss()
-	set name = "Toggle Auto-Accent"
-	set desc = "Toggle automatic accents for your species"
+	set name = "Toggle Auto-Hiss"
+	set desc = "Toggle automatic hissing as Unathi and r-rolling as Taj"
 	set category = "OOC"
 
 	autohiss_mode = (autohiss_mode + 1) % AUTOHISS_NUM
@@ -31,6 +31,7 @@
 		if(AUTOHISS_FULL)
 			to_chat(src, "Auto-hiss is now FULL.")
 		else
+			soft_assert(0, "invalid autohiss value [autohiss_mode]")
 			autohiss_mode = AUTOHISS_OFF
 			to_chat(src, "Auto-hiss is now OFF.")
 
@@ -46,34 +47,21 @@
 	autohiss_extra_map = list(
 			"x" = list("ks", "kss", "ksss")
 		)
-	autohiss_exempt = list("Sinta'unathi")
+	autohiss_exempt = list(LANGUAGE_UNATHI)
 
 /datum/species/tajaran
 	autohiss_basic_map = list(
 			"r" = list("rr", "rrr", "rrrr")
 		)
-	autohiss_exempt = list("Siik'tajr")
-
-/datum/species/plasmaman
-	autohiss_basic_map = list(
-			"s" = list("ss", "sss", "ssss")
-		)
-
-/datum/species/kidan
-	autohiss_basic_map = list(
-			"z" = list("zz", "zzz", "zzzz"),
-			"v" = list("vv", "vvv", "vvvv")
-		)
-	autohiss_extra_map = list(
-			"s" = list("z", "zs", "zzz", "zzsz")
-		)
-	autohiss_exempt = list("Chittin")
-
+	autohiss_exempt = list(LANGUAGE_SIIK_MAAS)
+	
 
 /datum/species/proc/handle_autohiss(message, datum/language/lang, mode)
 	if(!autohiss_basic_map)
 		return message
-	if(autohiss_exempt && (lang && (lang.name in autohiss_exempt)))
+	if(lang.flags & NO_STUTTER)	// Currently prevents EAL, Sign language, and emotes from autohissing
+		return message
+	if(autohiss_exempt && (lang.name in autohiss_exempt))
 		return message
 
 	var/map = autohiss_basic_map.Copy()
@@ -97,12 +85,16 @@
 			break
 		. += copytext(message, 1, min_index)
 		if(copytext(message, min_index, min_index+1) == uppertext(min_char))
-			. += capitalize(pick(map[min_char]))
+			switch(text2ascii(message, min_index+1))
+				if(65 to 90) // A-Z, uppercase; uppercase R/S followed by another uppercase letter, uppercase the entire replacement string
+					. += uppertext(pick(map[min_char]))
+				else
+					. += capitalize(pick(map[min_char]))
 		else
 			. += pick(map[min_char])
 		message = copytext(message, min_index + 1)
 
-	return jointext(., "")
+	return jointext(., null)
 
 #undef AUTOHISS_OFF
 #undef AUTOHISS_BASIC

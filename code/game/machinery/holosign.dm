@@ -1,30 +1,43 @@
 ////////////////////HOLOSIGN///////////////////////////////////////
 /obj/machinery/holosign
 	name = "holosign"
-	desc = "Small wall-mounted holographic projector"
+	desc = "Small wall-mounted holographic projector."
 	icon = 'icons/obj/holosign.dmi'
 	icon_state = "sign_off"
-	layer = 4
+	layer = ABOVE_OBJ_LAYER
+	use_power = 1
+	idle_power_usage = 2
+	active_power_usage = 70
+	anchored = 1
 	var/lit = 0
 	var/id = null
 	var/on_icon = "sign_on"
+	var/_wifi_id
+	var/datum/wifi/receiver/button/holosign/wifi_receiver
 
-	proc/toggle()
-		if(stat & (BROKEN|NOPOWER))
-			return
-		lit = !lit
-		update_icon()
+/obj/machinery/holosign/Initialize()
+	. = ..()
+	if(_wifi_id)
+		wifi_receiver = new(_wifi_id, src)
 
+/obj/machinery/holosign/Destroy()
+	qdel(wifi_receiver)
+	wifi_receiver = null
+	return ..()
+
+/obj/machinery/holosign/proc/toggle()
+	if (stat & (BROKEN|NOPOWER))
+		return
+	lit = !lit
+	use_power = lit ? 2 : 1
 	update_icon()
-		if(!lit)
-			icon_state = "sign_off"
-		else
-			icon_state = on_icon
 
-	power_change()
-		if(stat & NOPOWER)
-			lit = 0
-		update_icon()
+//maybe add soft lighting? Maybe, though not everything needs it
+/obj/machinery/holosign/update_icon()
+	if (!lit || (stat & (BROKEN|NOPOWER)))
+		icon_state = "sign_off"
+	else
+		icon_state = on_icon
 
 /obj/machinery/holosign/surgery
 	name = "surgery holosign"
@@ -32,44 +45,30 @@
 	on_icon = "surgery"
 ////////////////////SWITCH///////////////////////////////////////
 
-/obj/machinery/holosign_switch
+/obj/machinery/button/holosign
 	name = "holosign switch"
-	icon = 'icons/obj/power.dmi'
-	icon_state = "light1"
 	desc = "A remote control switch for holosign."
-	var/id = null
-	var/active = 0
-	anchored = 1.0
-	use_power = 1
-	idle_power_usage = 2
-	active_power_usage = 4
+	icon = 'icons/obj/power.dmi'
+	icon_state = "crema_switch"
 
-/obj/machinery/holosign_switch/attack_ai(mob/user as mob)
-	return src.attack_hand(user)
-
-/obj/machinery/holosign_switch/attackby(obj/item/weapon/W, mob/user as mob, params)
-	if(istype(W, /obj/item/device/detective_scanner))
-		return
-	return src.attack_hand(user)
-
-/obj/machinery/holosign_switch/attack_hand(mob/user as mob)
-	src.add_fingerprint(usr)
-	if(stat & (NOPOWER|BROKEN))
+/obj/machinery/button/holosign/attack_hand(mob/user as mob)
+	if(..())
 		return
 	add_fingerprint(user)
 
 	use_power(5)
 
 	active = !active
-	if(active)
-		icon_state = "light1"
-	else
-		icon_state = "light0"
+	update_icon()
 
-	for(var/obj/machinery/holosign/M in world)
-		if(M.id == src.id)
+	for(var/obj/machinery/holosign/M in GLOB.machines)
+		if (M.id == src.id)
 			spawn( 0 )
 				M.toggle()
 				return
 
+	return
+
+/obj/machinery/button/holosign/update_icon()
+	icon_state = "light[active]"
 	return

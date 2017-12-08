@@ -2,134 +2,109 @@
 	name = "medical pack"
 	singular_name = "medical pack"
 	icon = 'icons/obj/items.dmi'
-	amount = 6
-	max_amount = 6
-	w_class = 1
-	throw_speed = 3
-	throw_range = 7
+	amount = 5
+	max_amount = 5
+	w_class = ITEM_SIZE_SMALL
+	throw_speed = 4
+	throw_range = 20
 	var/heal_brute = 0
 	var/heal_burn = 0
-	var/self_delay = 20
-	var/unique_handling = 0 //some things give a special prompt, do we want to bypass some checks in parent?
+	var/animal_heal = 3
 
-/obj/item/stack/medical/attack(mob/living/M, mob/user)
-	if(!iscarbon(M) && !isanimal(M))
-		to_chat(user, "<span class='danger'>[src] cannot be applied to [M]!</span>")
+/obj/item/stack/medical/attack(mob/living/carbon/M as mob, mob/user as mob)
+	if (!istype(M))
+		to_chat(user, "<span class='warning'>\The [src] cannot be applied to [M]!</span>")
 		return 1
 
-	if(!user.IsAdvancedToolUser())
-		to_chat(user, "<span class='danger'>You don't have the dexterity to do this!</span>")
+	if ( ! (istype(user, /mob/living/carbon/human) || \
+			istype(user, /mob/living/silicon)) )
+		to_chat(user, "<span class='warning'>You don't have the dexterity to do this!</span>")
 		return 1
 
-
-	if(ishuman(M))
+	if (istype(M, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = M
 		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting)
 
-		if(!H.can_inject(user, 1))
-			return 1
-
 		if(!affecting)
-			to_chat(user, "<span class='danger'>That limb is missing!</span>")
+			to_chat(user, "<span class='warning'>\The [M] is missing that body part!</span>")
 			return 1
 
-		if(affecting.status & ORGAN_ROBOT)
-			to_chat(user, "<span class='danger'>This can't be used on a robotic limb.</span>")
-			return 1
-
-		if(M == user && !unique_handling)
-			user.visible_message("<span class='notice'>[user] starts to apply [src] on [H]...</span>")
-			if(!do_mob(user, H, self_delay))
+		if(affecting.organ_tag == BP_HEAD)
+			if(H.head && istype(H.head,/obj/item/clothing/head/helmet/space))
+				to_chat(user, "<span class='warning'>You can't apply [src] through [H.head]!</span>")
 				return 1
-		return
+		else
+			if(H.wear_suit && istype(H.wear_suit,/obj/item/clothing/suit/space))
+				to_chat(user, "<span class='warning'>You can't apply [src] through [H.wear_suit]!</span>")
+				return 1
 
-	if(isanimal(M))
-		var/mob/living/simple_animal/critter = M
-		if(!(critter.healable))
-			to_chat(user, "<span class='notice'>You cannot use [src] on [critter]!</span>")
-			return
-		else if (critter.health == critter.maxHealth)
-			to_chat(user, "<span class='notice'>[critter] is at full health.</span>")
-			return
-		else if(heal_brute < 1)
-			to_chat(user, "<span class='notice'>[src] won't help [critter] at all.</span>")
-			return
+		if(affecting.robotic >= ORGAN_ROBOT)
+			to_chat(user, "<span class='warning'>This isn't useful at all on a robotic limb..</span>")
+			return 1
 
-		critter.heal_organ_damage(heal_brute, heal_burn)
-		user.visible_message("<span class='green'>[user] applies [src] on [critter].</span>", \
-							 "<span class='green'>You apply [src] on [critter].</span>")
-
-		use(1)
+		H.UpdateDamageIcon()
 
 	else
-		M.heal_organ_damage(heal_brute, heal_burn)
-		M.updatehealth()
-		user.visible_message("<span class='green'>[user] applies [src] on [M].</span>", \
-							 "<span class='green'>You apply [src] on [M].</span>")
+
+		M.heal_organ_damage((src.heal_brute/2), (src.heal_burn/2))
+		user.visible_message( \
+			"<span class='notice'>[M] has been applied with [src] by [user].</span>", \
+			"<span class='notice'>You apply \the [src] to [M].</span>" \
+		)
 		use(1)
 
-//Bruise Packs//
-
+	M.updatehealth()
 /obj/item/stack/medical/bruise_pack
 	name = "roll of gauze"
 	singular_name = "gauze length"
 	desc = "Some sterile gauze to wrap around bloody stumps."
-	icon_state = "gauze"
-	origin_tech = "biotech=1"
+	icon_state = "brutepack"
+	origin_tech = list(TECH_BIO = 1)
+	animal_heal = 5
 
-/obj/item/stack/medical/bruise_pack/attack(mob/living/M, mob/user)
+/obj/item/stack/medical/bruise_pack/attack(mob/living/carbon/M as mob, mob/user as mob)
 	if(..())
 		return 1
 
-	if(ishuman(M))
+	if (istype(M, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting)
-		var/limb = affecting.name
-	//	var/bandaged = affecting.bandage()
-	//	var/disinfected = affecting.disinfect()
-		if(affecting.bandage(1))
-			if(M != user)
-				user.visible_message("<span class='notice'>[user] starts to apply [src] to [H]'s [limb].</span>", \
-									 "<span class='notice'>You start to apply [src] to [H]'s [limb].</span>", \
-									 "<span class='notice'>You hear something being wrapped.</span>")
-				if(!do_mob(user, H, self_delay))
-					return
-				else
-					user.visible_message("<span class='green'>[user] applies [src] to their [limb].</span>", \
-										 "<span class='green'>You apply [src] to your [limb].</span>", \
-										 "<span class='green'>You hear something being wrapped.</span>")
+		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting) //nullchecked by ..()
 
-					
-			else
-				user.visible_message("<span class='green'>[user] starts to apply [src] to their [limb].</span>", \
-									 "<span class='green'>You start to apply [src] to your [limb].</span>", \
-									 "<span class='green'>You hear something being wrapped.</span>")
-				if(do_mob(user, H, self_delay*2))
-					user.visible_message("<span class='green'>[user] applies [src] to their [limb].</span>", \
-										 "<span class='green'>You apply [src] to your [limb].</span>", \
-										 "<span class='green'>You hear something being wrapped.</span>")
-				else
-					return
-			affecting.bandage(0)
-			affecting.heal_damage(heal_brute, heal_burn)
-			use(1)
-		else
-			to_chat(user, "<span class='warning'>The wounds on [H]'s [affecting.name] have already been bandaged.</span>")
+		if(affecting.is_bandaged())
+			to_chat(user, "<span class='warning'>The wounds on [M]'s [affecting.name] have already been bandaged.</span>")
 			return 1
-		
-		
+		else
+			user.visible_message("<span class='notice'>\The [user] starts treating [M]'s [affecting.name].</span>", \
+					             "<span class='notice'>You start treating [M]'s [affecting.name].</span>" )
+			var/used = 0
+			for (var/datum/wound/W in affecting.wounds)
+				if(W.bandaged)
+					continue
+				if(used == amount)
+					break
+				if(!do_mob(user, M, W.damage/5))
+					to_chat(user, "<span class='notice'>You must stand still to bandage wounds.</span>")
+					break
 
-/obj/item/stack/medical/bruise_pack/advanced
-	name = "advanced trauma kit"
-	singular_name = "advanced trauma kit"
-	desc = "An advanced trauma kit for severe injuries."
-	icon_state = "traumakit"
-	heal_brute = 25
-
-
-
-//Ointment//
-
+				if (W.current_stage <= W.max_bleeding_stage)
+					user.visible_message("<span class='notice'>\The [user] bandages \a [W.desc] on [M]'s [affecting.name].</span>", \
+					                              "<span class='notice'>You bandage \a [W.desc] on [M]'s [affecting.name].</span>" )
+					//H.add_side_effect("Itch")
+				else if (W.damage_type == BRUISE)
+					user.visible_message("<span class='notice'>\The [user] places a bruise patch over \a [W.desc] on [M]'s [affecting.name].</span>", \
+					                              "<span class='notice'>You place a bruise patch over \a [W.desc] on [M]'s [affecting.name].</span>" )
+				else
+					user.visible_message("<span class='notice'>\The [user] places a bandaid over \a [W.desc] on [M]'s [affecting.name].</span>", \
+					                              "<span class='notice'>You place a bandaid over \a [W.desc] on [M]'s [affecting.name].</span>" )
+				W.bandage()
+				used++
+			affecting.update_damages()
+			if(used == amount)
+				if(affecting.is_bandaged())
+					to_chat(user, "<span class='warning'>\The [src] is used up.</span>")
+				else
+					to_chat(user, "<span class='warning'>\The [src] is used up, but there are more wounds to treat on \the [affecting.name].</span>")
+			use(used)
 
 /obj/item/stack/medical/ointment
 	name = "ointment"
@@ -137,126 +112,171 @@
 	gender = PLURAL
 	singular_name = "ointment"
 	icon_state = "ointment"
-	origin_tech = "biotech=1"
-	self_delay = 50
-/obj/item/stack/medical/ointment/attack(mob/living/M, mob/user)
+	heal_burn = 1
+	origin_tech = list(TECH_BIO = 1)
+	animal_heal = 4
+
+/obj/item/stack/medical/ointment/attack(mob/living/carbon/M as mob, mob/user as mob)
 	if(..())
 		return 1
 
-	if(ishuman(M))
+	if (istype(M, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting)
-		var/limb = affecting.name
-		if(affecting.salve(1))
-			if(M != user)
-				user.visible_message("<span class='notice'>[user] starts to apply [src] to [H]'s [limb].</span>", \
-									 "<span class='notice'>You start to apply [src] to [H]'s [limb].</span>", \
-									 "<span class='notice'>You hear something being smeared.</span>")
-				if(!do_mob(user, H, self_delay))
-					return
-				else
-					user.visible_message("<span class='green'>[user] applies [src] to their [limb].</span>", \
-										 "<span class='green'>You apply [src] to your [limb].</span>", \
-										 "<span class='green'>You hear something being smeared.</span>")
+		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting) //nullchecked by ..()
 
-					
-			else
-				user.visible_message("<span class='green'>[user] starts to apply [src] to their [limb].</span>", \
-									 "<span class='green'>You start to apply [src] to your [limb].</span>", \
-									 "<span class='green'>You hear something being smeared.</span>")
-				if(do_mob(user, H, self_delay*2))
-					user.visible_message("<span class='green'>[user] applies [src] to their [limb].</span>", \
-										 "<span class='green'>You apply [src] to your [limb].</span>", \
-										 "<span class='green'>You hear something being smeared.</span>")
-				else
-					return
-			affecting.salve(0)
-			affecting.heal_damage(heal_brute, heal_burn)
-			H.UpdateDamageIcon()
-			use(1)
-		else
-			to_chat(user, "<span class='warning'>The wounds on [H]'s [affecting.name] have already been salved.</span>")
+		if(affecting.is_salved())
+			to_chat(user, "<span class='warning'>The wounds on [M]'s [affecting.name] have already been salved.</span>")
 			return 1
+		else
+			user.visible_message("<span class='notice'>\The [user] starts salving wounds on [M]'s [affecting.name].</span>", \
+					             "<span class='notice'>You start salving the wounds on [M]'s [affecting.name].</span>" )
+			if(!do_mob(user, M, 10))
+				to_chat(user, "<span class='notice'>You must stand still to salve wounds.</span>")
+				return 1
+			user.visible_message("<span class='notice'>[user] salved wounds on [M]'s [affecting.name].</span>", \
+			                         "<span class='notice'>You salved wounds on [M]'s [affecting.name].</span>" )
+			use(1)
+			affecting.salve()
 
-		
+/obj/item/stack/medical/advanced/bruise_pack
+	name = "advanced trauma kit"
+	singular_name = "advanced trauma kit"
+	desc = "An advanced trauma kit for severe injuries."
+	icon_state = "traumakit"
+	heal_brute = 0
+	origin_tech = list(TECH_BIO = 1)
+	animal_heal = 12
 
+/obj/item/stack/medical/advanced/bruise_pack/attack(mob/living/carbon/M as mob, mob/user as mob)
+	if(..())
+		return 1
 
-/obj/item/stack/medical/ointment/advanced
+	if (istype(M, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = M
+		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting) //nullchecked by ..()
+		if(affecting.is_bandaged() && affecting.is_disinfected())
+			to_chat(user, "<span class='warning'>The wounds on [M]'s [affecting.name] have already been treated.</span>")
+			return 1
+		else
+			user.visible_message("<span class='notice'>\The [user] starts treating [M]'s [affecting.name].</span>", \
+					             "<span class='notice'>You start treating [M]'s [affecting.name].</span>" )
+			var/used = 0
+			for (var/datum/wound/W in affecting.wounds)
+				if (W.bandaged && W.disinfected)
+					continue
+				if(used == amount)
+					break
+				if(!do_mob(user, M, W.damage/5))
+					to_chat(user, "<span class='notice'>You must stand still to bandage wounds.</span>")
+					break
+				if (W.current_stage <= W.max_bleeding_stage)
+					user.visible_message("<span class='notice'>\The [user] cleans \a [W.desc] on [M]'s [affecting.name] and seals the edges with bioglue.</span>", \
+					                     "<span class='notice'>You clean and seal \a [W.desc] on [M]'s [affecting.name].</span>" )
+				else if (W.damage_type == BRUISE)
+					user.visible_message("<span class='notice'>\The [user] places a medical patch over \a [W.desc] on [M]'s [affecting.name].</span>", \
+					                              "<span class='notice'>You place a medical patch over \a [W.desc] on [M]'s [affecting.name].</span>" )
+				else
+					user.visible_message("<span class='notice'>\The [user] smears some bioglue over \a [W.desc] on [M]'s [affecting.name].</span>", \
+					                              "<span class='notice'>You smear some bioglue over \a [W.desc] on [M]'s [affecting.name].</span>" )
+				W.bandage()
+				W.disinfect()
+				W.heal_damage(heal_brute)
+				used++
+			affecting.update_damages()
+			if(used == amount)
+				if(affecting.is_bandaged())
+					to_chat(user, "<span class='warning'>\The [src] is used up.</span>")
+				else
+					to_chat(user, "<span class='warning'>\The [src] is used up, but there are more wounds to treat on \the [affecting.name].</span>")
+			use(used)
+
+/obj/item/stack/medical/advanced/ointment
 	name = "advanced burn kit"
 	singular_name = "advanced burn kit"
 	desc = "An advanced treatment kit for severe burns."
 	icon_state = "burnkit"
-	heal_burn = 25
+	heal_burn = 0
+	origin_tech = list(TECH_BIO = 1)
+	animal_heal = 7
 
 
+/obj/item/stack/medical/advanced/ointment/attack(mob/living/carbon/M as mob, mob/user as mob)
+	if(..())
+		return 1
 
-//Medical Herbs//
+	if (istype(M, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = M
+		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting) //nullchecked by ..()
 
-
-/obj/item/stack/medical/bruise_pack/comfrey
-	name = "\improper Comfrey leaf"
-	singular_name = "Comfrey leaf"
-	desc = "A soft leaf that is rubbed on bruises."
-	icon = 'icons/obj/hydroponics_products.dmi'
-	icon_state = "alien3-product"
-	color = "#378C61"
-	heal_brute = 12
-
-
-/obj/item/stack/medical/ointment/aloe
-	name = "\improper Aloe Vera leaf"
-	singular_name = "Aloe Vera leaf"
-	desc = "A cold leaf that is rubbed on burns."
-	icon = 'icons/obj/hydroponics_products.dmi'
-	icon_state = "ambrosia-product"
-	color = "#4CC5C7"
-	heal_burn = 12
-
-
-
-//Splits//
-
+		if(affecting.is_salved())
+			to_chat(user, "<span class='warning'>The wounds on [M]'s [affecting.name] have already been salved.</span>")
+			return 1
+		else
+			user.visible_message("<span class='notice'>\The [user] starts salving wounds on [M]'s [affecting.name].</span>", \
+					             "<span class='notice'>You start salving the wounds on [M]'s [affecting.name].</span>" )
+			if(!do_mob(user, M, 10))
+				to_chat(user, "<span class='notice'>You must stand still to salve wounds.</span>")
+				return 1
+			user.visible_message( 	"<span class='notice'>[user] covers wounds on [M]'s [affecting.name] with regenerative membrane.</span>", \
+									"<span class='notice'>You cover wounds on [M]'s [affecting.name] with regenerative membrane.</span>" )
+			affecting.heal_damage(0,heal_burn)
+			use(1)
+			affecting.salve()
 
 /obj/item/stack/medical/splint
 	name = "medical splints"
 	singular_name = "medical splint"
+	desc = "Modular splints capable of supporting and immobilizing bones in both limbs and appendages."
 	icon_state = "splint"
-	unique_handling = 1
-	self_delay = 100
+	amount = 5
+	max_amount = 5
+	animal_heal = 0
+	var/list/splintable_organs = list(BP_L_ARM, BP_R_ARM, BP_L_LEG, BP_R_LEG, BP_L_HAND, BP_R_HAND, BP_L_FOOT, BP_R_FOOT)	//List of organs you can splint, natch.
 
-/obj/item/stack/medical/splint/attack(mob/living/M, mob/user)
+/obj/item/stack/medical/splint/attack(mob/living/carbon/M as mob, mob/user as mob)
 	if(..())
 		return 1
 
-	if(ishuman(M))
+	if (istype(M, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting)
+		var/obj/item/organ/external/affecting = H.get_organ(user.zone_sel.selecting) //nullchecked by ..()
 		var/limb = affecting.name
-		if(affecting.splint(1)) // 1 means its only testing if it needs a splint
-			if(M != user)
-				user.visible_message("<span class='notice'>[user] starts to apply [src] to [H]'s [limb].</span>", \
-									 "<span class='notice'>You start to apply [src] to [H]'s [limb].</span>", \
-									 "<span class='notice'>You hear something being wrapped.</span>")
-				if(!do_mob(user, H, self_delay))
-					return
-				else
-					user.visible_message("<span class='green'>[user] applies [src] to their [limb].</span>", \
-										 "<span class='green'>You apply [src] to your [limb].</span>", \
-										 "<span class='green'>You hear something being wrapped.</span>")
-
-				
-			else
-				user.visible_message("<span class='green'>[user] starts to apply [src] to their [limb].</span>", \
-									 "<span class='green'>You start to apply [src] to your [limb].</span>", \
-									 "<span class='green'>You hear something being wrapped.</span>")
-				if(do_mob(user, H, self_delay*2))
-					user.visible_message("<span class='green'>[user] applies [src] to their [limb].</span>", \
-										 "<span class='green'>You apply [src] to your [limb].</span>", \
-										 "<span class='green'>You hear something being wrapped.</span>")
-
-				else
-					return
-			affecting.splint()		
-			use(1)
+		if(!(affecting.organ_tag in splintable_organs))
+			to_chat(user, "<span class='danger'>You can't use \the [src] to apply a splint there!</span>")
+			return
+		if(affecting.splinted)
+			to_chat(user, "<span class='danger'>[M]'s [limb] is already splinted!</span>")
+			return
+		if (M != user)
+			user.visible_message("<span class='danger'>[user] starts to apply \the [src] to [M]'s [limb].</span>", "<span class='danger'>You start to apply \the [src] to [M]'s [limb].</span>", "<span class='danger'>You hear something being wrapped.</span>")
 		else
-			to_chat(user, "<span class='warning'>There are no wounds on [affecting] left to splint!</span>")
+			if(( !user.hand && (affecting.organ_tag in list(BP_R_ARM, BP_R_HAND)) || \
+				user.hand && (affecting.organ_tag in list(BP_L_ARM, BP_L_HAND)) ))
+				to_chat(user, "<span class='danger'>You can't apply a splint to the arm you're using!</span>")
+				return
+			user.visible_message("<span class='danger'>[user] starts to apply \the [src] to their [limb].</span>", "<span class='danger'>You start to apply \the [src] to your [limb].</span>", "<span class='danger'>You hear something being wrapped.</span>")
+		if(do_after(user, 50, M))
+			if(M == user && prob(75))
+				user.visible_message("<span class='danger'>\The [user] fumbles [src].</span>", "<span class='danger'>You fumble [src].</span>", "<span class='danger'>You hear something being wrapped.</span>")
+				return
+			var/obj/item/stack/medical/splint/S = split(1)
+			if(S)
+				if(affecting.apply_splint(S))
+					S.forceMove(affecting)
+					if (M != user)
+						user.visible_message("<span class='danger'>\The [user] finishes applying [src] to [M]'s [limb].</span>", "<span class='danger'>You finish applying \the [src] to [M]'s [limb].</span>", "<span class='danger'>You hear something being wrapped.</span>")
+					else
+						user.visible_message("<span class='danger'>\The [user] successfully applies [src] to their [limb].</span>", "<span class='danger'>You successfully apply \the [src] to your [limb].</span>", "<span class='danger'>You hear something being wrapped.</span>")
+					return
+				S.dropInto(src.loc) //didn't get applied, so just drop it
+			user.visible_message("<span class='danger'>\The [user] fails to apply [src].</span>", "<span class='danger'>You fail to apply [src].</span>", "<span class='danger'>You hear something being wrapped.</span>")
+		return
+
+
+/obj/item/stack/medical/splint/ghetto
+	name = "makeshift splints"
+	singular_name = "makeshift splint"
+	desc = "For holding your limbs in place with duct tape and scrap metal."
+	icon_state = "tape-splint"
+	amount = 1
+	splintable_organs = list(BP_L_ARM, BP_R_ARM, BP_L_LEG, BP_R_LEG)

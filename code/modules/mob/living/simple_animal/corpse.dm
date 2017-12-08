@@ -33,7 +33,7 @@
 /obj/effect/landmark/mobcorpse/proc/createCorpse() //Creates a mob and checks for gear in each slot before attempting to equip it.
 	var/mob/living/carbon/human/M = new /mob/living/carbon/human (src.loc)
 	M.real_name = src.name
-	M.stat = 2 //Kills the new mob
+	M.set_stat(DEAD) //Kills the new mob
 	if(src.corpseuniform)
 		M.equip_to_slot_or_del(new src.corpseuniform(M), slot_w_uniform)
 	if(src.corpsesuit)
@@ -88,8 +88,8 @@
 	name = "Syndicate Operative"
 	corpseuniform = /obj/item/clothing/under/syndicate
 	corpsesuit = /obj/item/clothing/suit/armor/vest
-	corpseshoes = /obj/item/clothing/shoes/combat
-	corpsegloves = /obj/item/clothing/gloves/combat
+	corpseshoes = /obj/item/clothing/shoes/swat
+	corpsegloves = /obj/item/clothing/gloves/thick/swat
 	corpseradio = /obj/item/device/radio/headset
 	corpsemask = /obj/item/clothing/mask/gas
 	corpsehelmet = /obj/item/clothing/head/helmet/swat
@@ -103,14 +103,14 @@
 /obj/effect/landmark/mobcorpse/syndicatecommando
 	name = "Syndicate Commando"
 	corpseuniform = /obj/item/clothing/under/syndicate
-	corpsesuit = /obj/item/clothing/suit/space/rig/syndi
-	corpseshoes = /obj/item/clothing/shoes/combat
-	corpsegloves = /obj/item/clothing/gloves/combat
+	corpsesuit = /obj/item/clothing/suit/space/void/merc
+	corpseshoes = /obj/item/clothing/shoes/swat
+	corpsegloves = /obj/item/clothing/gloves/thick/swat
 	corpseradio = /obj/item/device/radio/headset
 	corpsemask = /obj/item/clothing/mask/gas/syndicate
-	corpsehelmet = /obj/item/clothing/head/helmet/space/rig/syndi
+	corpsehelmet = /obj/item/clothing/head/helmet/space/void/merc
 	corpseback = /obj/item/weapon/tank/jetpack/oxygen
-	corpsepocket1 = /obj/item/weapon/tank/emergency_oxygen
+	corpsepocket1 = /obj/item/weapon/tank/emergency/oxygen
 	corpseid = 1
 	corpseidjob = "Operative"
 	corpseidaccess = "Syndicate"
@@ -142,7 +142,7 @@
 
 /obj/effect/landmark/mobcorpse/pirate/ranged
 	name = "Pirate Gunner"
-	corpsesuit = /obj/item/clothing/suit/pirate_black
+	corpsesuit = /obj/item/clothing/suit/pirate
 	corpsehelmet = /obj/item/clothing/head/pirate
 
 

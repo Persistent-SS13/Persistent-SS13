@@ -1,5 +1,6 @@
 // Interface for humans.
 /obj/item/weapon/rig/verb/hardsuit_interface()
+
 	set name = "Open Hardsuit Interface"
 	set desc = "Open the hardsuit system interface."
 	set category = "Hardsuit"
@@ -9,6 +10,7 @@
 		ui_interact(usr)
 
 /obj/item/weapon/rig/verb/toggle_vision()
+
 	set name = "Toggle Visor"
 	set desc = "Turns your rig visor off or on."
 	set category = "Hardsuit"
@@ -21,7 +23,7 @@
 	if(!check_power_cost(usr))
 		return
 
-	if(!(flags & NODROP))
+	if(canremove)
 		to_chat(usr, "<span class='warning'>The suit is not active.</span>")
 		return
 
@@ -32,16 +34,13 @@
 		to_chat(usr, "<span class='warning'>The hardsuit does not have a configurable visor.</span>")
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
 	if(!visor.active)
 		visor.activate()
 	else
 		visor.deactivate()
 
 /obj/item/weapon/rig/proc/toggle_helmet()
+
 	set name = "Toggle Helmet"
 	set desc = "Deploys or retracts your helmet."
 	set category = "Hardsuit"
@@ -54,13 +53,10 @@
 	if(!check_suit_access(usr))
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
-	toggle_piece("helmet", usr)
+	toggle_piece("helmet",wearer)
 
 /obj/item/weapon/rig/proc/toggle_chest()
+
 	set name = "Toggle Chestpiece"
 	set desc = "Deploys or retracts your chestpiece."
 	set category = "Hardsuit"
@@ -69,13 +65,10 @@
 	if(!check_suit_access(usr))
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
-	toggle_piece("chest", usr)
+	toggle_piece("chest",wearer)
 
 /obj/item/weapon/rig/proc/toggle_gauntlets()
+
 	set name = "Toggle Gauntlets"
 	set desc = "Deploys or retracts your gauntlets."
 	set category = "Hardsuit"
@@ -88,13 +81,10 @@
 	if(!check_suit_access(usr))
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
-	toggle_piece("gauntlets", usr)
+	toggle_piece("gauntlets",wearer)
 
 /obj/item/weapon/rig/proc/toggle_boots()
+
 	set name = "Toggle Boots"
 	set desc = "Deploys or retracts your boots."
 	set category = "Hardsuit"
@@ -107,13 +97,10 @@
 	if(!check_suit_access(usr))
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
-	toggle_piece("boots", usr)
+	toggle_piece("boots",wearer)
 
 /obj/item/weapon/rig/verb/deploy_suit()
+
 	set name = "Deploy Hardsuit"
 	set desc = "Deploys helmet, gloves and boots."
 	set category = "Hardsuit"
@@ -129,13 +116,10 @@
 	if(!check_power_cost(usr))
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
-	deploy(wearer, usr)
+	deploy(wearer)
 
 /obj/item/weapon/rig/verb/toggle_seals_verb()
+
 	set name = "Toggle Hardsuit"
 	set desc = "Activates or deactivates your rig."
 	set category = "Hardsuit"
@@ -148,16 +132,10 @@
 	if(!check_suit_access(usr))
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
-	if(flags & NODROP)
-		unseal(usr)
-	else
-		seal(usr)
+	toggle_seals(wearer)
 
 /obj/item/weapon/rig/verb/switch_vision_mode()
+
 	set name = "Switch Vision Mode"
 	set desc = "Switches between available vision modes."
 	set category = "Hardsuit"
@@ -169,16 +147,12 @@
 	if(!check_power_cost(usr, 0, 0, 0, 0))
 		return
 
-	if(!(flags & NODROP))
+	if(canremove)
 		to_chat(usr, "<span class='warning'>The suit is not active.</span>")
 		return
 
 	if(!visor)
 		to_chat(usr, "<span class='warning'>The hardsuit does not have a configurable visor.</span>")
-		return
-
-	var/mob/M = usr
-	if(M.incapacitated())
 		return
 
 	if(!visor.active)
@@ -191,6 +165,7 @@
 	visor.engage()
 
 /obj/item/weapon/rig/verb/alter_voice()
+
 	set name = "Configure Voice Synthesiser"
 	set desc = "Toggles or configures your voice synthesizer."
 	set category = "Hardsuit"
@@ -199,7 +174,7 @@
 	if(malfunction_check(usr))
 		return
 
-	if(!(flags & NODROP))
+	if(canremove)
 		to_chat(usr, "<span class='warning'>The suit is not active.</span>")
 		return
 
@@ -211,13 +186,10 @@
 		to_chat(usr, "<span class='warning'>The hardsuit does not have a speech synthesiser.</span>")
 		return
 
-	var/mob/M = usr
-	if(M.incapacitated())
-		return
-
 	speech.engage()
 
 /obj/item/weapon/rig/verb/select_module()
+
 	set name = "Select Module"
 	set desc = "Selects a module as your primary system."
 	set category = "Hardsuit"
@@ -225,20 +197,16 @@
 
 	if(malfunction_check(usr))
 		return
-
+	
 	if(!check_power_cost(usr, 0, 0, 0, 0))
 		return
 
-	if(!(flags & NODROP))
+	if(canremove)
 		to_chat(usr, "<span class='warning'>The suit is not active.</span>")
 		return
 
 	if(!istype(wearer) || !wearer.back == src)
 		to_chat(usr, "<span class='warning'>The hardsuit is not being worn.</span>")
-		return
-
-	var/mob/M = usr
-	if(M.incapacitated())
 		return
 
 	var/list/selectable = list()
@@ -257,6 +225,7 @@
 	to_chat(usr, "<font color='blue'><b>Primary system is now: [selected_module.interface_name].</b></font>")
 
 /obj/item/weapon/rig/verb/toggle_module()
+
 	set name = "Toggle Module"
 	set desc = "Toggle a system module."
 	set category = "Hardsuit"
@@ -268,16 +237,12 @@
 	if(!check_power_cost(usr, 0, 0, 0, 0))
 		return
 
-	if(!(flags & NODROP))
+	if(canremove)
 		to_chat(usr, "<span class='warning'>The suit is not active.</span>")
 		return
 
 	if(!istype(wearer) || !wearer.back == src)
 		to_chat(usr, "<span class='warning'>The hardsuit is not being worn.</span>")
-		return
-
-	var/mob/M = usr
-	if(M.incapacitated())
 		return
 
 	var/list/selectable = list()
@@ -298,6 +263,7 @@
 		module.activate()
 
 /obj/item/weapon/rig/verb/engage_module()
+
 	set name = "Engage Module"
 	set desc = "Engages a system module."
 	set category = "Hardsuit"
@@ -306,7 +272,7 @@
 	if(malfunction_check(usr))
 		return
 
-	if(!(flags & NODROP))
+	if(canremove)
 		to_chat(usr, "<span class='warning'>The suit is not active.</span>")
 		return
 
@@ -315,10 +281,6 @@
 		return
 
 	if(!check_power_cost(usr, 0, 0, 0, 0))
-		return
-
-	var/mob/M = usr
-	if(M.incapacitated())
 		return
 
 	var/list/selectable = list()

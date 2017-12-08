@@ -1,4 +1,3 @@
-
 <!--
 Title: inteliCard interface
 Used In File(s): \code\game\objects\items\devices\aicard.dm
@@ -55,6 +54,12 @@ Used In File(s): \code\game\objects\items\devices\aicard.dm
         <div class="itemContent">
             {{:data.hardware_integrity}}%
         </div>
+        <div class="itemLabel">
+            Backup Capacitor:
+        </div>
+        <div class="itemContent">
+            {{:data.backup_capacitor}}%
+        </div>
     </div>
     
     {{if data.has_laws}}    
@@ -88,7 +93,7 @@ Used In File(s): \code\game\objects\items\devices\aicard.dm
             {{else}}
                 <tr>
                     <td><span class='itemLabelWidest'>Wipe AI</span></td>
-                    <td>{{:helper.link("Wipe", 'exclamation-circle', {'wipe' : 1}, null, 'redButton')}}</td>
+                    <td>{{:helper.link("Wipe", 'radiation', {'wipe' : 1}, null, 'redButton')}}</td>
                 </tr>
             {{/if}}
         </table>

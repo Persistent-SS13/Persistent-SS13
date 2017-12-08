@@ -6,8 +6,8 @@
 #define MAX_FLAG 65535
 
 var/list/same_wires = list()
-// 12 colours, if you're adding more than 12 wires then add more colours here
-var/list/wireColours = list("red", "blue", "green", "black", "orange", "brown", "gold", "gray", "cyan", "navy", "purple", "pink")
+// 14 colours, if you're adding more than 14 wires then add more colours here
+var/list/wireColours = list("red", "blue", "green", "darkred", "orange", "brown", "gold", "gray", "cyan", "navy", "purple", "pink", "black", "yellow")
 
 /datum/wires
 
@@ -81,6 +81,7 @@ var/list/wireColours = list("red", "blue", "green", "black", "orange", "brown", 
 		// No content means no window.
 		user << browse(null, "window=wires")
 		return
+
 	var/datum/browser/popup = new(user, "wires", holder.name, window_x, window_y)
 	popup.set_content(html)
 	popup.set_title_image(user.browse_rsc_icon(holder.icon, holder.icon_state))
@@ -93,13 +94,16 @@ var/list/wireColours = list("red", "blue", "green", "black", "orange", "brown", 
 
 	for(var/colour in wires)
 		html += "<tr>"
-		html += "<td[row_options1]><font color='[colour]'>[capitalize(colour)]</font></td>"
+		html += "<td[row_options1]><font color='[colour]'>&#9724;</font>[capitalize(colour)]</td>"
 		html += "<td[row_options2]>"
 		html += "<A href='?src=\ref[src];action=1;cut=[colour]'>[IsColourCut(colour) ? "Mend" :  "Cut"]</A>"
 		html += " <A href='?src=\ref[src];action=1;pulse=[colour]'>Pulse</A>"
 		html += " <A href='?src=\ref[src];action=1;attach=[colour]'>[IsAttached(colour) ? "Detach" : "Attach"] Signaller</A></td></tr>"
 	html += "</table>"
 	html += "</div>"
+
+	if (random)
+		html += "<i>\The [holder] appears to have tamper-resistant electronics installed.</i><br><br>" //maybe this could be more generic?
 
 	return html
 
@@ -113,20 +117,16 @@ var/list/wireColours = list("red", "blue", "green", "black", "orange", "brown", 
 			holder.add_hiddenprint(L)
 			if(href_list["cut"]) // Toggles the cut/mend status
 				if(istype(I, /obj/item/weapon/wirecutters))
-					playsound(holder, 'sound/items/Wirecutter.ogg', 20, 1)
 					var/colour = href_list["cut"]
 					CutWireColour(colour)
 				else
 					to_chat(L, "<span class='error'>You need wirecutters!</span>")
-
 			else if(href_list["pulse"])
 				if(istype(I, /obj/item/device/multitool))
-					playsound(holder, 'sound/weapons/empty.ogg', 20, 1)
 					var/colour = href_list["pulse"]
 					PulseColour(colour)
 				else
 					to_chat(L, "<span class='error'>You need a multitool!</span>")
-
 			else if(href_list["attach"])
 				var/colour = href_list["attach"]
 				// Detach
@@ -142,7 +142,6 @@ var/list/wireColours = list("red", "blue", "green", "black", "orange", "brown", 
 						Attach(colour, I)
 					else
 						to_chat(L, "<span class='error'>You need a remote signaller!</span>")
-
 
 
 
@@ -209,6 +208,11 @@ var/const/POWER = 8
 	else
 		CRASH("[colour] is not a key in wires.")
 
+
+/datum/wires/proc/RandomPulse()
+	var/index = rand(1, wires.len)
+	PulseIndex(index)
+
 //
 // Is Index/Colour Cut procs
 //
@@ -238,7 +242,7 @@ var/const/POWER = 8
 	if(colour && S)
 		if(!IsAttached(colour))
 			signallers[colour] = S
-			S.loc = holder
+			S.forceMove(holder)
 			S.connected = src
 			return S
 
@@ -248,7 +252,7 @@ var/const/POWER = 8
 		if(S)
 			signallers -= colour
 			S.connected = null
-			S.loc = holder.loc
+			S.dropInto(holder.loc)
 			return S
 
 
@@ -258,7 +262,6 @@ var/const/POWER = 8
 		if(S == signallers[colour])
 			PulseColour(colour)
 			break
-
 
 //
 // Cut Wire Colour/Index procs
@@ -280,6 +283,11 @@ var/const/POWER = 8
 	var/r = rand(1, wires.len)
 	CutWireIndex(r)
 
+/datum/wires/proc/RandomCutAll(var/probability = 10)
+	for(var/i = 1; i < MAX_FLAG && i < (1 << wire_count); i += i)
+		if(prob(probability))
+			CutWireIndex(i)
+
 /datum/wires/proc/CutAll()
 	for(var/i = 1; i < MAX_FLAG && i < (1 << wire_count); i += i)
 		CutWireIndex(i)
@@ -288,6 +296,11 @@ var/const/POWER = 8
 	if(wires_status == (1 << wire_count) - 1)
 		return 1
 	return 0
+
+/datum/wires/proc/MendAll()
+	for(var/i = 1; i < MAX_FLAG && i < (1 << wire_count); i += i)
+		if(IsIndexCut(i))
+			CutWireIndex(i)
 
 //
 //Shuffle and Mend

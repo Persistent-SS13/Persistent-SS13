@@ -8,27 +8,30 @@
 	var/viewload = 0			// the load as it appears on the power console (gradually updated)
 	var/number = 0				// Unused //TODEL
 
+	var/smes_demand = 0			// Amount of power demanded by all SMESs from this network. Needed for load balancing.
+	var/list/inputting = list()	// List of SMESs that are demanding power from this network. Needed for load balancing.
+
+	var/smes_avail = 0			// Amount of power (avail) from SMESes. Used by SMES load balancing
+	var/smes_newavail = 0		// As above, just for newavail
+
 	var/perapc = 0			// per-apc avilability
 	var/perapc_excess = 0
 	var/netexcess = 0			// excess power on the powernet (typically avail-load)
 
-	var/problem = 0	// If either of these is set to 1 there is some sort of issue at the powernet.
-
+	var/problem = 0				// If this is not 0 there is some sort of issue in the powernet. Monitors will display warnings.
 
 /datum/powernet/New()
-	powernets += src
+	GLOB.powernets += src
 	..()
 
 /datum/powernet/Destroy()
-	//Go away references, you suck!
 	for(var/obj/structure/cable/C in cables)
 		cables -= C
 		C.powernet = null
 	for(var/obj/machinery/power/M in nodes)
 		nodes -= M
 		M.powernet = null
-
-	powernets -= src
+	GLOB.powernets -= src
 	return ..()
 
 //Returns the amount of excess power (before refunding to SMESs) from last tick.
@@ -51,7 +54,7 @@
 	cables -= C
 	C.powernet = null
 	if(is_empty())//the powernet is now empty...
-		qdel(src)///... delete it - qdel
+		qdel(src)///... delete it
 
 //add a cable to the current powernet
 //Warning : this proc DON'T check if the cable exists
@@ -89,6 +92,7 @@
 /datum/powernet/proc/trigger_warning(var/duration_ticks = 20)
 	problem = max(duration_ticks, problem)
 
+
 //handles the power changes in the powernet
 //called every ticks by the powernet controller
 /datum/powernet/proc/reset()
@@ -108,16 +112,25 @@
 		//very simple load balancing. If there was a net excess this tick then it must have been that some APCs used less than perapc, since perapc*numapc = avail
 		//Therefore we can raise the amount of power rationed out to APCs on the assumption that those APCs that used less than perapc will continue to do so.
 		//If that assumption fails, then some APCs will miss out on power next tick, however it will be rebalanced for the tick after.
-		if(netexcess >= 0)
+		if (netexcess >= 0)
 			perapc_excess += min(netexcess/numapc, (avail - perapc) - perapc_excess)
 		else
 			perapc_excess = 0
 
 		perapc = avail/numapc + perapc_excess
 
-	if(netexcess > 100 && nodes && nodes.len)		// if there was excess power last cycle
-		for(var/obj/machinery/power/smes/S in nodes)	// find the SMESes in the network
-			S.restore()				// and restore some of the power that was used
+	// At this point, all other machines have finished using power. Anything left over may be used up to charge SMESs.
+	if(inputting.len && smes_demand)
+		var/smes_input_percentage = between(0, (netexcess / smes_demand) * 100, 100)
+		for(var/obj/machinery/power/smes/S in inputting)
+			S.input_power(smes_input_percentage)
+
+	netexcess = avail - load
+
+	if(netexcess)
+		var/perc = get_percent_load(1)
+		for(var/obj/machinery/power/smes/S in nodes)
+			S.restore(perc)
 
 	//updates the viewed load (as seen on power computers)
 	viewload = round(load)
@@ -125,23 +138,34 @@
 	//reset the powernet
 	load = 0
 	avail = newavail
+	smes_avail = smes_newavail
+	inputting.Cut()
+	smes_demand = 0
 	newavail = 0
+	smes_newavail = 0
+
+/datum/powernet/proc/get_percent_load(var/smes_only = 0)
+	if(smes_only)
+		var/smes_used = load - (avail - smes_avail) 			// SMESs are always last to provide power
+		if(!smes_used || smes_used < 0 || !smes_avail)			// SMES power isn't available or being used at all, SMES load is therefore 0%
+			return 0
+		return between(0, (smes_used / smes_avail) * 100, 100)	// Otherwise return percentage load of SMESs.
+	else
+		if(!load)
+			return 0
+		return between(0, (avail / load) * 100, 100)
 
 /datum/powernet/proc/get_electrocute_damage()
 	switch(avail)
-		if(5000000 to INFINITY)
-			return min(rand(200,300),rand(200,300))
-		if(4000000 to 5000000)
-			return min(rand(80,180),rand(80,180))
-		if(1000000 to 4000000)
+		if (1000000 to INFINITY)
 			return min(rand(50,160),rand(50,160))
-		if(200000 to 1000000)
+		if (200000 to 1000000)
 			return min(rand(25,80),rand(25,80))
-		if(100000 to 200000)//Ave powernet
+		if (100000 to 200000)//Ave powernet
 			return min(rand(20,60),rand(20,60))
-		if(50000 to 100000)
+		if (50000 to 100000)
 			return min(rand(15,40),rand(15,40))
-		if(1000 to 50000)
+		if (1000 to 50000)
 			return min(rand(10,20),rand(10,20))
 		else
 			return 0
@@ -154,17 +178,13 @@
 // return a knot cable (O-X) if one is present in the turf
 // null if there's none
 /turf/proc/get_cable_node()
-	if(!istype(src, /turf/simulated/floor))
+	if(!istype(src, /turf/simulated))
 		return null
 	for(var/obj/structure/cable/C in src)
 		if(C.d1 == 0)
 			return C
 	return null
 
+
 /area/proc/get_apc()
-	// This was a simple locate() in src, but an unresolved BYOND bug causes trying to locate() in an
-	//  area to take an inconceivably long time, especially for large areas.
-	// See: http://www.byond.com/forum/?post=1860571
-	var/obj/machinery/power/apc/FINDME
-	for(FINDME in src)
-		return FINDME
+	return apc

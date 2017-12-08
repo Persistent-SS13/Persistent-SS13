@@ -3,15 +3,8 @@
 		health = maxHealth
 		stat = CONSCIOUS
 		return
-	health = maxHealth - (getOxyLoss() + getFireLoss() + getBruteLoss())
-	if(stat == DEAD && health > 0)
-		update_revive()
-		var/mob/dead/observer/ghost = get_ghost()
-		if(ghost)
-			to_chat(ghost, "<span class='ghostalert'>Your cyborg shell has been repaired, re-enter if you want to continue!</span> (Verbs -> Ghost -> Re-enter corpse)")
-			ghost << sound('sound/effects/genetics.ogg')
+	health = maxHealth - (getBruteLoss() + getFireLoss())
 	return
-
 
 /mob/living/silicon/robot/getBruteLoss()
 	var/amount = 0
@@ -39,12 +32,13 @@
 	else
 		heal_overall_damage(0, -amount)
 
-/mob/living/silicon/robot/proc/get_damaged_components(var/brute, var/burn, var/get_all)
+/mob/living/silicon/robot/proc/get_damaged_components(var/brute, var/burn, var/destroyed = 0)
 	var/list/datum/robot_component/parts = list()
 	for(var/V in components)
 		var/datum/robot_component/C = components[V]
-		if(C.installed == 1 || get_all) if((brute && C.brute_damage) || (burn && C.electronics_damage))
-			parts += C
+		if(C.installed == 1 || (C.installed == -1 && destroyed))
+			if((brute && C.brute_damage) || (burn && C.electronics_damage) || (!C.toggled) || (!C.powered && C.toggled))
+				parts += C
 	return parts
 
 /mob/living/silicon/robot/proc/get_damageable_components()
@@ -68,20 +62,14 @@
 	var/datum/robot_component/picked = pick(parts)
 	picked.heal_damage(brute,burn)
 
-/mob/living/silicon/robot/take_organ_damage(var/brute = 0, var/burn = 0, var/sharp = 0, var/edge = 0)
+/mob/living/silicon/robot/take_organ_damage(var/brute = 0, var/burn = 0, var/sharp = 0, var/edge = 0, var/emp = 0)
 	var/list/components = get_damageable_components()
 	if(!components.len)
 		return
 
 	 //Combat shielding absorbs a percentage of damage directly into the cell.
-	var/obj/item/borg/combat/shield/shield
-	if(module_state_1 && istype(module_state_1,/obj/item/borg/combat/shield))
-		shield = module_state_1
-	else if(module_state_2 && istype(module_state_2,/obj/item/borg/combat/shield))
-		shield = module_state_2
-	else if(module_state_3 && istype(module_state_3,/obj/item/borg/combat/shield))
-		shield = module_state_3
-	if(shield)
+	if(module_active && istype(module_active,/obj/item/borg/combat/shield))
+		var/obj/item/borg/combat/shield/shield = module_active
 		//Shields absorb a certain percentage of damage based on their power setting.
 		var/absorb_brute = brute*shield.shield_level
 		var/absorb_burn = burn*shield.shield_level
@@ -90,16 +78,17 @@
 		cell.charge -= cost
 		if(cell.charge <= 0)
 			cell.charge = 0
-			to_chat(src, "\red Your shield has overloaded!")
+			to_chat(src, "<span class='warning'>Your shield has overloaded!</span>")
 		else
 			brute -= absorb_brute
 			burn -= absorb_burn
-			to_chat(src, "\red Your shield absorbs some of the impact!")
+			to_chat(src, "<span class='warning'>Your shield absorbs some of the impact!</span>")
 
-	var/datum/robot_component/armour/A = get_armour()
-	if(A)
-		A.take_damage(brute,burn,sharp,edge)
-		return
+	if(!emp)
+		var/datum/robot_component/armour/A = get_armour()
+		if(A)
+			A.take_damage(brute,burn,sharp,edge)
+			return
 
 	var/datum/robot_component/C = pick(components)
 	C.take_damage(brute,burn,sharp,edge)
@@ -125,14 +114,8 @@
 	var/list/datum/robot_component/parts = get_damageable_components()
 
 	 //Combat shielding absorbs a percentage of damage directly into the cell.
-	var/obj/item/borg/combat/shield/shield
-	if(module_state_1 && istype(module_state_1,/obj/item/borg/combat/shield))
-		shield = module_state_1
-	else if(module_state_2 && istype(module_state_2,/obj/item/borg/combat/shield))
-		shield = module_state_2
-	else if(module_state_3 && istype(module_state_3,/obj/item/borg/combat/shield))
-		shield = module_state_3
-	if(shield)
+	if(module_active && istype(module_active,/obj/item/borg/combat/shield))
+		var/obj/item/borg/combat/shield/shield = module_active
 		//Shields absorb a certain percentage of damage based on their power setting.
 		var/absorb_brute = brute*shield.shield_level
 		var/absorb_burn = burn*shield.shield_level
@@ -141,11 +124,11 @@
 		cell.charge -= cost
 		if(cell.charge <= 0)
 			cell.charge = 0
-			to_chat(src, "\red Your shield has overloaded!")
+			to_chat(src, "<span class='warning'>Your shield has overloaded!</span>")
 		else
 			brute -= absorb_brute
 			burn -= absorb_burn
-			to_chat(src, "\red Your shield absorbs some of the impact!")
+			to_chat(src, "<span class='warning'>Your shield absorbs some of the impact!</span>")
 
 	var/datum/robot_component/armour/A = get_armour()
 	if(A)
@@ -164,3 +147,7 @@
 		burn	-= (picked.electronics_damage - burn_was)
 
 		parts -= picked
+
+/mob/living/silicon/robot/emp_act(severity)
+	uneq_all()
+	..() //Damage is handled at /silicon/ level.

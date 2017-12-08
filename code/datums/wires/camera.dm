@@ -1,7 +1,7 @@
 // Wires for cameras.
 
 /datum/wires/camera
-	random = 0
+	random = 1
 	holder_type = /obj/machinery/camera
 	wire_count = 6
 
@@ -17,9 +17,7 @@
 
 /datum/wires/camera/CanUse(var/mob/living/L)
 	var/obj/machinery/camera/C = holder
-	if(!C.panel_open)
-		return 0
-	return 1
+	return C.panel_open
 
 var/const/CAMERA_WIRE_FOCUS = 1
 var/const/CAMERA_WIRE_POWER = 2
@@ -38,7 +36,7 @@ var/const/CAMERA_WIRE_NOTHING2 = 32
 
 		if(CAMERA_WIRE_POWER)
 			if(C.status && !mended || !C.status && mended)
-				C.toggle_cam(usr, 1)
+				C.deactivate(usr, 1)
 
 		if(CAMERA_WIRE_LIGHT)
 			C.light_disabled = !mended
@@ -59,14 +57,11 @@ var/const/CAMERA_WIRE_NOTHING2 = 32
 			var/new_range = (C.view_range == initial(C.view_range) ? C.short_range : initial(C.view_range))
 			C.setViewRange(new_range)
 
-		if(CAMERA_WIRE_POWER)
-			C.toggle_cam(null) // Deactivate the camera
-
 		if(CAMERA_WIRE_LIGHT)
 			C.light_disabled = !C.light_disabled
 
 		if(CAMERA_WIRE_ALARM)
-			C.visible_message("[bicon(C)] *beep*", "[bicon(C)] *beep*")
+			C.visible_message("\icon[C] *beep*", "\icon[C] *beep*")
 	return
 
 /datum/wires/camera/proc/CanDeconstruct()

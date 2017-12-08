@@ -1,5 +1,5 @@
 /mob/living/simple_animal/hostile/russian
-	name = "Russian"
+	name = "russian"
 	desc = "For the Motherland!"
 	icon_state = "russianmelee"
 	icon_living = "russianmelee"
@@ -7,36 +7,49 @@
 	icon_gib = "syndicate_gib"
 	speak_chance = 0
 	turns_per_move = 5
-	response_help = "pokes the"
-	response_disarm = "shoves the"
-	response_harm = "hits the"
-	speed = 0
+	response_help = "pokes"
+	response_disarm = "shoves"
+	response_harm = "hits"
+	speed = 4
+	stop_automated_movement_when_pulled = 0
 	maxHealth = 100
 	health = 100
 	harm_intent_damage = 5
 	melee_damage_lower = 15
 	melee_damage_upper = 15
-	attacktext = "punches"
-	attack_sound = 'sound/weapons/punch1.ogg'
-	a_intent = I_HARM
-	unsuitable_atmos_damage = 15
-	faction = list("russian")
+	attacktext = "punched"
+	a_intent = I_HURT
+	var/corpse = /obj/effect/landmark/mobcorpse/russian
+	var/weapon1 = /obj/item/weapon/material/knife
+	min_oxy = 5
+	max_oxy = 0
+	min_tox = 0
+	max_tox = 1
+	min_co2 = 0
+	max_co2 = 5
+	min_n2 = 0
+	max_n2 = 0
+	unsuitable_atoms_damage = 15
+	faction = "russian"
 	status_flags = CANPUSH
-	loot = list(/obj/effect/landmark/mobcorpse/russian,
-			/obj/item/weapon/kitchen/knife)
-	del_on_death = 1
 
 
 /mob/living/simple_animal/hostile/russian/ranged
 	icon_state = "russianranged"
 	icon_living = "russianranged"
+	corpse = /obj/effect/landmark/mobcorpse/russian/ranged
+	weapon1 = /obj/item/weapon/gun/projectile/revolver/mateba
 	ranged = 1
-	retreat_distance = 5
-	minimum_distance = 5
+	projectiletype = /obj/item/projectile/bullet
+	projectilesound = 'sound/weapons/gunshot/gunshot2.ogg'
 	casingtype = /obj/item/ammo_casing/a357
-	loot = list(/obj/effect/landmark/mobcorpse/russian/ranged, /obj/item/weapon/gun/projectile/revolver/mateba)
 
-/mob/living/simple_animal/hostile/russian/ranged/mosin
-	loot = list(/obj/effect/landmark/mobcorpse/russian/ranged,
-				/obj/item/weapon/gun/projectile/shotgun/boltaction)
-	casingtype = /obj/item/ammo_casing/a762
+
+/mob/living/simple_animal/hostile/russian/death(gibbed, deathmessage, show_dead_message)
+	..(gibbed, deathmessage, show_dead_message)
+	if(corpse)
+		new corpse (src.loc)
+	if(weapon1)
+		new weapon1 (src.loc)
+	qdel(src)
+	return

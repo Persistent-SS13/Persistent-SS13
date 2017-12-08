@@ -4,7 +4,7 @@
 	var/radio_desc = ""
 	icon_state = "headset"
 	item_state = "headset"
-	materials = list(MAT_METAL=75)
+	matter = list(DEFAULT_WALL_MATERIAL = 75)
 	subspace_transmission = 1
 	canhear_range = 0 // can't hear headsets from very far away
 
@@ -14,28 +14,21 @@
 	var/obj/item/device/encryptionkey/keyslot1 = null
 	var/obj/item/device/encryptionkey/keyslot2 = null
 
-	var/ks1type = null
+	var/ks1type = /obj/item/device/encryptionkey
 	var/ks2type = null
 
-/obj/item/device/radio/headset/New()
-	..()
+/obj/item/device/radio/headset/Initialize()
+	. = ..()
 	internal_channels.Cut()
-
-/obj/item/device/radio/headset/initialize()
-	..()
-
 	if(ks1type)
 		keyslot1 = new ks1type(src)
 	if(ks2type)
 		keyslot2 = new ks2type(src)
-
 	recalculateChannels(1)
 
 /obj/item/device/radio/headset/Destroy()
-	if(keyslot1)
-		qdel(keyslot1)
-	if(keyslot2)
-		qdel(keyslot2)
+	qdel(keyslot1)
+	qdel(keyslot2)
 	keyslot1 = null
 	keyslot2 = null
 	return ..()
@@ -43,7 +36,7 @@
 /obj/item/device/radio/headset/list_channels(var/mob/user)
 	return list_secure_channels()
 
-/obj/item/device/radio/headset/examine(mob/user, var/distance = -1)
+/obj/item/device/radio/headset/examine(mob/user)
 	if(!(..(user, 1) && radio_desc))
 		return
 
@@ -51,53 +44,46 @@
 	to_chat(user, radio_desc)
 
 /obj/item/device/radio/headset/handle_message_mode(mob/living/M as mob, message, channel)
-	if(channel == "special")
-		if(translate_binary)
+	if (channel == "special")
+		if (translate_binary)
 			var/datum/language/binary = all_languages["Robot Talk"]
 			binary.broadcast(M, message)
-			return RADIO_CONNECTION_NON_SUBSPACE
-		if(translate_hive)
+		if (translate_hive)
 			var/datum/language/hivemind = all_languages["Hivemind"]
 			hivemind.broadcast(M, message)
-			return RADIO_CONNECTION_NON_SUBSPACE
-		return RADIO_CONNECTION_FAIL
+		return null
 
 	return ..()
 
 /obj/item/device/radio/headset/receive_range(freq, level, aiOverride = 0)
-	if(aiOverride)
+	if (aiOverride)
 		return ..(freq, level)
-	if(ishuman(loc))
-		var/mob/living/carbon/human/H = loc
+	if(ishuman(src.loc))
+		var/mob/living/carbon/human/H = src.loc
 		if(H.l_ear == src || H.r_ear == src)
 			return ..(freq, level)
-	else if(isanimal(loc))
-		// frankly, all the ones with inventory are small enough to not warrant snowflaking the slot check somehow
-		return ..(freq, level)
 	return -1
 
-/obj/item/device/radio/headset/alt
-	name = "bowman headset"
-	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "com_headset_alt"
-	item_state = "com_headset_alt"
-
 /obj/item/device/radio/headset/syndicate
-	origin_tech = "syndicate=3"
+	origin_tech = list(TECH_ILLEGAL = 3)
 	syndie = 1
 	ks1type = /obj/item/device/encryptionkey/syndicate
 
-/obj/item/device/radio/headset/syndicate/alt //undisguised bowman with flash protection
-	name = "syndicate headset"
-	desc = "A syndicate headset that can be used to hear all radio frequencies. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	origin_tech = "syndicate=3"
-	icon_state = "syndie_headset"
-	item_state = "syndie_headset"
+/obj/item/device/radio/headset/syndicate/Initialize()
+	. = ..()
+	set_frequency(SYND_FREQ)
+
+/obj/item/device/radio/headset/raider
+	origin_tech = list(TECH_ILLEGAL = 2)
+	syndie = 1
+	ks1type = /obj/item/device/encryptionkey/raider
+
+/obj/item/device/radio/headset/raider/Initialize()
+	. = ..()
+	set_frequency(RAID_FREQ)
 
 /obj/item/device/radio/headset/binary
-	origin_tech = "syndicate=3"
+	origin_tech = list(TECH_ILLEGAL = 3)
 	ks1type = /obj/item/device/encryptionkey/binary
 
 /obj/item/device/radio/headset/headset_sec
@@ -106,13 +92,6 @@
 	icon_state = "sec_headset"
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/headset_sec
-
-/obj/item/device/radio/headset/headset_sec/alt
-	name = "security bowman headset"
-	desc = "This is used by your elite security force. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "sec_headset_alt"
-	item_state = "sec_headset_alt"
 
 /obj/item/device/radio/headset/headset_eng
 	name = "engineering radio headset"
@@ -138,14 +117,14 @@
 /obj/item/device/radio/headset/headset_sci
 	name = "science radio headset"
 	desc = "A sciency headset. Like usual."
-	icon_state = "sci_headset"
+	icon_state = "com_headset"
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/headset_sci
 
 /obj/item/device/radio/headset/headset_medsci
 	name = "medical research radio headset"
 	desc = "A headset that is a result of the mating between medical and science."
-	icon_state = "medsci_headset"
+	icon_state = "med_headset"
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/headset_medsci
 
@@ -163,15 +142,23 @@
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/heads/captain
 
-/obj/item/device/radio/headset/heads/captain/alt
-	name = "\proper the captain's bowman headset"
-	desc = "The headset of the boss. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "com_headset_alt"
-	item_state = "com_headset_alt"
+/obj/item/device/radio/headset/heads/ai_integrated //No need to care about icons, it should be hidden inside the AI anyway.
+	name = "\improper AI subspace transceiver"
+	desc = "Integrated AI radio transceiver."
+	icon = 'icons/obj/robot_component.dmi'
+	icon_state = "radio"
+	item_state = "headset"
+	ks2type = /obj/item/device/encryptionkey/heads/ai_integrated
+	var/myAi = null    // Atlantis: Reference back to the AI which has this radio.
+	var/disabledAi = 0 // Atlantis: Used to manually disable AI's integrated radio via inteliCard menu.
+
+/obj/item/device/radio/headset/heads/ai_integrated/receive_range(freq, level)
+	if (disabledAi)
+		return -1 //Transciever Disabled.
+	return ..(freq, level, 1)
 
 /obj/item/device/radio/headset/heads/rd
-	name = "Research Director's headset"
+	name = "research director's headset"
 	desc = "Headset of the researching God."
 	icon_state = "com_headset"
 	item_state = "headset"
@@ -183,13 +170,6 @@
 	icon_state = "com_headset"
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/heads/hos
-
-/obj/item/device/radio/headset/heads/hos/alt
-	name = "\proper the head of security's bowman headset"
-	desc = "The headset of the man in charge of keeping order and protecting the station. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "com_headset_alt"
-	item_state = "com_headset_alt"
 
 /obj/item/device/radio/headset/heads/ce
 	name = "chief engineer's headset"
@@ -214,112 +194,69 @@
 
 /obj/item/device/radio/headset/headset_cargo
 	name = "supply radio headset"
-	desc = "A headset used by the cargo department."
+	desc = "A headset used by the box pushers."
 	icon_state = "cargo_headset"
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/headset_cargo
 
-/obj/item/device/radio/headset/headset_cargo/mining
-	name = "mining radio headset"
-	desc = "Headset used by shaft miners."
-	icon_state = "mine_headset"
-
 /obj/item/device/radio/headset/headset_service
 	name = "service radio headset"
-	desc = "Headset used by the service staff, tasked with keeping the station full, happy and clean."
+	desc = "Headset used by the service staff, tasked with keeping everyone full, happy and clean."
 	icon_state = "srv_headset"
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/headset_service
 
-/obj/item/device/radio/headset/heads/ntrep
-	name = "nanotrasen representative's headset"
-	desc = "The headset of the Nanotrasen Representative."
-	icon_state = "com_headset"
-	item_state = "headset"
-	ks2type = /obj/item/device/encryptionkey/heads/ntrep
-
-/obj/item/device/radio/headset/heads/magistrate
-	name = "magistrate's headset"
-	desc = "The headset of the Magistrate."
-	icon_state = "com_headset"
-	item_state = "headset"
-	ks2type = /obj/item/device/encryptionkey/heads/magistrate
-
-/obj/item/device/radio/headset/heads/magistrate/alt
-	name = "\proper magistrate's bowman headset"
-	desc = "The headset of the Magistrate. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "com_headset_alt"
-	item_state = "com_headset_alt"
-
-/obj/item/device/radio/headset/heads/blueshield
-	name = "blueshield's headset"
-	desc = "The headset of the Blueshield."
-	icon_state = "com_headset"
-	item_state = "headset"
-	ks2type = /obj/item/device/encryptionkey/heads/blueshield
-
-/obj/item/device/radio/headset/heads/blueshield/alt
-	name = "\proper blueshield's bowman headset"
-	desc = "The headset of the Blueshield. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "com_headset_alt"
-	item_state = "com_headset_alt"
-
 /obj/item/device/radio/headset/ert
-	name = "emergency response team headset"
+	name = "emergency response team radio headset"
 	desc = "The headset of the boss's boss."
 	icon_state = "com_headset"
 	item_state = "headset"
 	ks2type = /obj/item/device/encryptionkey/ert
 
-/obj/item/device/radio/headset/ert/alt
-	name = "\proper emergency response team's bowman headset"
-	desc = "The headset of the boss. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "com_headset_alt"
-	item_state = "com_headset_alt"
-
-/obj/item/device/radio/headset/centcom
-	name = "\proper centcom officer's bowman headset"
-	desc = "The headset of final authority. Protects ears from flashbangs."
-	flags = EARBANGPROTECT
-	icon_state = "com_headset_alt"
-	item_state = "com_headset_alt"
-	ks2type = /obj/item/device/encryptionkey/centcom
-
-/obj/item/device/radio/headset/heads/ai_integrated //No need to care about icons, it should be hidden inside the AI anyway.
-	name = "\improper AI subspace transceiver"
-	desc = "Integrated AI radio transceiver."
-	icon = 'icons/obj/robot_component.dmi'
-	icon_state = "radio"
+/obj/item/device/radio/headset/ia
+	name = "internal affair's headset"
+	desc = "The headset of your worst enemy."
+	icon_state = "com_headset"
 	item_state = "headset"
-	ks2type = /obj/item/device/encryptionkey/heads/ai_integrated
-	var/myAi = null    // Atlantis: Reference back to the AI which has this radio.
-	var/disabledAi = 0 // Atlantis: Used to manually disable AI's integrated radio via intellicard menu.
+	ks2type = /obj/item/device/encryptionkey/heads/hos
 
-/obj/item/device/radio/headset/heads/ai_integrated/receive_range(freq, level)
-	if(disabledAi)
-		return -1 //Transciever Disabled.
-	return ..(freq, level, 1)
+/obj/item/device/radio/headset/entertainment
+	name = "actor's radio headset"
+	desc = "specially made to make you sound less cheesy."
+	icon_state = "com_headset"
+	item_state = "headset"
+	ks2type = /obj/item/device/encryptionkey/entertainment
+
+/obj/item/device/radio/headset/specops
+	name = "special operations radio headset"
+	desc = "The headset of the spooks."
+	icon_state = "cent_headset"
+	item_state = "headset"
+	ks2type = /obj/item/device/encryptionkey/specops
 
 /obj/item/device/radio/headset/attackby(obj/item/weapon/W as obj, mob/user as mob)
+//	..()
 	user.set_machine(src)
-	if(!( istype(W, /obj/item/weapon/screwdriver) || (istype(W, /obj/item/device/encryptionkey/ ))))
+	if (!( istype(W, /obj/item/weapon/screwdriver) || (istype(W, /obj/item/device/encryptionkey/ ))))
 		return
 
 	if(istype(W, /obj/item/weapon/screwdriver))
 		if(keyslot1 || keyslot2)
 
+
 			for(var/ch_name in channels)
 				radio_controller.remove_object(src, radiochannels[ch_name])
 				secure_radio_connections[ch_name] = null
+
 
 			if(keyslot1)
 				var/turf/T = get_turf(user)
 				if(T)
 					keyslot1.loc = T
 					keyslot1 = null
+
+
+
 			if(keyslot2)
 				var/turf/T = get_turf(user)
 				if(T)
@@ -328,6 +265,7 @@
 
 			recalculateChannels()
 			to_chat(user, "You pop out the encryption keys in the headset!")
+
 		else
 			to_chat(user, "This headset doesn't have any encryption keys!  How useless...")
 
@@ -340,14 +278,22 @@
 			user.drop_item()
 			W.loc = src
 			keyslot1 = W
+
 		else
 			user.drop_item()
 			W.loc = src
 			keyslot2 = W
 
+
 		recalculateChannels()
+
 	return
 
+/obj/item/device/radio/headset/MouseDrop(var/obj/over_object)
+	var/mob/M = usr
+	if((!istype(over_object, /obj/screen)) && (src in M) && CanUseTopic(M))
+		return attack_self(M)
+	return
 
 /obj/item/device/radio/headset/proc/recalculateChannels(var/setDescription = 0)
 	src.channels = list()
@@ -388,7 +334,9 @@
 			src.syndie = 1
 
 
-	for(var/ch_name in channels)
+	for (var/ch_name in channels)
+		if(!radio_controller)
+			sleep(30) // Waiting for the radio_controller to be created.
 		if(!radio_controller)
 			src.name = "broken radio headset"
 			return

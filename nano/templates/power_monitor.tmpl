@@ -1,67 +1,93 @@
-<!--
-Title: Power Monitoring Console
-Used In File(s): \code\modules\nano\modules\power_monitor.dm
--->
-{{if !data.powermonitor && data.select_monitor}}
-	<h2>Station Power Monitors</h2>
-	<div class="item">
-		Select a power monitor:
+{{if data.focus}}
+	<div class="notice" style="height: 22px">
+		{{:helper.link('Show List', 'cancel', { 'clear' : 1})}}   Sensor selected: {{:data.focus.name}} 
 	</div>
-	{{for data.powermonitors}}
-		<div class="item">
-			{{:helper.link(value.Name, 'gear', { 'selectmonitor' : value.ref }, null, null)}}
+	{{if data.focus.error}}
+		{{:data.focus.error}}
+	{{else}}
+		<h3>Network Information</h3>
+		<div class="itemLabel">
+			Network Load Status:
 		</div>
-	{{empty}}
-		<h2>Network Error</h2>
-		<span class='bad'>No power monitors found.</span>
-	{{/for}}
-{{/if}}
-{{if data.powermonitor}}
-	{{if data.select_monitor}}
-		{{:helper.link('Return', 'gear', { 'return' : 1 }, null, null)}}
+		{{if data.focus.load_percentage >= 95}}
+			<div class="itemContent"><span class='bad'>DANGER: Overload</span></div>
+		{{else data.focus.load_percentage >= 85}}
+			<div class="itemContent"><span class='average'>WARNING: High Load</span></div>
+		{{else}}
+			<div class="itemContent"><span class='good'>Optimal</span></div>
+		{{/if}}
+		<div class="itemLabel">
+			Network Security Status:
+		</div>
+		{{if data.focus.alarm}}
+			<div class="itemContent"><span class='bad'>WARNING: Abnormal activity detected!</span></div>
+		{{else}}
+			<div class="itemContent"><span class='good'>Secure</span></div>
+		{{/if}}
+
+		<div class="itemLabel">
+			Load Percentage:
+		</div>
+		<div class="itemContent">
+			{{:helper.displayBar(data.focus.load_percentage, 0, 100, (data.focus.load_percentage <= 75) ? 'good' : (data.focus.load_percentage <= 90) ? 'average' : 'bad')}}{{:data.focus.load_percentage}}%
+		</div>
+		<div class="itemLabel">
+			Available Power:
+		</div>
+		<div class="itemContent">
+			{{:data.focus.total_avail}}
+		</div>
+		<div class="itemLabel">
+			APC Power Usage:
+		</div>
+		<div class="itemContent">
+			{{:data.focus.total_used_apc}}
+		</div>
+		<div class="itemLabel">
+			Other Power Usage:
+		</div>
+		<div class="itemContent">
+			{{:data.focus.total_used_other}}
+		</div>
+		<div class="itemLabel">
+			Total Usage:
+		</div>
+		<div class="itemContent">
+			{{:data.focus.total_used_all}}
+		</div>
+		<h3>Sensor Readings</h3>
+		<table><tr><th>APC Name<th>Equipment<th>Lighting<th>Environment<th>Cell Status<th>APC Load
+		{{for data.focus.apc_data}}
+			<tr>
+			<td>{{:value.name}}
+			<td>{{:value.s_equipment}}
+			<td>{{:value.s_lighting}}
+			<td>{{:value.s_environment}}
+			{{if value.cell_status == "N"}}
+				<td>{{:helper.link(value.cell_charge + '%', 'batt_disc', null,'disabled', 'width75btn')}}
+			{{else value.cell_status == "C"}}
+				<td>{{:helper.link(value.cell_charge + '%', 'batt_chrg', null,'disabled', 'width75btn')}}
+			{{else}}
+				<td>{{:helper.link(value.cell_charge + '%', 'batt_full', null,'disabled', 'width75btn')}}
+			{{/if}}
+			<td>{{:value.total_load}}
+		{{empty}}
+			<tr><td>No APCs detected in connected powernet.
+		{{/for}}
+		</table>
 	{{/if}}
-	<h2>Powernet Status</h2>
-	<div class="item">
-		<div class="itemLabelNarrow">
-			<b>Total Power:</b>
-		</div>
-		<div class="itemContent">
-			<span class="average">{{:helper.smoothRound(data.poweravail)}} W</span>
-		</div>
-	</div>
-	<div class="item">
-		<div class="itemLabelNarrow">
-			<b>Total Load:</b>
-		</div>
-		<div class="itemContent">
-			<span class="average">{{:helper.smoothRound(data.powerload)}} W</span>
-		</div>
-	</div>
-	<div class="item">
-		<div class="itemLabelNarrow">
-			<b>Total Demand:</b>
-		</div>
-		<div class="itemContent">
-			<span class="average">{{:helper.smoothRound(data.powerdemand)}} W</span>
-		</div>
-	</div>
-	<div class="item">
-		<table class="curvedEdges" style="text-align: center;"><tbody>
-			<tr><th>Area</th><th>Equip.</th><th>Lighting</th><th>Environ.</th><th>Cell</th><th>Load</th></tr>
-			{{for data.apcs}}
-				<tr><td style="text-align: left; font-weight: bold;">{{:value.Name}}</td>
-					{{:helper.string('<td width="55px" bgcolor="{0}">{1}</td>', value.Equipment == "On" || value.Equipment == "AOn" ? '#4f7529' : '#8f1414', value.Equipment)}}
-					{{:helper.string('<td width="55px" bgcolor="{0}">{1}</td>', value.Lights == "On" || value.Lights == "AOn" ? '#4f7529' : '#8f1414', value.Lights)}}
-					{{:helper.string('<td width="55px" bgcolor="{0}">{1}</td>', value.Environment == "On" || value.Environment == "AOn" ? '#4f7529' : '#8f1414', value.Environment)}}
-					{{:helper.string('<td style="text-align: center;" width="65px" bgcolor="{0}">{1}{2}</td>', value.CellStatus == "F" ? '#4f7529' : value.CellStatus == "C" ? '#cd6500' : '#8f1414', value.CellStatus == "M" ? 'No Cell' : value.CellPct + '%', value.CellStatus == "M" ? '' : ' (' + value.CellStatus + ')')}}
-					<td width="65px">{{:value.Load}}W</td>
-				</tr>
-			{{/for}}
-		</tbody></table>
-	</div>
 {{else}}
-	{{if !data.select_monitor}}
-		<h2>Network Error</h2>
-		<span class='bad'>Power monitor not connected to power network.</span>
-	{{/if}}
-{{/if}}
+	<div class="notice" style="height: 22px">
+		{{:helper.link('Scan For Sensors', 'refresh', { 'refresh' : 1})}}   No active sensor. Printing sensor list.
+	</div><br><table>
+	{{for data.all_sensors}}
+		{{if value.alarm}}
+			<tr><td>{{:helper.link(value.name, 'alert', { 'setsensor' : value.name})}}
+		{{else}}
+			<tr><td>{{:helper.link(value.name, '' , { 'setsensor' : value.name})}}
+		{{/if}}
+	{{empty}}
+		<b>WARN: No Sensors Detected!</b>
+	{{/for}}
+	</table>
+{{/if}} 

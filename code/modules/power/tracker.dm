@@ -23,14 +23,13 @@
 
 /obj/machinery/power/tracker/Destroy()
 	unset_control() //remove from control computer
-	return ..()
+	..()
 
 //set the control of the tracker to a given computer if closer than SOLAR_MAX_DIST
 /obj/machinery/power/tracker/proc/set_control(var/obj/machinery/power/solar_control/SC)
 	if(SC && (get_dist(src, SC) > SOLAR_MAX_DIST))
 		return 0
 	control = SC
-	SC.connected_tracker = src
 	return 1
 
 //set the control of the tracker to null and removes it from the previous control computer if needed
@@ -42,7 +41,7 @@
 /obj/machinery/power/tracker/proc/Make(var/obj/item/solar_assembly/S)
 	if(!S)
 		S = new /obj/item/solar_assembly(src)
-		S.glass_type = /obj/item/stack/sheet/glass
+		S.glass_type = /obj/item/stack/material/glass
 		S.tracker = 1
 		S.anchored = 1
 	S.loc = src
@@ -53,7 +52,7 @@
 	sun_angle = angle
 
 	//set icon dir to show sun illumination
-	dir = turn(NORTH, -angle - 22.5)	// 22.5 deg bias ensures, e.g. 67.5-112.5 is EAST
+	set_dir(turn(NORTH, -angle - 22.5))	// 22.5 deg bias ensures, e.g. 67.5-112.5 is EAST
 
 	if(powernet && (powernet == control.powernet)) //update if we're still in the same powernet
 		control.cdir = angle
@@ -63,14 +62,14 @@
 	if(istype(W, /obj/item/weapon/crowbar))
 		playsound(src.loc, 'sound/machines/click.ogg', 50, 1)
 		user.visible_message("<span class='notice'>[user] begins to take the glass off the solar tracker.</span>")
-		if(do_after(user, 50, target = src))
+		if(do_after(user, 50,src))
 			var/obj/item/solar_assembly/S = locate() in src
 			if(S)
 				S.loc = src.loc
 				S.give_glass()
 			playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
 			user.visible_message("<span class='notice'>[user] takes the glass off the tracker.</span>")
-			qdel(src) // qdel
+			qdel(src)
 		return
 	..()
 
@@ -81,4 +80,4 @@
 	name = "tracker electronics"
 	icon = 'icons/obj/doors/door_assembly.dmi'
 	icon_state = "door_electronics"
-	w_class = 2
+	w_class = ITEM_SIZE_SMALL

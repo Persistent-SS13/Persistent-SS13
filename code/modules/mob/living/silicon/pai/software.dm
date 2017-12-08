@@ -7,7 +7,13 @@ var/list/pai_emotions = list(
 		"Off" = 6,
 		"Sad" = 7,
 		"Angry" = 8,
-		"What" = 9
+		"What" = 9,
+		"Neutral" = 10,
+		"Silly" = 11,
+		"Nose" = 12,
+		"Smirk" = 13,
+		"Exclamation Points" = 14,
+		"Question Mark" = 15
 	)
 
 
@@ -15,11 +21,11 @@ var/global/list/pai_software_by_key = list()
 var/global/list/default_pai_software = list()
 /hook/startup/proc/populate_pai_software_list()
 	var/r = 1 // I would use ., but it'd sacrifice runtime detection
-	for(var/type in subtypesof(/datum/pai_software))
+	for(var/type in typesof(/datum/pai_software) - /datum/pai_software)
 		var/datum/pai_software/P = new type()
 		if(pai_software_by_key[P.id])
 			var/datum/pai_software/O = pai_software_by_key[P.id]
-			to_chat(world, "<span class='warning'>pAI software module [P.name] has the same key as [O.name]!</span>")
+			log_error("<span class='warning'>pAI software module [P.name] has the same key as [O.name]!</span>")
 			r = 0
 			continue
 		pai_software_by_key[P.id] = P
@@ -84,16 +90,16 @@ var/global/list/default_pai_software = list()
 	data["emotions"] = emotions
 	data["current_emotion"] = card.current_emotion
 
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
-	if(!ui)
+	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	if (!ui)
 		ui = new(user, src, ui_key, "pai_interface.tmpl", "pAI Software Interface", 450, 600)
 		ui.set_initial_data(data)
 		ui.open()
 		ui.set_auto_update(1)
 
 /mob/living/silicon/pai/Topic(href, href_list)
-	if(..())
-		return 1
+	. = ..()
+	if(.) return
 
 	if(href_list["software"])
 		var/soft = href_list["software"]
@@ -120,6 +126,6 @@ var/global/list/default_pai_software = list()
 
 	else if(href_list["image"])
 		var/img = text2num(href_list["image"])
-		if(1 <= img && img <= 9)
+		if(1 <= img && img <= pai_emotions.len)
 			card.setEmotion(img)
 		return 1

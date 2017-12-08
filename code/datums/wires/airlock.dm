@@ -2,6 +2,8 @@
 
 /datum/wires/airlock/secure
 	random = 1
+	wire_count = 14
+	window_y = 680
 
 /datum/wires/airlock
 	holder_type = /obj/machinery/door/airlock
@@ -33,16 +35,18 @@ var/const/AIRLOCK_WIRE_LIGHT = 2048
 
 /datum/wires/airlock/GetInteractWindow()
 	var/obj/machinery/door/airlock/A = holder
-	var/haspower = A.arePowerSystemsOn()
+	var/haspower = A.arePowerSystemsOn() //If there's no power, then no lights will be on.
+
 	. += ..()
-	. += text("<br>\n[]<br>\n[]<br>\n[]<br>\n[]<br>\n[]<br>\n[]<br>\n[]", 
+	. += text("<br>\n[]<br>\n[]<br>\n[]<br>\n[]<br>\n[]<br>\n[]<br>\n[]<br>\n[]",
 	(A.locked ? "The door bolts have fallen!" : "The door bolts look up."),
 	((A.lights && haspower) ? "The door bolt lights are on." : "The door bolt lights are off!"),
 	((haspower) ? "The test light is on." : "The test light is off!"),
-	((A.aiControlDisabled==0 && !A.emagged && haspower) ? "The 'AI control allowed' light is on." : "The 'AI control allowed' light is off."),
-	((A.safe==0 && haspower) ? "The 'Check Wiring' light is on." : "The 'Check Wiring' light is off."),
-	((A.normalspeed==0 && haspower) ? "The 'Check Timing Mechanism' light is on." : "The 'Check Timing Mechanism' light is off."),
-	((A.emergency && haspower) ? "The emergency lights are on." : "The emergency lights are off."))
+	((A.backup_power_lost_until) ? "The backup power light is off!" : "The backup power light is on."),
+	((A.aiControlDisabled==0 && !A.emagged && haspower)? "The 'AI control allowed' light is on." : "The 'AI control allowed' light is off."),
+	((A.safe==0 && haspower)? "The 'Check Wiring' light is on." : "The 'Check Wiring' light is off."),
+	((A.normalspeed==0 && haspower)? "The 'Check Timing Mechanism' light is on." : "The 'Check Timing Mechanism' light is off."),
+	((A.aiDisabledIdScanner==0 && haspower)? "The IDScan light is on." : "The IDScan light is off."))
 
 /datum/wires/airlock/UpdateCut(var/index, var/mended)
 
@@ -100,19 +104,19 @@ var/const/AIRLOCK_WIRE_LIGHT = 2048
 				A.electrify(0)
 			return // Don't update the dialog.
 
-		if(AIRLOCK_WIRE_SAFETY)
+		if (AIRLOCK_WIRE_SAFETY)
 			A.safe = mended
 
 		if(AIRLOCK_WIRE_SPEED)
 			A.autoclose = mended
 			if(mended)
 				if(!A.density)
-					spawn(0)
-						A.close()
+					A.close()
 
 		if(AIRLOCK_WIRE_LIGHT)
 			A.lights = mended
 			A.update_icon()
+
 
 /datum/wires/airlock/UpdatePulsed(var/index)
 
@@ -122,10 +126,7 @@ var/const/AIRLOCK_WIRE_LIGHT = 2048
 			//Sending a pulse through flashes the red light on the door (if the door has power).
 			if(A.arePowerSystemsOn() && A.density)
 				A.do_animate("deny")
-				if(A.emergency)
-					A.emergency = 0
-					A.update_icon()
-		if(AIRLOCK_WIRE_MAIN_POWER1 || AIRLOCK_WIRE_MAIN_POWER2)
+		if(AIRLOCK_WIRE_MAIN_POWER1, AIRLOCK_WIRE_MAIN_POWER2)
 			//Sending a pulse through either one causes a breaker to trip, disabling the door for 10 seconds if backup power is connected, or 1 minute if not (or until backup power comes back on, whichever is shorter).
 			A.loseMainPower()
 		if(AIRLOCK_WIRE_DOOR_BOLTS)
@@ -136,7 +137,7 @@ var/const/AIRLOCK_WIRE_LIGHT = 2048
 			else
 				A.unlock()
 
-		if(AIRLOCK_WIRE_BACKUP_POWER1 || AIRLOCK_WIRE_BACKUP_POWER2)
+		if(AIRLOCK_WIRE_BACKUP_POWER1, AIRLOCK_WIRE_BACKUP_POWER2)
 			//two wires for backup power. Sending a pulse through either one causes a breaker to trip, but this does not disable it unless main power is down too (in which case it is disabled for 1 minute or however long it takes main power to come back, whichever is shorter).
 			A.loseBackupPower()
 		if(AIRLOCK_WIRE_AI_CONTROL)
@@ -160,16 +161,12 @@ var/const/AIRLOCK_WIRE_LIGHT = 2048
 			//will succeed only if the ID wire is cut or the door requires no access and it's not emagged
 			if(A.emagged)	return
 			if(!A.requiresID() || A.check_access(null))
-				spawn(0)
-					if(A.density)
-						A.open()
-					else
-						A.close()
+				if(A.density)	A.open()
+				else			A.close()
 		if(AIRLOCK_WIRE_SAFETY)
 			A.safe = !A.safe
 			if(!A.density)
-				spawn(0)
-					A.close()
+				A.close()
 
 		if(AIRLOCK_WIRE_SPEED)
 			A.normalspeed = !A.normalspeed

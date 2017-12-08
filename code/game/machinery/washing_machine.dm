@@ -1,6 +1,5 @@
 /obj/machinery/washing_machine
 	name = "Washing Machine"
-	desc = "Gets rid of those pesky bloodstains, or your money back!"
 	icon = 'icons/obj/machines/washing_machine.dmi'
 	icon_state = "wm_10"
 	density = 1
@@ -23,6 +22,11 @@
 	var/gibs_ready = 0
 	var/obj/crayon
 
+/obj/machinery/washing_machine/Destroy()
+	qdel(crayon)
+	crayon = null
+	. = ..()
+
 /obj/machinery/washing_machine/verb/start()
 	set name = "Start Washing"
 	set category = "Object"
@@ -43,138 +47,18 @@
 	sleep(200)
 	for(var/atom/A in contents)
 		A.clean_blood()
+		if(isitem(A))
+			var/obj/item/I = A
+			I.decontaminate()
+			if(crayon && iscolorablegloves(I))
+				var/obj/item/clothing/gloves/C = I
+				C.color = crayon.color
 
 	//Tanning!
-	for(var/obj/item/stack/sheet/hairlesshide/HH in contents)
-		var/obj/item/stack/sheet/wetleather/WL = new(src)
+	for(var/obj/item/stack/material/hairlesshide/HH in contents)
+		var/obj/item/stack/material/wetleather/WL = new(src)
 		WL.amount = HH.amount
 		qdel(HH)
-
-
-	if(crayon)
-		var/wash_color
-		if(istype(crayon,/obj/item/toy/crayon))
-			var/obj/item/toy/crayon/CR = crayon
-			wash_color = CR.colourName
-		else if(istype(crayon,/obj/item/weapon/stamp))
-			var/obj/item/weapon/stamp/ST = crayon
-			wash_color = ST.item_color
-
-		if(wash_color)
-			var/new_jumpsuit_icon_state = ""
-			var/new_jumpsuit_item_state = ""
-			var/new_jumpsuit_name = ""
-			var/new_glove_icon_state = ""
-			var/new_glove_item_state = ""
-			var/new_glove_name = ""
-			var/new_bandana_icon_state = ""
-			var/new_bandana_item_state = ""
-			var/new_bandana_name = ""
-			var/new_shoe_icon_state = ""
-			var/new_shoe_name = ""
-			var/new_sheet_icon_state = ""
-			var/new_sheet_name = ""
-			var/new_softcap_icon_state = ""
-			var/new_softcap_name = ""
-			var/new_desc = "The colors are a bit dodgy."
-			for(var/T in typesof(/obj/item/clothing/under))
-				var/obj/item/clothing/under/J = new T
-				if(wash_color == J.item_color)
-					new_jumpsuit_icon_state = J.icon_state
-					new_jumpsuit_item_state = J.item_state
-					new_jumpsuit_name = J.name
-					qdel(J)
-					break
-				qdel(J)
-			for(var/T in typesof(/obj/item/clothing/gloves/color))
-				var/obj/item/clothing/gloves/color/G = new T
-				if(wash_color == G.item_color)
-					new_glove_icon_state = G.icon_state
-					new_glove_item_state = G.item_state
-					new_glove_name = G.name
-					qdel(G)
-					break
-				qdel(G)
-			for(var/T in typesof(/obj/item/clothing/shoes))
-				var/obj/item/clothing/shoes/S = new T
-				if(wash_color == S.item_color)
-					new_shoe_icon_state = S.icon_state
-					new_shoe_name = S.name
-					qdel(S)
-					break
-				qdel(S)
-			for(var/T in typesof(/obj/item/clothing/mask/bandana))
-				var/obj/item/clothing/mask/bandana/M = new T
-				if(wash_color == M.item_color)
-					new_bandana_icon_state = M.icon_state
-					new_bandana_item_state = M.item_state
-					new_bandana_name = M.name
-					qdel(M)
-					break
-				qdel(M)
-			for(var/T in typesof(/obj/item/weapon/bedsheet))
-				var/obj/item/weapon/bedsheet/B = new T
-				if(wash_color == B.item_color)
-					new_sheet_icon_state = B.icon_state
-					new_sheet_name = B.name
-					qdel(B)
-					break
-				qdel(B)
-			for(var/T in typesof(/obj/item/clothing/head/soft))
-				var/obj/item/clothing/head/soft/H = new T
-				if(wash_color == H.item_color)
-					new_softcap_icon_state = H.icon_state
-					new_softcap_name = H.name
-					qdel(H)
-					break
-				qdel(H)
-			if(new_jumpsuit_icon_state && new_jumpsuit_item_state && new_jumpsuit_name)
-				for(var/obj/item/clothing/under/J in contents)
-					J.item_state = new_jumpsuit_item_state
-					J.icon_state = new_jumpsuit_icon_state
-					J.item_color = wash_color
-					J.name = new_jumpsuit_name
-					J.desc = new_desc
-			if(new_glove_icon_state && new_glove_item_state && new_glove_name)
-				for(var/obj/item/clothing/gloves/color/G in contents)
-					G.item_state = new_glove_item_state
-					G.icon_state = new_glove_icon_state
-					G.item_color = wash_color
-					G.name = new_glove_name
-					if(!istype(G, /obj/item/clothing/gloves/color/black/thief))
-						G.desc = new_desc
-			if(new_shoe_icon_state && new_shoe_name)
-				for(var/obj/item/clothing/shoes/S in contents)
-					if(S.chained == 1)
-						S.chained = 0
-						S.slowdown = SHOES_SLOWDOWN
-						new /obj/item/weapon/restraints/handcuffs( src )
-					S.icon_state = new_shoe_icon_state
-					S.item_color = wash_color
-					S.name = new_shoe_name
-					S.desc = new_desc
-			if(new_bandana_icon_state && new_bandana_name)
-				for(var/obj/item/clothing/mask/bandana/M in contents)
-					M.item_state = new_bandana_item_state
-					M.icon_state = new_bandana_icon_state
-					M.item_color = wash_color
-					M.name = new_bandana_name
-					M.desc = new_desc
-			if(new_sheet_icon_state && new_sheet_name)
-				for(var/obj/item/weapon/bedsheet/B in contents)
-					B.icon_state = new_sheet_icon_state
-					B.item_color = wash_color
-					B.name = new_sheet_name
-					B.desc = new_desc
-			if(new_softcap_icon_state && new_softcap_name)
-				for(var/obj/item/clothing/head/soft/H in contents)
-					H.icon_state = new_softcap_icon_state
-					H.item_color = wash_color
-					H.name = new_softcap_name
-					H.desc = new_desc
-		qdel(crayon)
-		crayon = null
-
 
 	if( locate(/mob,contents) )
 		state = 7
@@ -196,30 +80,27 @@
 /obj/machinery/washing_machine/update_icon()
 	icon_state = "wm_[state][panel]"
 
-/obj/machinery/washing_machine/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	/*if(istype(W,/obj/item/weapon/screwdriver))
-		panel = !panel
-		to_chat(user, "\blue you [panel ? "open" : "close"] the [src]'s maintenance panel")*/
-	if(istype(W,/obj/item/toy/crayon) ||istype(W,/obj/item/weapon/stamp))
+/obj/machinery/washing_machine/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if(istype(W,/obj/item/weapon/pen/crayon) || istype(W,/obj/item/weapon/stamp))
 		if( state in list(	1, 3, 6 ) )
 			if(!crayon)
 				user.drop_item()
 				crayon = W
-				crayon.loc = src
+				crayon.forceMove(src)
 			else
 				..()
 		else
 			..()
-	else if(istype(W,/obj/item/weapon/grab))
+	else if(istype(W,/obj/item/grab))
 		if( (state == 1) && hacked)
-			var/obj/item/weapon/grab/G = W
+			var/obj/item/grab/G = W
 			if(ishuman(G.assailant) && iscorgi(G.affecting))
 				G.affecting.loc = src
 				qdel(G)
 				state = 3
 		else
 			..()
-	else if(istype(W,/obj/item/stack/sheet/hairlesshide) || \
+	else if(istype(W,/obj/item/stack/material/hairlesshide) || \
 		istype(W,/obj/item/clothing/under) || \
 		istype(W,/obj/item/clothing/mask) || \
 		istype(W,/obj/item/clothing/head) || \
@@ -229,58 +110,52 @@
 		istype(W,/obj/item/weapon/bedsheet))
 
 		//YES, it's hardcoded... saves a var/can_be_washed for every single clothing item.
-		if( istype(W,/obj/item/clothing/suit/space ) )
+		if ( istype(W,/obj/item/clothing/suit/space ) )
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/syndicatefake ) )
+		if ( istype(W,/obj/item/clothing/suit/syndicatefake ) )
 			to_chat(user, "This item does not fit.")
 			return
-//		if( istype(W,/obj/item/clothing/suit/powered ) )
+//		if ( istype(W,/obj/item/clothing/suit/powered ) )
 //			to_chat(user, "This item does not fit.")
 //			return
-		if( istype(W,/obj/item/clothing/suit/cyborg_suit ) )
+		if ( istype(W,/obj/item/clothing/suit/cyborg_suit ) )
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/bomb_suit ) )
+		if ( istype(W,/obj/item/clothing/suit/bomb_suit ) )
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/armor ) )
+		if ( istype(W,/obj/item/clothing/suit/armor ) )
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/armor ) )
+		if ( istype(W,/obj/item/clothing/suit/armor ) )
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/mask/gas ) )
+		if ( istype(W,/obj/item/clothing/mask/gas ) )
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/mask/cigarette ) )
+		if ( istype(W,/obj/item/clothing/mask/smokable/cigarette ) )
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/head/syndicatefake ) )
+		if ( istype(W,/obj/item/clothing/head/syndicatefake ) )
 			to_chat(user, "This item does not fit.")
 			return
-//		if( istype(W,/obj/item/clothing/head/powered ) )
+//		if ( istype(W,/obj/item/clothing/head/powered ) )
 //			to_chat(user, "This item does not fit.")
 //			return
-		if( istype(W,/obj/item/clothing/head/helmet ) )
+		if ( istype(W,/obj/item/clothing/head/helmet ) )
 			to_chat(user, "This item does not fit.")
-			return
-		if( istype(W,/obj/item/clothing/gloves/furgloves ) )
-			to_chat(user, "This item does not fit.")
-			return
-		if(W.flags & NODROP) //if "can't drop" item
-			to_chat(user, "<span class='notice'>\The [W] is stuck to your hand, you cannot put it in the washing machine!</span>")
 			return
 
 		if(contents.len < 5)
-			if( state in list(1, 3) )
+			if ( state in list(1, 3) )
 				user.drop_item()
 				W.loc = src
 				state = 3
 			else
-				to_chat(user, "\blue You can't put the item in right now.")
+				to_chat(user, "<span class='notice'>You can't put the item in right now.</span>")
 		else
-			to_chat(user, "\blue The washing machine is full.")
+			to_chat(user, "<span class='notice'>The washing machine is full.</span>")
 	else
 		..()
 	update_icon()
@@ -292,17 +167,17 @@
 		if(2)
 			state = 1
 			for(var/atom/movable/O in contents)
-				O.loc = src.loc
+				O.forceMove(loc)
 		if(3)
 			state = 4
 		if(4)
 			state = 3
 			for(var/atom/movable/O in contents)
-				O.loc = src.loc
+				O.forceMove(src)
 			crayon = null
 			state = 1
 		if(5)
-			to_chat(user, "\red The [src] is busy.")
+			to_chat(user, "<span class='warning'>The [src] is busy.</span>")
 		if(6)
 			state = 7
 		if(7)
@@ -312,7 +187,7 @@
 					var/mob/M = locate(/mob,contents)
 					M.gib()
 			for(var/atom/movable/O in contents)
-				O.loc = src.loc
+				O.forceMove(src.loc)
 			crayon = null
 			state = 1
 

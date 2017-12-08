@@ -1,562 +1,284 @@
-/obj/screen/human
-	icon = 'icons/mob/screen_midnight.dmi'
+/mob/living/carbon/human/instantiate_hud(var/datum/hud/HUD, var/ui_style, var/ui_color, var/ui_alpha)
+	HUD.human_hud(ui_style, ui_color, ui_alpha, src)
 
-/obj/screen/human/toggle
-	name = "toggle"
-	icon_state = "toggle"
-
-/obj/screen/human/toggle/Click()
-	if(usr.hud_used.inventory_shown)
-		usr.hud_used.inventory_shown = 0
-		if(usr.hud_used.underwear_shown)
-			usr.hud_used.underwear_shown = 0
-			usr.client.screen -= usr.hud_used.underwear_inventory
-		usr.client.screen -= usr.hud_used.toggleable_inventory
+/datum/hud/proc/human_hud(var/ui_style='icons/mob/screen1_White.dmi', var/ui_color = "#ffffff", var/ui_alpha = 255, var/mob/living/carbon/human/target)
+	var/datum/hud_data/hud_data
+	if(!istype(target))
+		hud_data = new()
 	else
-		usr.hud_used.inventory_shown = 1
-		usr.client.screen += usr.hud_used.toggleable_inventory
+		hud_data = target.species.hud
 
-	usr.hud_used.hidden_inventory_update()
-	usr.hud_used.underwear_inventory_update()
-/obj/screen/human/toggle_underwear
-	name = "toggle underwear"
-	icon_state = "toggle"
+	if(hud_data.icon)
+		ui_style = hud_data.icon
 
-/obj/screen/human/toggle_underwear/Click()
-	if(usr.hud_used.underwear_shown)
-		usr.hud_used.underwear_shown = 0
-		usr.client.screen -= usr.hud_used.underwear_inventory
-	else
-		usr.hud_used.underwear_shown = 1
-		usr.client.screen += usr.hud_used.underwear_inventory
+	src.adding = list()
+	src.other = list()
+	src.hotkeybuttons = list() //These can be disabled for hotkey usersx
 
-	usr.hud_used.underwear_inventory_update()
-
-	
-/obj/screen/human/equip
-	name = "equip"
-	icon_state = "act_equip"
-
-/obj/screen/human/equip/Click()
-	if(istype(usr.loc,/obj/mecha)) // stops inventory actions in a mech
-		return 1
-	var/mob/living/carbon/human/H = usr
-	H.quick_equip()
-
-/obj/screen/ling
-	invisibility = 101
-
-/obj/screen/ling/sting
-	name = "current sting"
-	screen_loc = ui_lingstingdisplay
-
-/obj/screen/ling/sting/Click()
-	var/mob/living/carbon/U = usr
-	U.unset_sting()
-
-/obj/screen/ling/chems
-	name = "chemical storage"
-	icon_state = "power_display"
-	screen_loc = ui_lingchemdisplay
-
-
-/mob/living/carbon/human/proc/remake_hud() //used for preference changes mid-round; can't change hud icons without remaking the hud.
-	if(hud_used)
-		qdel(hud_used)
-		hud_used = null
-	create_mob_hud()
-	if(hud_used)
-		hud_used.show_hud(hud_used.hud_version)
-
-/mob/living/carbon/human/create_mob_hud()
-	if(client && !hud_used)
-		hud_used = new /datum/hud/human(src, ui_style2icon(client.prefs.UI_style), client.prefs.UI_style_color, client.prefs.UI_style_alpha)
-
-/datum/hud/human/New(mob/living/carbon/human/owner, var/ui_style = 'icons/mob/screen_white.dmi', var/ui_color = "#ffffff", var/ui_alpha = 255)
-	..()
-
+	var/list/hud_elements = list()
 	var/obj/screen/using
 	var/obj/screen/inventory/inv_box
 
-	using = new /obj/screen/inventory/craft
-	using.icon = ui_style
-	using.color = ui_color
-	using.alpha = ui_alpha
-	static_inventory += using
+	// Draw the various inventory equipment slots.
+	var/has_hidden_gear
+	for(var/gear_slot in hud_data.gear)
 
-	using = new /obj/screen/act_intent()
-	using.icon_state = mymob.a_intent
-	using.color = ui_color
-	using.alpha = ui_alpha
-	static_inventory += using
-	action_intent = using
+		inv_box = new /obj/screen/inventory()
+		inv_box.icon = ui_style
+		inv_box.color = ui_color
+		inv_box.alpha = ui_alpha
 
-	using = new /obj/screen/mov_intent()
-	using.icon = ui_style
-	using.icon_state = (mymob.m_intent == "run" ? "running" : "walking")
-	using.screen_loc = ui_movi
-	using.color = ui_color
-	using.alpha = ui_alpha
-	static_inventory += using
-	move_intent = using
+		var/list/slot_data =  hud_data.gear[gear_slot]
+		inv_box.name =        gear_slot
+		inv_box.screen_loc =  slot_data["loc"]
+		inv_box.slot_id =     slot_data["slot"]
+		inv_box.icon_state =  slot_data["state"]
 
-	using = new /obj/screen/drop()
-	using.icon = ui_style
-	using.screen_loc = ui_drop_throw
-	using.color = ui_color
-	using.alpha = ui_alpha
-	static_inventory += using
+		if(slot_data["dir"])
+			inv_box.set_dir(slot_data["dir"])
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "i_clothing"
-	inv_box.icon = ui_style
-	inv_box.slot_id = slot_w_uniform
-	inv_box.icon_state = "uniform"
-	inv_box.screen_loc = ui_iclothing
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
+		if(slot_data["toggle"])
+			src.other += inv_box
+			has_hidden_gear = 1
+		else
+			src.adding += inv_box
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "o_clothing"
-	inv_box.icon = ui_style
-	inv_box.slot_id = slot_wear_suit
-	inv_box.icon_state = "suit"
-	inv_box.screen_loc = ui_oclothing
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory/hand()
-	inv_box.name = "r_hand"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "hand_r"
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	inv_box.screen_loc = ui_rhand
-	inv_box.slot_id = slot_r_hand
-	static_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory/hand()
-	inv_box.name = "l_hand"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "hand_l"
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	inv_box.screen_loc = ui_lhand
-	inv_box.slot_id = slot_l_hand
-	static_inventory += inv_box
-
-	
-
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "id"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "id"
-	inv_box.screen_loc = ui_id
-	inv_box.slot_id = slot_wear_id
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	static_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "pda"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "pda"
-	inv_box.screen_loc = ui_pda
-	inv_box.slot_id = slot_wear_pda
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	static_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "mask"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "mask"
-	inv_box.screen_loc = ui_mask
-	inv_box.slot_id = slot_wear_mask
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "back"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "back"
-	inv_box.screen_loc = ui_back
-	inv_box.slot_id = slot_back
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	static_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "storage1"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "pocket"
-	inv_box.screen_loc = ui_storage1
-	inv_box.slot_id = slot_l_store
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	static_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "storage2"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "pocket"
-	inv_box.screen_loc = ui_storage2
-	inv_box.slot_id = slot_r_store
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	static_inventory += inv_box
-
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "suit storage"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "suit_storage"
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	inv_box.screen_loc = ui_sstore1
-	inv_box.slot_id = slot_s_store
-	static_inventory += inv_box
-
-	using = new /obj/screen/resist()
-	using.icon = ui_style
-	using.color = ui_color
-	using.alpha = ui_alpha
-	using.screen_loc = ui_pull_resist
-	hotkeybuttons += using
-
-	using = new /obj/screen/human/toggle()
-	using.icon = ui_style
-	using.color = ui_color
-	using.alpha = ui_alpha
-	using.screen_loc = ui_inventory
-	static_inventory += using
-	if(ui_style != 'icons/mob/screen_midnight.dmi')
-		using = new /obj/screen/human/equip()
+	if(has_hidden_gear)
+		using = new /obj/screen()
+		using.name = "toggle"
 		using.icon = ui_style
+		using.icon_state = "other"
+		using.screen_loc = ui_inventory
 		using.color = ui_color
 		using.alpha = ui_alpha
-		using.screen_loc = ui_equip
-		static_inventory += using
+		src.adding += using
 
-		using = new /obj/screen/swap_hand()
+	// Draw the attack intent dialogue.
+	if(hud_data.has_a_intent)
+
+		using = new /obj/screen/intent()
+		src.adding += using
+		action_intent = using
+
+		hud_elements |= using
+
+	if(hud_data.has_m_intent)
+		using = new /obj/screen()
+		using.name = "mov_intent"
+		using.icon = ui_style
+		using.icon_state = (mymob.m_intent == "run" ? "running" : "walking")
+		using.screen_loc = ui_movi
+		using.color = ui_color
+		using.alpha = ui_alpha
+		src.adding += using
+		move_intent = using
+
+	if(hud_data.has_drop)
+		using = new /obj/screen()
+		using.name = "drop"
+		using.icon = ui_style
+		using.icon_state = "act_drop"
+		using.screen_loc = ui_drop_throw
+		using.color = ui_color
+		using.alpha = ui_alpha
+		src.hotkeybuttons += using
+
+	if(hud_data.has_hands)
+
+		using = new /obj/screen()
+		using.name = "equip"
+		using.icon = ui_style
+		using.icon_state = "act_equip"
+		using.screen_loc = ui_equip
+		using.color = ui_color
+		using.alpha = ui_alpha
+		src.adding += using
+
+		inv_box = new /obj/screen/inventory()
+		inv_box.name = "r_hand"
+		inv_box.icon = ui_style
+		inv_box.icon_state = "r_hand_inactive"
+		if(mymob && !mymob.hand)	//This being 0 or null means the right hand is in use
+			inv_box.icon_state = "r_hand_active"
+		inv_box.screen_loc = ui_rhand
+		inv_box.slot_id = slot_r_hand
+		inv_box.color = ui_color
+		inv_box.alpha = ui_alpha
+
+		src.r_hand_hud_object = inv_box
+		src.adding += inv_box
+
+		inv_box = new /obj/screen/inventory()
+		inv_box.name = "l_hand"
+		inv_box.icon = ui_style
+		inv_box.icon_state = "l_hand_inactive"
+		if(mymob && mymob.hand)	//This being 1 means the left hand is in use
+			inv_box.icon_state = "l_hand_active"
+		inv_box.screen_loc = ui_lhand
+		inv_box.slot_id = slot_l_hand
+		inv_box.color = ui_color
+		inv_box.alpha = ui_alpha
+		src.l_hand_hud_object = inv_box
+		src.adding += inv_box
+
+		using = new /obj/screen/inventory()
 		using.name = "hand"
 		using.icon = ui_style
-		using.icon_state = "swap_1"
+		using.icon_state = "hand1"
 		using.screen_loc = ui_swaphand1
 		using.color = ui_color
 		using.alpha = ui_alpha
-		static_inventory += using
+		src.adding += using
 
-		using = new /obj/screen/swap_hand()
+		using = new /obj/screen/inventory()
 		using.name = "hand"
 		using.icon = ui_style
-		using.icon_state = "swap_2"
+		using.icon_state = "hand2"
 		using.screen_loc = ui_swaphand2
 		using.color = ui_color
 		using.alpha = ui_alpha
-		static_inventory += using
-		
-		mymob.throw_icon = new /obj/screen/throw_catch()
+		src.adding += using
+
+	if(hud_data.has_resist)
+		using = new /obj/screen()
+		using.name = "resist"
+		using.icon = ui_style
+		using.icon_state = "act_resist"
+		using.screen_loc = ui_pull_resist
+		using.color = ui_color
+		using.alpha = ui_alpha
+		src.hotkeybuttons += using
+
+	if(hud_data.has_throw)
+		mymob.throw_icon = new /obj/screen()
 		mymob.throw_icon.icon = ui_style
+		mymob.throw_icon.icon_state = "act_throw_off"
+		mymob.throw_icon.name = "throw"
 		mymob.throw_icon.screen_loc = ui_drop_throw
 		mymob.throw_icon.color = ui_color
 		mymob.throw_icon.alpha = ui_alpha
-		hotkeybuttons += mymob.throw_icon
-	else
-		using = new /obj/screen/human/equip()
-		using.icon = ui_style
-		using.icon_state = "equip_button"
-		using.color = ui_color
-		using.alpha = ui_alpha
-		using.screen_loc = ui_equip
-		static_inventory += using
+		src.hotkeybuttons += mymob.throw_icon
+		hud_elements |= mymob.throw_icon
 
-		using = new /obj/screen/swap_hand()
-		using.name = "swap hand"
-		using.icon = ui_style
-		using.icon_state = "swap_button"
-		using.screen_loc = ui_swaphand2
-		using.color = ui_color
-		using.alpha = ui_alpha
-		static_inventory += using
-		
-		using = new /obj/screen/drop()
-		using.icon = ui_style
-		using.icon_state = "drop_button"
-		using.screen_loc = ui_equip
-		using.color = ui_color
-		using.alpha = ui_alpha
-		static_inventory += using
+		mymob.pullin = new /obj/screen()
+		mymob.pullin.icon = ui_style
+		mymob.pullin.icon_state = "pull0"
+		mymob.pullin.name = "pull"
+		mymob.pullin.screen_loc = ui_pull_resist
+		src.hotkeybuttons += mymob.pullin
+		hud_elements |= mymob.pullin
 
-		mymob.throw_icon = new /obj/screen/throw_catch()
-		mymob.throw_icon.icon = ui_style
-		mymob.throw_icon.screen_loc = ui_swaphand2
-		mymob.throw_icon.color = ui_color
-		mymob.throw_icon.alpha = ui_alpha
-		hotkeybuttons += mymob.throw_icon
-		
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "gloves"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "gloves"
-	inv_box.screen_loc = ui_gloves
-	inv_box.slot_id = slot_gloves
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
+	if(hud_data.has_internals)
+		mymob.internals = new /obj/screen()
+		mymob.internals.icon = ui_style
+		mymob.internals.icon_state = "internal0"
+		mymob.internals.name = "internal"
+		mymob.internals.screen_loc = ui_internal
+		hud_elements |= mymob.internals
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "eyes"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "glasses"
-	inv_box.screen_loc = ui_glasses
-	inv_box.slot_id = slot_glasses
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
+	if(hud_data.has_warnings)
+		mymob.oxygen = new /obj/screen()
+		mymob.oxygen.icon = ui_style
+		mymob.oxygen.icon_state = "oxy0"
+		mymob.oxygen.name = "oxygen"
+		mymob.oxygen.screen_loc = ui_oxygen
+		hud_elements |= mymob.oxygen
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "l_ear"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "ears"
-	inv_box.screen_loc = ui_l_ear
-	inv_box.slot_id = slot_l_ear
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
+		mymob.toxin = new /obj/screen()
+		mymob.toxin.icon = ui_style
+		mymob.toxin.icon_state = "tox0"
+		mymob.toxin.name = "toxin"
+		mymob.toxin.screen_loc = ui_toxin
+		hud_elements |= mymob.toxin
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "r_ear"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "ears"
-	inv_box.screen_loc = ui_r_ear
-	inv_box.slot_id = slot_r_ear
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
+		mymob.fire = new /obj/screen()
+		mymob.fire.icon = ui_style
+		mymob.fire.icon_state = "fire0"
+		mymob.fire.name = "fire"
+		mymob.fire.screen_loc = ui_fire
+		hud_elements |= mymob.fire
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "head"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "head"
-	inv_box.screen_loc = ui_head
-	inv_box.slot_id = slot_head
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
+		mymob.healths = new /obj/screen()
+		mymob.healths.icon = ui_style
+		mymob.healths.icon_state = "health0"
+		mymob.healths.name = "health"
+		mymob.healths.screen_loc = ui_health
+		hud_elements |= mymob.healths
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "shoes"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "shoes"
-	inv_box.screen_loc = ui_shoes
-	inv_box.slot_id = slot_shoes
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	toggleable_inventory += inv_box
+	if(hud_data.has_pressure)
+		mymob.pressure = new /obj/screen()
+		mymob.pressure.icon = ui_style
+		mymob.pressure.icon_state = "pressure0"
+		mymob.pressure.name = "pressure"
+		mymob.pressure.screen_loc = ui_pressure
+		hud_elements |= mymob.pressure
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "belt"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "belt"
-	inv_box.screen_loc = ui_belt
-	inv_box.slot_id = slot_belt
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	static_inventory += inv_box
+	if(hud_data.has_bodytemp)
+		mymob.bodytemp = new /obj/screen()
+		mymob.bodytemp.icon = ui_style
+		mymob.bodytemp.icon_state = "temp1"
+		mymob.bodytemp.name = "body temperature"
+		mymob.bodytemp.screen_loc = ui_temp
+		hud_elements |= mymob.bodytemp
 
-	using = new /obj/screen/human/toggle_underwear()
-	using.icon = ui_style
-	using.color = ui_color
-	using.alpha = ui_alpha
-	using.screen_loc = "WEST:6,SOUTH+3:11"
-	toggleable_inventory += using
+	if(target.isSynthetic())
+		target.cells = new /obj/screen()
+		target.cells.icon = 'icons/mob/screen1_robot.dmi'
+		target.cells.icon_state = "charge-empty"
+		target.cells.name = "cell"
+		target.cells.screen_loc = ui_nutrition
+		hud_elements |= target.cells
 
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "underwear"
-	inv_box.icon = 'icons/mob/screen_midnight.dmi'
-	inv_box.icon_state = "underwear"
-	inv_box.screen_loc = "WEST+1:8,SOUTH+4:13"
-	inv_box.slot_id = slot_underwear
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	underwear_inventory += inv_box
-	
-	inv_box = new /obj/screen/inventory()
-	inv_box.name = "undershirt"
-	inv_box.icon = 'icons/mob/screen_midnight.dmi'
-	inv_box.icon_state = "undershirt"
-	inv_box.screen_loc = "WEST+2:10,SOUTH+4:13"
-	inv_box.slot_id = slot_undershirt
-	inv_box.color = ui_color
-	inv_box.alpha = ui_alpha
-	underwear_inventory += inv_box
+	else if(hud_data.has_nutrition)
+		mymob.nutrition_icon = new /obj/screen()
+		mymob.nutrition_icon.icon = ui_style
+		mymob.nutrition_icon.icon_state = "nutrition0"
+		mymob.nutrition_icon.name = "nutrition"
+		mymob.nutrition_icon.screen_loc = ui_nutrition
+		hud_elements |= mymob.nutrition_icon
 
-	internals = new /obj/screen/internals()
-	infodisplay += internals
 
-	mymob.healths = new /obj/screen/healths()
-	infodisplay += mymob.healths
-	// persistant edit stamina hud
-	mymob.staminas = new /obj/screen/staminas()
-	infodisplay += mymob.staminas
-	mymob.focuss = new /obj/screen/focuss()
-	infodisplay += mymob.focuss
-	mymob.view_stats = new /obj/screen/viewstats()
-	infodisplay += mymob.view_stats
-	mymob.mechcells += new /obj/screen/mechcells()
-	mymob.mechcntrlpanel += new /obj/screen/mechcntrlpanel()
-	infodisplay += mymob.mechcells
-	infodisplay += mymob.mechcntrlpanel
-	mymob.healthdoll = new /obj/screen/healthdoll()
-	infodisplay += mymob.healthdoll
+	mymob.pain = new /obj/screen( null )
 
-	mymob.pullin = new /obj/screen/pull()
-	mymob.pullin.icon = ui_style
-	mymob.pullin.update_icon(mymob)
-	mymob.pullin.screen_loc = ui_pull_resist
-	static_inventory += mymob.pullin
-
-	lingchemdisplay = new /obj/screen/ling/chems()
-	infodisplay += lingchemdisplay
-
-	lingstingdisplay = new /obj/screen/ling/sting()
-	infodisplay += lingstingdisplay
-
-	mymob.zone_sel = new /obj/screen/zone_sel()
+	mymob.zone_sel = new /obj/screen/zone_sel( null )
 	mymob.zone_sel.icon = ui_style
-	mymob.zone_sel.update_icon(mymob)
-	static_inventory += mymob.zone_sel
+	mymob.zone_sel.color = ui_color
+	mymob.zone_sel.alpha = ui_alpha
+	mymob.zone_sel.overlays.Cut()
+	mymob.zone_sel.overlays += image('icons/mob/zone_sel.dmi', "[mymob.zone_sel.selecting]")
+	hud_elements |= mymob.zone_sel
 
+	//Handle the gun settings buttons
+	mymob.gun_setting_icon = new /obj/screen/gun/mode(null)
+	mymob.gun_setting_icon.icon = ui_style
+	mymob.gun_setting_icon.color = ui_color
+	mymob.gun_setting_icon.alpha = ui_alpha
+	hud_elements |= mymob.gun_setting_icon
+
+	mymob.item_use_icon = new /obj/screen/gun/item(null)
+	mymob.item_use_icon.icon = ui_style
+	mymob.item_use_icon.color = ui_color
+	mymob.item_use_icon.alpha = ui_alpha
+
+	mymob.gun_move_icon = new /obj/screen/gun/move(null)
+	mymob.gun_move_icon.icon = ui_style
+	mymob.gun_move_icon.color = ui_color
+	mymob.gun_move_icon.alpha = ui_alpha
+
+	mymob.radio_use_icon = new /obj/screen/gun/radio(null)
+	mymob.radio_use_icon.icon = ui_style
+	mymob.radio_use_icon.color = ui_color
+	mymob.radio_use_icon.alpha = ui_alpha
+
+	mymob.client.screen = list()
+
+	mymob.client.screen += hud_elements
+	mymob.client.screen += src.adding + src.hotkeybuttons
 	inventory_shown = 0
-
-	for(var/obj/screen/inventory/inv in (static_inventory + (toggleable_inventory + underwear_inventory)))
-		if(inv.slot_id)
-			inv.hud = src
-			inv_slots[inv.slot_id] = inv
-			inv.update_icon()
-
-/datum/hud/human/hidden_inventory_update()
-	if(!mymob)
-		return
-	var/mob/living/carbon/human/H = mymob
-	if(inventory_shown && hud_shown)
-		if(H.shoes)
-			H.shoes.screen_loc = ui_shoes
-			H.client.screen += H.shoes
-		if(H.gloves)
-			H.gloves.screen_loc = ui_gloves
-			H.client.screen += H.gloves
-		if(H.l_ear)
-			H.l_ear.screen_loc = ui_l_ear
-			H.client.screen += H.l_ear
-		if(H.r_ear)
-			H.r_ear.screen_loc = ui_r_ear
-			H.client.screen += H.r_ear
-		if(H.glasses)
-			H.glasses.screen_loc = ui_glasses
-			H.client.screen += H.glasses
-		if(H.w_uniform)
-			H.w_uniform.screen_loc = ui_iclothing
-			H.client.screen += H.w_uniform
-		if(H.wear_suit)
-			H.wear_suit.screen_loc = ui_oclothing
-			H.client.screen += H.wear_suit
-		if(H.wear_mask)
-			H.wear_mask.screen_loc = ui_mask
-			H.client.screen += H.wear_mask
-		if(H.head)
-			H.head.screen_loc = ui_head
-			H.client.screen += H.head
-	else
-		if(H.shoes)		H.shoes.screen_loc = null
-		if(H.gloves)	H.gloves.screen_loc = null
-		if(H.l_ear)		H.l_ear.screen_loc = null
-		if(H.r_ear)		H.r_ear.screen_loc = null
-		if(H.glasses)	H.glasses.screen_loc = null
-		if(H.w_uniform)	H.w_uniform.screen_loc = null
-		if(H.wear_suit)	H.wear_suit.screen_loc = null
-		if(H.wear_mask)	H.wear_mask.screen_loc = null
-		if(H.head)		H.head.screen_loc = null
-
-/datum/hud/human/underwear_inventory_update()
-	if(!mymob)
-		return
-	var/mob/living/carbon/human/H = mymob
-	if(underwear_shown && hud_shown)
-		if(H.underwear)
-			H.underwear.screen_loc = "WEST+1:8,SOUTH+4:13"
-			H.client.screen += H.underwear
-		if(H.undershirt)
-			H.undershirt.screen_loc = "WEST+2:10,SOUTH+4:13"
-			H.client.screen += H.undershirt
-	else
-		if(H.underwear)	H.underwear.screen_loc = null
-		if(H.undershirt) H.undershirt.screen_loc = null
-		
-		
-		
-/datum/hud/human/persistant_inventory_update()
-	if(!mymob)
-		return
-	var/mob/living/carbon/human/H = mymob
-	if(hud_shown)
-		if(H.s_store)
-			H.s_store.screen_loc = ui_sstore1
-			H.client.screen += H.s_store
-		if(H.wear_id)
-			H.wear_id.screen_loc = ui_id
-			H.client.screen += H.wear_id
-		if(H.wear_pda)
-			H.wear_pda.screen_loc = ui_pda
-			H.client.screen += H.wear_pda
-		if(H.belt)
-			H.belt.screen_loc = ui_belt
-			H.client.screen += H.belt
-		if(H.back)
-			H.back.screen_loc = ui_back
-			H.client.screen += H.back
-		if(H.l_store)
-			H.l_store.screen_loc = ui_storage1
-			H.client.screen += H.l_store
-		if(H.r_store)
-			H.r_store.screen_loc = ui_storage2
-			H.client.screen += H.r_store
-	else
-		if(H.s_store)
-			H.s_store.screen_loc = null
-		if(H.wear_id)
-			H.wear_id.screen_loc = null
-		if(H.wear_pda)
-			H.wear_pda.screen_loc = null
-		if(H.belt)
-			H.belt.screen_loc = null
-		if(H.back)
-			H.back.screen_loc = null
-		if(H.l_store)
-			H.l_store.screen_loc = null
-		if(H.r_store)
-			H.r_store.screen_loc = null
-
-	if(hud_version != HUD_STYLE_NOHUD)
-		if(H.r_hand)
-			H.r_hand.screen_loc = ui_rhand
-			H.client.screen += H.r_hand
-		if(H.l_hand)
-			H.l_hand.screen_loc = ui_lhand
-			H.client.screen += H.l_hand
-	else
-		if(H.r_hand)
-			H.r_hand.screen_loc = null
-		if(H.l_hand)
-			H.l_hand.screen_loc = null
-
 
 /mob/living/carbon/human/verb/toggle_hotkey_verbs()
 	set category = "OOC"
-	set name = "Toggle Hotkey Buttons"
+	set name = "Toggle hotkey buttons"
 	set desc = "This disables or enables the user interface buttons which can be used with hotkeys."
 
 	if(hud_used.hotkey_ui_hidden)
@@ -565,3 +287,11 @@
 	else
 		client.screen -= hud_used.hotkeybuttons
 		hud_used.hotkey_ui_hidden = 1
+
+//Used for new human mobs created by cloning/goleming/etc.
+/mob/living/carbon/human/proc/set_cloned_appearance()
+	f_style = "Shaved"
+	if(dna.species == SPECIES_HUMAN) //no more xenos losing ears/tentacles
+		h_style = pick("Bedhead", "Bedhead 2", "Bedhead 3")
+	all_underwear.Cut()
+	regenerate_icons()

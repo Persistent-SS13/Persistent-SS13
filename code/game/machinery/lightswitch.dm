@@ -7,143 +7,70 @@
 	icon = 'icons/obj/power.dmi'
 	icon_state = "light1"
 	anchored = 1.0
+	use_power = 1
+	idle_power_usage = 20
+	power_channel = LIGHT
 	var/on = 1
-	var/area/area = null
-	var/otherarea = null
-	//	luminosity = 1
-	settagwhitelist = list("logic_id_tag")
-	var/light_connect = 1							//Allows the switch to control lights in its associated areas. When set to 0, using the switch won't affect the lights.
-	var/datum/radio_frequency/radio_connection
-	var/frequency = 0
-	var/logic_id_tag = "default"					//Defines the ID tag to send logic signals to.
-	var/logic_connect = 0							//Set this to allow the switch to send out logic signals.
+	var/area/connected_area = null
+	var/other_area = null
+	var/image/overlay
 
-
-/obj/machinery/light_switch/New(turf/loc, var/w_dir=null)
-	..()
-	switch(w_dir)
-		if(NORTH)
-			pixel_y = 25
-		if(SOUTH)
-			pixel_y = -25
-		if(EAST)
-			pixel_x = 25
-		if(WEST)
-			pixel_x = -25
-	if(radio_controller)
-		set_frequency(frequency)
-	src.loc = loc
-	spawn(5)
-		if(loc && loc.loc)
-			src.area = src.loc.loc
-
-			if(otherarea)
-				src.area = locate(text2path("/area/[otherarea]"))
-
-			if(!name)
-				name = "light switch([area.name])"
-
-			src.on = src.area.lightswitch
-		updateicon()
-
-/obj/machinery/light_switch/after_load()
-	spawn(5)
-		if(loc)
-			src.area = src.loc.loc
-
-			if(otherarea)
-				src.area = locate(text2path("/area/[otherarea]"))
-
-			if(!name)
-				name = "light switch([area.name])"
-
-			src.on = src.area.lightswitch
-		updateicon()
-		..()
-/obj/machinery/light_switch/initialize()
-	..()
-	set_frequency(frequency)
-
-/obj/machinery/light_switch/proc/set_frequency(new_frequency)
-	radio_controller.remove_object(src, frequency)
-	frequency = new_frequency
-	radio_connection = radio_controller.add_object(src, frequency, RADIO_LOGIC)
-	return
-
-/obj/machinery/light_switch/Destroy()
-	if(radio_controller)
-		radio_controller.remove_object(src,frequency)
-	return ..()
-
-/obj/machinery/light_switch/proc/updateicon()
-	if(stat & NOPOWER)
-		icon_state = "light-p"
+/obj/machinery/light_switch/Initialize()
+	. = ..()
+	if(other_area)
+		src.connected_area = locate(other_area)
 	else
-		if(on)
-			icon_state = "light1"
-		else
-			icon_state = "light0"
+		src.connected_area = get_area(src)
+
+	if(!name)
+		name = "light switch ([connected_area.name])"
+
+	sync_state()
+
+/obj/machinery/light_switch/update_icon()
+	if(!overlay)
+		overlay = image(icon, "light1-overlay")
+		overlay.plane = LIGHTING_PLANE
+		overlay.layer = ABOVE_LIGHTING_LAYER
+
+	overlays.Cut()
+	if(stat & (NOPOWER|BROKEN))
+		icon_state = "light-p"
+		set_light(0)
+	else
+		icon_state = "light[on]"
+		overlay.icon_state = "light[on]-overlay"
+		overlays += overlay
+		set_light(2, 0.1, on ? "#82FF4C" : "#F86060")
 
 /obj/machinery/light_switch/examine(mob/user)
 	if(..(user, 1))
 		to_chat(user, "A light switch. It is [on? "on" : "off"].")
 
+/obj/machinery/light_switch/proc/set_state(var/newstate)
+	if(on != newstate)
+		on = newstate
+		connected_area.set_lightswitch(on)
+		update_icon()
+
+/obj/machinery/light_switch/proc/sync_state()
+	if(on != connected_area.lightswitch)
+		on = connected_area.lightswitch
+		update_icon()
+		return 1
+
 /obj/machinery/light_switch/attack_hand(mob/user)
+	playsound(src, "switch", 30)
+	set_state(!on)
 
-	on = !on
-	updateicon()
-
-	if(light_connect)
-		area.lightswitch = on
-		area.updateicon()
-
-	if(logic_connect && powered(LIGHT))		//Don't bother sending a signal if we aren't set to send them or we have no power to send with.
-		handle_output()
-
-	if(light_connect)
-		for(var/obj/machinery/light_switch/L in area)
-			L.on = on
-			L.updateicon()
-
-		area.power_change()
-
-/obj/machinery/light_switch/proc/handle_output()
-	if(!radio_connection)		//can't output without this
-		return
-
-	if(logic_id_tag == null)	//Don't output to an undefined id_tag
-		return
-
-	var/datum/signal/signal = new
-	signal.transmission_method = 1	//radio signal
-	signal.source = src
-
-	//Light switches are continuous signal sources, since they register as ON or OFF and stay that way until adjusted again
-	if(on)
-		signal.data = list(
-				"tag" = logic_id_tag,
-				"sigtype" = "logic",
-				"state" = LOGIC_ON,
-		)
-	else
-		signal.data = list(
-				"tag" = logic_id_tag,
-				"sigtype" = "logic",
-				"state" = LOGIC_OFF,
-		)
-
-	radio_connection.post_signal(src, signal, filter = RADIO_LOGIC)
-	if(on)
-		use_power(5, LIGHT)			//Use a tiny bit of power every time we send an ON signal. Draws from the local APC's lighting circuit, since this is a LIGHT switch.
+/obj/machinery/light_switch/powered()
+	. = ..(power_channel, connected_area) //tie our powered status to the connected area
 
 /obj/machinery/light_switch/power_change()
-	if(!otherarea)
-		if(powered(LIGHT))
-			stat &= ~NOPOWER
-		else
-			stat |= NOPOWER
-
-		updateicon()
+	. = ..()
+	//synch ourselves to the new state
+	if(connected_area) //If an APC initializes before we do it will force a power_change() before we can get our connected area
+		sync_state()
 
 /obj/machinery/light_switch/emp_act(severity)
 	if(stat & (BROKEN|NOPOWER))
@@ -151,40 +78,3 @@
 		return
 	power_change()
 	..(severity)
-
-/obj/machinery/light_switch/process()
-	if(logic_connect && powered(LIGHT))		//We won't send signals while unpowered, but the last signal will remain valid for anything that received it before we went dark
-		handle_output()
-
-/obj/machinery/light_switch/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/device/detective_scanner))
-		return
-
-	if(istype(W, /obj/item/device/multitool))
-		update_multitool_menu(user)
-		return 1
-
-	if(istype(W, /obj/item/weapon/wrench))
-		playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
-		if(do_after(user, 30, target = src))
-			to_chat(user, "<span class='notice'>You detach \the [src] from the wall.</span>")
-			new/obj/item/mounted/frame/light_switch(get_turf(src))
-			qdel(src)
-		return 1
-
-	return src.attack_hand(user)
-
-/obj/machinery/light_switch/multitool_menu(var/mob/user, var/obj/item/device/multitool/P)
-	return {"
-	<ul>
-	<li><b>Light Circuit Connection:</b> <a href='?src=\ref[src];toggle_light_connect=1'>[light_connect ? "On" : "Off"]</a></li>
-	<li><b>Logic Connection:</b> <a href='?src=\ref[src];toggle_logic=1'>[logic_connect ? "On" : "Off"]</a></li>
-	<li><b>Logic ID Tag:</b> [format_tag("Logic ID Tag", "logic_id_tag")]</li>
-	</ul>"}
-
-/obj/machinery/light_switch/multitool_topic(var/mob/user,var/list/href_list,var/obj/O)
-	..()
-	if("toggle_light_connect" in href_list)
-		light_connect = !light_connect
-	if("toggle_logic" in href_list)
-		logic_connect = !logic_connect

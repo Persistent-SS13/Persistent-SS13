@@ -1,17 +1,16 @@
-#define SHOWER_OPEN_LAYER OBJ_LAYER + 0.4
-#define SHOWER_CLOSED_LAYER MOB_LAYER + 0.1
-
 /obj/structure/curtain
-	icon = 'icons/obj/curtain.dmi'
 	name = "curtain"
+	icon = 'icons/obj/curtain.dmi'
 	icon_state = "closed"
-	layer = SHOWER_CLOSED_LAYER
+	plane = OBJ_PLANE
+	layer = ABOVE_WINDOW_LAYER
 	opacity = 1
 	density = 0
 
 /obj/structure/curtain/open
 	icon_state = "open"
-	layer = SHOWER_OPEN_LAYER
+	plane = ABOVE_HUMAN_PLANE
+	layer = ABOVE_HUMAN_LAYER
 	opacity = 0
 
 /obj/structure/curtain/bullet_act(obj/item/projectile/P, def_zone)
@@ -26,21 +25,16 @@
 	toggle()
 	..()
 
-/obj/structure/curtain/attackby(var/obj/item/O as obj, var/mob/user as mob, params)
-	if(iswirecutter(O))
-		playsound(src, 'sound/items/Wirecutter.ogg', 50, 1, 1)
-		new /obj/item/stack/sheet/cloth(src.loc, 5)
-		qdel(src)
-		return
-	..()
 /obj/structure/curtain/proc/toggle()
 	set_opacity(!opacity)
 	if(opacity)
 		icon_state = "closed"
-		layer = SHOWER_CLOSED_LAYER
+		plane = ABOVE_HUMAN_PLANE
+		layer = ABOVE_WINDOW_LAYER
 	else
 		icon_state = "open"
-		layer = SHOWER_OPEN_LAYER
+		plane = OBJ_PLANE
+		layer = ABOVE_WINDOW_LAYER
 
 /obj/structure/curtain/black
 	name = "black curtain"
@@ -50,6 +44,14 @@
 	name = "plastic curtain"
 	color = "#B8F5E3"
 	alpha = 200
+
+/obj/structure/curtain/open/bed
+	name = "bed curtain"
+	color = "#854636"
+
+/obj/structure/curtain/open/privacy
+	name = "privacy curtain"
+	color = "#B8F5E3"
 
 /obj/structure/curtain/open/shower
 	name = "shower curtain"
@@ -61,9 +63,6 @@
 
 /obj/structure/curtain/open/shower/security
 	color = "#AA0000"
-
-/obj/structure/curtain/open/shower/centcom
-	color = "#000066"
 
 #undef SHOWER_OPEN_LAYER
 #undef SHOWER_CLOSED_LAYER

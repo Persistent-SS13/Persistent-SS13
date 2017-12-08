@@ -1,14 +1,11 @@
-/obj/structure/flora
-	burn_state = FLAMMABLE
-	burntime = 30
-
 //trees
 /obj/structure/flora/tree
 	name = "tree"
 	anchored = 1
 	density = 1
 	pixel_x = -16
-	layer = 9
+	plane = ABOVE_HUMAN_PLANE
+	layer = ABOVE_HUMAN_LAYER
 
 /obj/structure/flora/tree/pine
 	name = "pine tree"
@@ -76,6 +73,13 @@
 /obj/structure/flora/bush/New()
 	..()
 	icon_state = "snowbush[rand(1, 6)]"
+
+/obj/structure/flora/pottedplant
+	name = "potted plant"
+	icon = 'icons/obj/plants.dmi'
+	icon_state = "plant-26"
+	plane = ABOVE_HUMAN_PLANE
+	layer = ABOVE_HUMAN_LAYER
 
 //newbushes
 
@@ -195,134 +199,144 @@
 	icon_state = "fullgrass_[rand(1, 3)]"
 
 
-/obj/item/weapon/twohanded/required/kirbyplants
+//potted plants credit: Flashkirby
+/obj/structure/flora/pottedplant
 	name = "potted plant"
-	icon = 'icons/obj/flora/plants.dmi'
-	icon_state = "plant-1"
-	anchored = 0
-	layer = 5
-	w_class = 5
-	force = 10
-	throwforce = 13
-	throw_speed = 2
-	throw_range = 4
+	desc = "Really brings the room together."
+	icon = 'icons/obj/plants.dmi'
+	icon_state = "plant-01"
+	plane = ABOVE_HUMAN_PLANE
+	layer = ABOVE_HUMAN_LAYER
 
-/obj/item/weapon/twohanded/required/kirbyplants/New()
-	..()
-	icon_state = "plant-[rand(1,35)]"
-	if(prob(1))
-		icon_state = "plant-36"
+/obj/structure/flora/pottedplant/large
+	name = "large potted plant"
+	desc = "This is a large plant. Three branches support pairs of waxy leaves."
+	icon_state = "plant-26"
 
-/obj/item/weapon/twohanded/required/kirbyplants/equipped(mob/living/user)
-	var/image/I = image(icon = 'icons/obj/flora/plants.dmi' , icon_state = src.icon_state, loc = user)
-	I.override = 1
-	user.add_alt_appearance("sneaking_mission", I, player_list)
+/obj/structure/flora/pottedplant/fern
+	name = "potted fern"
+	desc = "This is an ordinary looking fern. It looks like it could do with some water."
+	icon_state = "plant-02"
 
-/obj/item/weapon/twohanded/required/kirbyplants/dropped(mob/living/user)
-	..()
-	user.remove_alt_appearance("sneaking_mission")
+/obj/structure/flora/pottedplant/overgrown
+	name = "overgrown potted plants"
+	desc = "This is an assortment of colourful plants. Some parts are overgrown."
+	icon_state = "plant-03"
 
-/obj/item/weapon/twohanded/required/kirbyplants/dead
-	name = "\improper RD's potted plant"
-	desc = "A gift from the botanical staff, presented after the RD's reassignment. There's a tag on it that says \"Y'all come back now, y'hear?\"\nIt doesn't look very healthy..."
-	icon_state = "plant-dead"
+/obj/structure/flora/pottedplant/bamboo
+	name = "potted bamboo"
+	desc = "These are bamboo shoots. The tops looks like they've been cut short."
+	icon_state = "plant-04"
 
-//a rock is flora according to where the icon file is
-//and now these defines
-/obj/structure/flora/rock
-	name = "rock"
-	desc = "a rock"
-	icon_state = "rock1"
-	icon = 'icons/obj/flora/rocks.dmi'
-	burn_state = FIRE_PROOF
-	anchored = 1
+/obj/structure/flora/pottedplant/largebush
+	name = "large potted bush"
+	desc = "This is a large bush. The leaves stick upwards in an odd fashion."
+	icon_state = "plant-05"
 
-/obj/structure/flora/rock/New()
-	..()
-	icon_state = "rock[rand(1,5)]"
+/obj/structure/flora/pottedplant/thinbush
+	name = "thin potted bush"
+	desc = "This is a thin bush. It appears to be flowering."
+	icon_state = "plant-06"
 
-/obj/structure/flora/rock/pile
-	name = "rocks"
-	desc = "some rocks"
-	icon_state = "rockpile1"
+/obj/structure/flora/pottedplant/mysterious
+	name = "mysterious potted bulbs"
+	desc = "This is a mysterious looking plant. Touching the bulbs cause them to shrink."
+	icon_state = "plant-07"
 
-/obj/structure/flora/rock/pile/New()
-	..()
-	icon_state = "rockpile[rand(1,5)]"
+/obj/structure/flora/pottedplant/smalltree
+	name = "small potted tree"
+	desc = "This is a small tree. It is rather pleasant."
+	icon_state = "plant-08"
 
-/obj/structure/flora/corn_stalk
-	name = "corn stalk"
-	icon = 'icons/obj/flora/plants.dmi'
-	icon_state = "cornstalk1"
-	anchored = 0
-	layer = 5
+/obj/structure/flora/pottedplant/unusual
+	name = "unusual potted plant"
+	desc = "This is an unusual plant. It's bulbous ends emit a soft blue light."
+	icon_state = "plant-09"
+	set_light(l_range = 1, l_power = 0.5, l_color = "#0000FF")
 
-/obj/structure/flora/corn_stalk/alt_1
-	icon_state = "cornstalk2"
+/obj/structure/flora/pottedplant/orientaltree
+	name = "potted oriental tree"
+	desc = "This is a rather oriental style tree. It's flowers are bright pink."
+	icon_state = "plant-10"
 
-/obj/structure/flora/corn_stalk/alt_2
-	icon_state = "cornstalk3"
+/obj/structure/flora/pottedplant/smallcactus
+	name = "small potted cactus"
+	desc = "This is a small cactus. Its needles are sharp."
+	icon_state = "plant-11"
 
-/obj/structure/flora/straw_bail
-	name = "straw bail"
-	icon = 'icons/obj/flora/plants.dmi'
-	icon_state = "strawbail1"
-	density = 1
-	climbable = 1 // you can climb all over them.
+/obj/structure/flora/pottedplant/tall
+	name = "tall potted plant"
+	desc = "This is a tall plant. Tiny pores line its surface."
+	icon_state = "plant-12"
 
-/obj/structure/flora/straw_bail/alt_1
-	icon_state = "strawbail2"
+/obj/structure/flora/pottedplant/sticky
+	name = "styicky potted plant"
+	desc = "This is an odd plant. Its sticky leaves trap insects."
+	icon_state = "plant-13"
 
-/obj/structure/flora/straw_bail/alt_2
-	icon_state = "strawbail3"
+/obj/structure/flora/pottedplant/smelly
+	name = "smelly potted plant"
+	desc = "This is some kind of tropical plant. It reeks of rotten eggs."
+	icon_state = "plant-14"
 
-/obj/structure/bush
-	name = "foliage"
-	desc = "Pretty thick scrub, it'll take something sharp and a lot of determination to clear away."
-	icon = 'icons/obj/flora/plants.dmi'
-	icon_state = "bush1"
-	density = 1
-	anchored = 1
-	layer = 3.2
-	var/indestructable = 0
-	var/stump = 0
+/obj/structure/flora/pottedplant/small
+	name = "small potted plant"
+	desc = "This is a pot of assorted small flora. Some look familiar."
+	icon_state = "plant-15"
 
-/obj/structure/bush/New()
-	if(prob(20))
-		opacity = 1
+/obj/structure/flora/pottedplant/aquatic
+	name = "aquatic potted plant"
+	desc = "This is apparently an aquatic plant. It's probably fake."
+	icon_state = "plant-16"
 
-/*
-/obj/structure/bush/Bumped(M as mob)
-	if(istype(M, /mob/living/simple_animal))
-		var/mob/living/simple_animal/A = M
-		A.loc = get_turf(src)
-	else if(istype(M, /mob/living/carbon/monkey))
-		var/mob/living/carbon/monkey/A = M
-		A.loc = get_turf(src)
-*/
+/obj/structure/flora/pottedplant/shoot
+	name = "small potted shoot"
+	desc = "This is a small shoot. It still needs time to grow."
+	icon_state = "plant-17"
 
-/obj/structure/bush/attackby(var/obj/I as obj, var/mob/user as mob, params)
-	//hatchets can clear away undergrowth
-	if(istype(I, /obj/item/weapon/hatchet) && !stump)
-		if(indestructable)
-			//this bush marks the edge of the map, you can't destroy it
-			to_chat(user, "\red You flail away at the undergrowth, but it's too thick here.")
-		else
-			user.visible_message("<span class='danger'>[user] begins clearing away [src].</b>","\red <b>You begin clearing away [src].</span>")
-			spawn(rand(15,30))
-				if(get_dist(user,src) < 2)
-					to_chat(user, "\blue You clear away [src].")
-					var/obj/item/stack/sheet/wood/W = new(src.loc)
-					W.amount = rand(3,15)
-					if(prob(50))
-						icon_state = "stump[rand(1,2)]"
-						name = "cleared foliage"
-						desc = "There used to be dense undergrowth here."
-						density = 0
-						stump = 1
-						pixel_x = rand(-6,6)
-						pixel_y = rand(-6,6)
-					else
-						qdel(src)
-	else
-		return ..()
+/obj/structure/flora/pottedplant/flower
+	name = "potted flower"
+	desc = "This is a slim plant. Sweet smelling flowers are supported by spindly stems."
+	icon_state = "plant-18"
+
+/obj/structure/flora/pottedplant/crystal
+	name = "crystalline potted plant"
+	desc = "These are rather cubic plants. Odd crystal formations grow on the end."
+	icon_state = "plant-19"
+
+/obj/structure/flora/pottedplant/subterranean
+	name = "subterranean potted plant"
+	desc = "This is a subterranean plant. It's bulbous ends glow faintly."
+	icon_state = "plant-20"
+	set_light(l_range = 1, l_power = 0.5, l_color = "#FF6633")
+
+/obj/structure/flora/pottedplant/minitree
+	name = "potted tree"
+	desc = "This is a miniature tree. Apparently it was grown to 1/5 scale."
+	icon_state = "plant-21"
+
+/obj/structure/flora/pottedplant/stoutbush
+	name = "stout potted bush"
+	desc = "This is a stout bush. Its leaves point up and outwards."
+	icon_state = "plant-22"
+
+/obj/structure/flora/pottedplant/drooping
+	name = "drooping potted plant"
+	desc = "This is a small plant. The drooping leaves make it look like its wilted."
+	icon_state = "plant-23"
+
+/obj/structure/flora/pottedplant/tropical
+	name = "tropical potted plant"
+	desc = "This is some kind of tropical plant. It hasn't begun to flower yet."
+	icon_state = "plant-24"
+
+/obj/structure/flora/pottedplant/dead
+	name = "dead potted plant"
+	desc = "This is the dried up remains of a dead plant. Someone should replace it."
+	icon_state = "plant-25"
+
+/obj/structure/flora/pottedplant/decorative
+	name = "decorative potted plant"
+	desc = "This is a decorative shrub. It's been trimmed into the shape of an apple."
+	icon_state = "applebush"
+

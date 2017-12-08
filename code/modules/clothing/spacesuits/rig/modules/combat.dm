@@ -15,13 +15,17 @@
 	interface_name = "mounted flash"
 	interface_desc = "Stuns your target by blinding them with a bright light."
 	device_type = /obj/item/device/flash
+	origin_tech = list(TECH_COMBAT = 2, TECH_MAGNET = 3, TECH_ENGINEERING = 5)
 
 /obj/item/rig_module/grenade_launcher
 
 	name = "mounted grenade launcher"
 	desc = "A shoulder-mounted micro-explosive dispenser."
 	selectable = 1
-	icon_state = "grenade"
+	icon_state = "grenadelauncher"
+	use_power_cost = 2 KILOWATTS	// 2kJ per shot, a mass driver that propels the grenade?
+
+	suit_overlay = "grenade"
 
 	interface_name = "integrated grenade launcher"
 	interface_desc = "Discharges loaded grenades against the wearer's location."
@@ -55,7 +59,7 @@
 		return 0
 
 	to_chat(user, "<font color='blue'><b>You slot \the [input_device] into the suit module.</b></font>")
-	user.unEquip(input_device)
+	user.drop_from_inventory(input_device)
 	qdel(input_device)
 	accepted_item.charges++
 	return 1
@@ -86,8 +90,16 @@
 	charge.charges--
 	var/obj/item/weapon/grenade/new_grenade = new charge.product_type(get_turf(H))
 	H.visible_message("<span class='danger'>[H] launches \a [new_grenade]!</span>")
+	new_grenade.activate(H)
 	new_grenade.throw_at(target,fire_force,fire_distance)
-	new_grenade.prime()
+
+/obj/item/rig_module/grenade_launcher/cleaner
+	name = "mounted cleaning grenade launcher"
+	desc = "A specialty shoulder-mounted micro-explosive dispenser."
+
+	charges = list(
+		list("cleaning grenade",   "cleaning grenade",   /obj/item/weapon/grenade/chem_grenade/cleaner,  9),
+		)
 
 /obj/item/rig_module/mounted
 
@@ -98,17 +110,19 @@
 	module_cooldown = 0
 	icon_state = "lcannon"
 
+	suit_overlay = "mounted-lascannon"
+
 	engage_string = "Configure"
 
 	interface_name = "mounted laser cannon"
 	interface_desc = "A shoulder-mounted cell-powered laser cannon."
 
-	var/gun_type = /obj/item/weapon/gun/energy/lasercannon/mounted
-	var/obj/item/weapon/gun/gun
+	var/obj/item/weapon/gun/gun = /obj/item/weapon/gun/energy/lasercannon/mounted
 
 /obj/item/rig_module/mounted/New()
 	..()
-	gun = new gun_type(src)
+	if(gun)
+		gun = new gun(src)
 
 /obj/item/rig_module/mounted/engage(atom/target)
 
@@ -117,9 +131,9 @@
 
 	if(!target)
 		gun.attack_self(holder.wearer)
-		return 1
+		return
 
-	gun.process_fire(target,holder.wearer)
+	gun.Fire(target,holder.wearer)
 	return 1
 
 /obj/item/rig_module/mounted/egun
@@ -130,8 +144,8 @@
 
 	interface_name = "mounted energy gun"
 	interface_desc = "A forearm-mounted suit-powered energy gun."
-
-	gun_type = /obj/item/weapon/gun/energy/gun/mounted
+	origin_tech = list(TECH_POWER = 6, TECH_COMBAT = 6, TECH_ENGINEERING = 6)
+	gun = /obj/item/weapon/gun/energy/gun/mounted
 
 /obj/item/rig_module/mounted/taser
 
@@ -144,10 +158,10 @@
 	suit_overlay_active = "mounted-taser"
 	suit_overlay_inactive = "mounted-taser"
 
-	interface_name = "mounted energy gun"
-	interface_desc = "A shoulder-mounted cell-powered energy gun."
-
-	gun_type = /obj/item/weapon/gun/energy/taser/mounted
+	interface_name = "mounted taser"
+	interface_desc = "A shoulder-mounted cell-powered taser."
+	origin_tech = list(TECH_POWER = 5, TECH_COMBAT = 5, TECH_ENGINEERING = 6)
+	gun = /obj/item/weapon/gun/energy/taser/mounted
 
 /obj/item/rig_module/mounted/energy_blade
 
@@ -164,11 +178,11 @@
 	usable = 0
 	selectable = 1
 	toggleable = 1
-	use_power_cost = 50
-	active_power_cost = 10
+	use_power_cost = 10 KILOWATTS
+	active_power_cost = 500
 	passive_power_cost = 0
 
-	gun_type = /obj/item/weapon/gun/energy/kinetic_accelerator/crossbow/ninja
+	gun = /obj/item/weapon/gun/energy/crossbow/ninja
 
 /obj/item/rig_module/mounted/energy_blade/process()
 
@@ -191,6 +205,7 @@
 		return
 
 	var/obj/item/weapon/melee/energy/blade/blade = new(M)
+	blade.creator = M
 	M.put_in_hands(blade)
 
 /obj/item/rig_module/mounted/energy_blade/deactivate()
@@ -203,7 +218,7 @@
 		return
 
 	for(var/obj/item/weapon/melee/energy/blade/blade in M.contents)
-		M.unEquip(blade)
+		M.drop_from_inventory(blade)
 		qdel(blade)
 
 /obj/item/rig_module/fabricator
@@ -212,15 +227,15 @@
 	desc = "A self-contained microfactory system for hardsuit integration."
 	selectable = 1
 	usable = 1
-	use_power_cost = 15
+	use_power_cost = 5 KILOWATTS
 	icon_state = "enet"
 
-	engage_string = "Fabricate Tile"
+	engage_string = "Fabricate Star"
 
 	interface_name = "death blossom launcher"
-	interface_desc = "An integrated microfactory that produces floor tiles from thin air and electricity."
+	interface_desc = "An integrated microfactory that produces poisoned throwing stars from thin air and electricity."
 
-	var/fabrication_type = /obj/item/stack/tile/plasteel
+	var/fabrication_type = /obj/item/weapon/material/star/ninja
 	var/fire_force = 30
 	var/fire_distance = 10
 
@@ -246,3 +261,13 @@
 			H.put_in_hands(new_weapon)
 
 	return 1
+
+/obj/item/rig_module/fabricator/wf_sign
+	name = "wet floor sign fabricator"
+	use_power_cost = 50 KILOWATTS
+	engage_string = "Fabricate Sign"
+
+	interface_name = "work saftey launcher"
+	interface_desc = "An integrated microfactory that produces wet floor signs from thin air and electricity."
+
+	fabrication_type = /obj/item/weapon/caution

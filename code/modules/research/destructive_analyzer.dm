@@ -1,5 +1,3 @@
-//This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:33
-
 /*
 Destructive Analyzer
 
@@ -7,84 +5,85 @@ It is used to destroy hand-held objects and advance technological research. Cont
 
 Note: Must be placed within 3 tiles of the R&D Console
 */
+
 /obj/machinery/r_n_d/destructive_analyzer
-	name = "Destructive Analyzer"
-	desc = "Learn science by destroying things!"
+	name = "destructive analyzer"
 	icon_state = "d_analyzer"
 	var/obj/item/weapon/loaded_item = null
 	var/decon_mod = 0
 
+	use_power = 1
+	idle_power_usage = 30
+	active_power_usage = 2500
+
 /obj/machinery/r_n_d/destructive_analyzer/New()
 	..()
 	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/destructive_analyzer(null)
-	component_parts += new /obj/item/weapon/stock_parts/scanning_module(null)
-	component_parts += new /obj/item/weapon/stock_parts/manipulator(null)
-	component_parts += new /obj/item/weapon/stock_parts/micro_laser(null)
-	RefreshParts()
-
-/obj/machinery/r_n_d/destructive_analyzer/upgraded/New()
-	..()
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/destructive_analyzer(null)
-	component_parts += new /obj/item/weapon/stock_parts/scanning_module/phasic(null)
-	component_parts += new /obj/item/weapon/stock_parts/manipulator/pico(null)
-	component_parts += new /obj/item/weapon/stock_parts/micro_laser/ultra(null)
+	component_parts += new /obj/item/weapon/circuitboard/destructive_analyzer(src)
+	component_parts += new /obj/item/weapon/stock_parts/scanning_module(src)
+	component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
+	component_parts += new /obj/item/weapon/stock_parts/micro_laser(src)
 	RefreshParts()
 
 /obj/machinery/r_n_d/destructive_analyzer/RefreshParts()
 	var/T = 0
-	for(var/obj/item/weapon/stock_parts/S in component_parts)
+	for(var/obj/item/weapon/stock_parts/S in src)
 		T += S.rating
-	decon_mod = T
+	decon_mod = T * 0.1
 
+/obj/machinery/r_n_d/destructive_analyzer/update_icon()
+	if(panel_open)
+		icon_state = "d_analyzer_t"
+	else if(loaded_item)
+		icon_state = "d_analyzer_l"
+	else
+		icon_state = "d_analyzer"
 
-/obj/machinery/r_n_d/destructive_analyzer/proc/ConvertReqString2List(var/list/source_list)
-	var/list/temp_list = params2list(source_list)
-	for(var/O in temp_list)
-		temp_list[O] = text2num(temp_list[O])
-	return temp_list
-
-
-/obj/machinery/r_n_d/destructive_analyzer/attackby(var/obj/item/O as obj, var/mob/user as mob, params)
-	if(shocked)
-		shock(user,50)
-	if(default_deconstruction_screwdriver(user, "d_analyzer_t", "d_analyzer", O))
+/obj/machinery/r_n_d/destructive_analyzer/attackby(var/obj/item/O as obj, var/mob/user as mob)
+	if(busy)
+		to_chat(user, "<span class='notice'>\The [src] is busy right now.</span>")
+		return
+	if(loaded_item)
+		to_chat(user, "<span class='notice'>There is something already loaded into \the [src].</span>")
+		return 1
+	if(default_deconstruction_screwdriver(user, O))
 		if(linked_console)
 			linked_console.linked_destroy = null
 			linked_console = null
 		return
-
-	if(exchange_parts(user, O))
+	if(default_deconstruction_crowbar(user, O))
 		return
-
-	default_deconstruction_crowbar(user, O)
-
-	if(disabled)
+	if(default_part_replacement(user, O))
 		return
+	if(panel_open)
+		to_chat(user, "<span class='notice'>You can't load \the [src] while it's opened.</span>")
+		return 1
 	if(!linked_console)
-		to_chat(user, "<span class='warning'>The [src.name] must be linked to an R&D console first!</span>")
+		to_chat(user, "<span class='notice'>\The [src] must be linked to an R&D console first.</span>")
 		return
-	if(busy)
-		to_chat(user, "<span class='warning'>The [src.name] is busy right now.</span>")
-		return
-	if(istype(O, /obj/item) && !loaded_item)
-		if(!O.origin_tech)
-			to_chat(user, "<span class='warning'>This doesn't seem to have a tech origin!</span>")
+	if(!loaded_item)
+		if(isrobot(user)) //Don't put your module items in there!
 			return
-		var/list/temp_tech = ConvertReqString2List(O.origin_tech)
-		if(temp_tech.len == 0)
-			to_chat(user, "<span class='warning'>You cannot deconstruct this item!</span>")
-			return
-		if(!user.drop_item())
-			to_chat(user, "<span class='warning'>\The [O] is stuck to your hand, you cannot put it in the [src.name]!</span>")
-			return
+		if(istype(O, /obj/item/device/electronic_assembly)) //A few things
+			var/obj/item/device/electronic_assembly/assembly = O
+			if(!assembly.contents.len) //Make sure they don't use this to get cheap assemblies.
+				return
+		else
+			if(!O.origin_tech)
+				to_chat(user, "<span class='notice'>This doesn't seem to have a tech origin.</span>")
+				return
+			if(O.origin_tech.len == 0)
+				to_chat(user, "<span class='notice'>You cannot deconstruct this item.</span>")
+				return
+
 		busy = 1
 		loaded_item = O
+		user.drop_item()
 		O.loc = src
-		to_chat(user, "<span class='notice'>You add the [O.name] to the [src.name]!</span>")
+		to_chat(user, "<span class='notice'>You add \the [O] to \the [src].</span>")
 		flick("d_analyzer_la", src)
 		spawn(10)
-			icon_state = "d_analyzer_l"
+			update_icon()
 			busy = 0
+		return 1
 	return

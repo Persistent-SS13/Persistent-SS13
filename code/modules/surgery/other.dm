@@ -1,142 +1,102 @@
-//Procedures in this file: Inernal wound patching, Implant removal.
+//Procedures in this file: Internal wound patching, Implant removal.
 //////////////////////////////////////////////////////////////////
 //					INTERNAL WOUND PATCHING						//
 //////////////////////////////////////////////////////////////////
 
-/datum/surgery/infection
-	name = "external infection treatment/autopsy"
-	steps = list(/datum/surgery_step/generic/cut_open, /datum/surgery_step/generic/cauterize)
-	possible_locs = list("chest","head","groin", "l_arm", "r_arm", "l_leg", "r_leg", "r_hand", "l_hand", "r_foot", "l_foot")
-
-/datum/surgery/bleeding
-	name = "gaping wound and internal bleeding treatment"
-	steps = list(/datum/surgery_step/generic/cut_open,/datum/surgery_step/generic/clamp_bleeders,/datum/surgery_step/generic/retract_skin,/datum/surgery_step/fix_vein,/datum/surgery_step/generic/cauterize)
-	possible_locs = list("chest","head","groin", "l_arm", "r_arm", "l_leg", "r_leg", "r_hand", "l_hand", "r_foot", "l_foot")
-
-/datum/surgery/bleeding/can_start(mob/user, mob/living/carbon/target)
-	if(ishuman(target))
-		var/mob/living/carbon/human/H = target
-		var/obj/item/organ/external/affected = H.get_organ(user.zone_sel.selecting)
-		if(!affected) return 0
-
-		var/internal_bleeding = 0
-		for(var/datum/wound/W in affected.wounds)
-			if(W.damage_type == CUT)
-				if(!W.surgery_treated && !W.simpleheal)
-					return 1
-			if(W.internal)
-				internal_bleeding = 1
-				break
-		if(internal_bleeding)
-			return 1
-		return 0
-
-/datum/surgery_step/fix_vein
-	name = "mend internal bleeding"
+//////////////////////////////////////////////////////////////////
+//	 Tendon fix surgery step
+//////////////////////////////////////////////////////////////////
+/datum/surgery_step/fix_tendon
+	priority = 2
 	allowed_tools = list(
 	/obj/item/weapon/FixOVein = 100, \
-	/obj/item/stack/cable_coil = 75
+	/obj/item/stack/cable_coil = 75,	\
+	/obj/item/weapon/tape_roll = 50
 	)
 	can_infect = 1
 	blood_level = 1
 
-	time = 32
+	min_duration = 70
+	max_duration = 90
+	shock_level = 40
+	delicate = 1
 
-/datum/surgery_step/fix_vein/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_tendon/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	if(!hasorgans(target))
+		return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	if(!affected) return 0
+	return affected && (affected.status & ORGAN_TENDON_CUT) && affected.open() >= SURGERY_RETRACTED
 
-	var/internal_bleeding = 0
-	for(var/datum/wound/W in affected.wounds)
-		if(W.internal)
-			internal_bleeding = 1
-			break
-
-	return affected.open == 2 && internal_bleeding
-
-/datum/surgery_step/fix_vein/begin_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_tendon/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message("[user] starts patching the damaged vein in [target]'s [affected.name] with \the [tool]." , \
-	"You start patching the damaged vein in [target]'s [affected.name] with \the [tool].")
-	target.custom_pain("The pain in [affected.name] is unbearable!",1)
+	user.visible_message("[user] starts reattaching the damaged [affected.tendon_name] in [target]'s [affected.name] with \the [tool]." , \
+	"You start reattaching the damaged [affected.tendon_name] in [target]'s [affected.name] with \the [tool].")
+	target.custom_pain("The pain in your [affected.name] is unbearable!",100,affecting = affected)
 	..()
 
-/datum/surgery_step/fix_vein/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_tendon/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message("<span class='notice'> [user] has patched the damaged vein in [target]'s [affected.name] with \the [tool].</span>", \
-		"<span class='notice'> You have patched the damaged vein in [target]'s [affected.name] with \the [tool].</span>")
+	user.visible_message("<span class='notice'>[user] has reattached the [affected.tendon_name] in [target]'s [affected.name] with \the [tool].</span>", \
+		"<span class='notice'>You have reattached the [affected.tendon_name] in [target]'s [affected.name] with \the [tool].</span>")
+	affected.status &= ~ORGAN_TENDON_CUT
+	affected.update_damages()
 
-	for(var/datum/wound/W in affected.wounds) if(W.internal)
-		affected.wounds -= W
-		affected.update_damages()
-	if(ishuman(user) && prob(40))
-		var/mob/living/carbon/human/U = user
-		U.bloody_hands(target, 0)
-		
-	for(var/datum/wound/W in affected.wounds)	
-		if(W.damage_type != CUT) continue
-		if(W.simpleheal) continue
-		W.surgery_treated = 1
-		
-	return 1
-
-/datum/surgery_step/fix_vein/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_tendon/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message("<span class='warning'> [user]'s hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>" , \
-	"<span class='warning'> Your hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>")
-	affected.take_damage(5, 0)
+	user.visible_message("<span class='warning'>[user]'s hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>" , \
+	"<span class='warning'>Your hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>")
+	affected.take_damage(5, used_weapon = tool)
 
-	return 0
-
-/datum/surgery_step/fix_dead_tissue		//Debridement
-	name = "remove dead tissue"
+//////////////////////////////////////////////////////////////////
+//	 IB fix surgery step
+//////////////////////////////////////////////////////////////////
+/datum/surgery_step/fix_vein
+	priority = 3
 	allowed_tools = list(
-		/obj/item/weapon/scalpel = 100,		\
-		/obj/item/weapon/kitchen/knife = 75,	\
-		/obj/item/weapon/shard = 50, 		\
+	/obj/item/weapon/FixOVein = 100, \
+	/obj/item/stack/cable_coil = 75,	\
+	/obj/item/weapon/tape_roll = 50
 	)
-
 	can_infect = 1
 	blood_level = 1
 
-	time = 16
+	min_duration = 70
+	max_duration = 90
+	shock_level = 40
+	delicate = 1
 
-/datum/surgery_step/fix_dead_tissue/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_vein/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	if(!hasorgans(target))
 		return 0
 
-	if(target_zone == "mouth" || target_zone == "eyes")
-		return 0
-
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
+	return affected && (affected.status & ORGAN_ARTERY_CUT) && affected.open() >= SURGERY_RETRACTED
 
-	return affected && affected.open == 2 && (affected.status & ORGAN_DEAD)
-
-/datum/surgery_step/fix_dead_tissue/begin_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_vein/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message("[user] starts cutting away necrotic tissue in [target]'s [affected.name] with \the [tool]." , \
-	"You start cutting away necrotic tissue in [target]'s [affected.name] with \the [tool].")
-	target.custom_pain("The pain in [affected.name] is unbearable!",1)
+	user.visible_message("[user] starts patching the damaged [affected.artery_name] in [target]'s [affected.name] with \the [tool]." , \
+	"You start patching the damaged [affected.artery_name] in [target]'s [affected.name] with \the [tool].")
+	target.custom_pain("The pain in your [affected.name] is unbearable!",100,affecting = affected)
 	..()
 
-/datum/surgery_step/fix_dead_tissue/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_vein/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message("<span class='notice'> [user] has cut away necrotic tissue in [target]'s [affected.name] with \the [tool].</span>", \
-		"<span class='notice'> You have cut away necrotic tissue in [target]'s [affected.name] with \the [tool].</span>")
-	affected.open = 3
+	user.visible_message("<span class='notice'>[user] has patched the [affected.artery_name] in [target]'s [affected.name] with \the [tool].</span>", \
+		"<span class='notice'>You have patched the [affected.artery_name] in [target]'s [affected.name] with \the [tool].</span>")
+	affected.status &= ~ORGAN_ARTERY_CUT
+	affected.update_damages()
 
-	return 1
-
-/datum/surgery_step/fix_dead_tissue/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/fix_vein/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	user.visible_message("<span class='warning'> [user]'s hand slips, slicing an artery inside [target]'s [affected.name] with \the [tool]!</span>", \
-	"<span class='warning'> Your hand slips, slicing an artery inside [target]'s [affected.name] with \the [tool]!</span>")
-	affected.createwound(CUT, 20, 1)
+	user.visible_message("<span class='warning'>[user]'s hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>" , \
+	"<span class='warning'>Your hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>")
+	affected.take_damage(5, used_weapon = tool)
 
-	return 0
-
+//////////////////////////////////////////////////////////////////
+//	 Peridaxon necrosis treatment surgery step
+//////////////////////////////////////////////////////////////////
 /datum/surgery_step/treat_necrosis
-	name = "treat necrosis"
+	priority = 2
 	allowed_tools = list(
 		/obj/item/weapon/reagent_containers/dropper = 100,
 		/obj/item/weapon/reagent_containers/glass/bottle = 75,
@@ -148,134 +108,188 @@
 	can_infect = 0
 	blood_level = 0
 
-	time = 24
+	min_duration = 50
+	max_duration = 60
 
-/datum/surgery_step/fix_dead_tissue/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
-	if(!istype(tool, /obj/item/weapon/reagent_containers))
-		return 0
-
+/datum/surgery_step/treat_necrosis/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/weapon/reagent_containers/container = tool
-	if(!container.reagents.has_reagent("mitocholide"))
+	if(!istype(container) || !container.reagents.has_reagent("peridaxon"))
 		return 0
 
 	if(!hasorgans(target))
 		return 0
 
-	if(target_zone == "mouth" || target_zone == "eyes")
-		return 0
-
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	return affected.open == 3 && (affected.status & ORGAN_DEAD)
+	return affected && affected.open() >= SURGERY_RETRACTED && (affected.status & ORGAN_DEAD)
 
-/datum/surgery_step/fix_dead_tissue/begin_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/treat_necrosis/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("[user] starts applying medication to the affected tissue in [target]'s [affected.name] with \the [tool]." , \
 	"You start applying medication to the affected tissue in [target]'s [affected.name] with \the [tool].")
-	target.custom_pain("Something in your [affected.name] is causing you a lot of pain!",1)
+	target.custom_pain("Something in your [affected.name] is causing you a lot of pain!",50,affecting = affected)
 	..()
 
-/datum/surgery_step/fix_dead_tissue/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/treat_necrosis/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 
-	if(!istype(tool, /obj/item/weapon/reagent_containers))
+	if (!istype(tool, /obj/item/weapon/reagent_containers))
 		return
 
 	var/obj/item/weapon/reagent_containers/container = tool
 
-	var/trans = container.reagents.trans_to(target, container.amount_per_transfer_from_this)
-	if(trans > 0)
-		container.reagents.reaction(target, INGEST)	//technically it's contact, but the reagents are being applied to internal tissue
+	var/amount = container.amount_per_transfer_from_this
+	var/datum/reagents/temp = new(amount)
+	container.reagents.trans_to_holder(temp, amount)
 
-		if(container.reagents.has_reagent("mitocholide"))
+	var/rejuvenate = temp.has_reagent("peridaxon")
+
+	var/trans = temp.trans_to_mob(target, temp.total_volume, CHEM_BLOOD) //technically it's contact, but the reagents are being applied to internal tissue
+	if (trans > 0)
+
+		if(rejuvenate)
 			affected.status &= ~ORGAN_DEAD
+			affected.owner.update_body(1)
 
-		user.visible_message("<span class='notice'> [user] applies [trans] units of the solution to affected tissue in [target]'s [affected.name]</span>", \
-			"<span class='notice'> You apply [trans] units of the solution to affected tissue in [target]'s [affected.name] with \the [tool].</span>")
+		user.visible_message("<span class='notice'>[user] applies [trans] units of the solution to affected tissue in [target]'s [affected.name]</span>.", \
+			"<span class='notice'>You apply [trans] units of the solution to affected tissue in [target]'s [affected.name] with \the [tool].</span>")
 
-	return 1
-
-/datum/surgery_step/fix_dead_tissue/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
+/datum/surgery_step/treat_necrosis/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 
-	if(!istype(tool, /obj/item/weapon/reagent_containers))
+	if (!istype(tool, /obj/item/weapon/reagent_containers))
 		return
 
 	var/obj/item/weapon/reagent_containers/container = tool
 
-	var/trans = container.reagents.trans_to(target, container.amount_per_transfer_from_this)
-	container.reagents.reaction(target, INGEST)	//technically it's contact, but the reagents are being applied to internal tissue
+	var/trans = container.reagents.trans_to_mob(target, container.amount_per_transfer_from_this, CHEM_BLOOD)
 
-	user.visible_message("<span class='warning'> [user]'s hand slips, applying [trans] units of the solution to the wrong place in [target]'s [affected.name] with the [tool]!</span>" , \
-	"<span class='warning'> Your hand slips, applying [trans] units of the solution to the wrong place in [target]'s [affected.name] with the [tool]!</span>")
+	user.visible_message("<span class='warning'>[user]'s hand slips, applying [trans] units of the solution to the wrong place in [target]'s [affected.name] with the [tool]!</span>" , \
+	"<span class='warning'>Your hand slips, applying [trans] units of the solution to the wrong place in [target]'s [affected.name] with the [tool]!</span>")
 
 	//no damage or anything, just wastes medicine
 
-
 //////////////////////////////////////////////////////////////////
-//					Dethrall Shadowling 						//
+//	 Hardsuit removal surgery step
 //////////////////////////////////////////////////////////////////
-/datum/surgery/remove_thrall
-	name = "cleanse contaminations"//RENAME MEH
-	steps = list(/datum/surgery_step/generic/cut_open, /datum/surgery_step/generic/clamp_bleeders, /datum/surgery_step/generic/retract_skin, /datum/surgery_step/open_encased/saw,/datum/surgery_step/open_encased/retract, /datum/surgery_step/internal/dethrall, /datum/surgery_step/glue_bone, /datum/surgery_step/set_bone,/datum/surgery_step/finish_bone,/datum/surgery_step/generic/cauterize)
-	possible_locs = list("head")
+/datum/surgery_step/hardsuit
+	allowed_tools = list(
+		/obj/item/weapon/weldingtool = 80,
+		/obj/item/weapon/circular_saw = 60,
+		/obj/item/weapon/pickaxe/plasmacutter = 100
+		)
 
-/datum/surgery/remove_thrall/synth
-	name = "cleanse contaminations"//RENAME MEH
-	steps = list(/datum/surgery_step/robotics/external/unscrew_hatch,/datum/surgery_step/robotics/external/open_hatch,/datum/surgery_step/internal/dethrall,/datum/surgery_step/robotics/external/close_hatch)
-	possible_locs = list("chest")
+	can_infect = 0
+	blood_level = 0
 
+	min_duration = 120
+	max_duration = 180
 
+/datum/surgery_step/hardsuit/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	if(!istype(target))
+		return 0
+	if(istype(tool,/obj/item/weapon/weldingtool))
+		var/obj/item/weapon/weldingtool/welder = tool
+		if(!welder.isOn() || !welder.remove_fuel(1,user))
+			return 0
+	return (target_zone == BP_CHEST) && istype(target.back, /obj/item/weapon/rig) && !(target.back.canremove)
 
-/datum/surgery/remove_thrall/can_start(mob/user, mob/living/carbon/target)
-	return is_thrall(target) //would this be too meta?
-
-/datum/surgery/remove_thrall/synth/can_start(mob/user, mob/living/carbon/target)
-	return is_thrall(target) && target.get_species() == "Machine"
-
-
-/datum/surgery_step/internal/dethrall
-	name = "cleanse contamination"
-	allowed_tools = list(/obj/item/device/flash = 100, /obj/item/device/flashlight/pen = 80, /obj/item/device/flashlight = 40)
-
-	time = 30
-
-/datum/surgery_step/internal/dethrall/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
-	if(!hasorgans(target))
-		return
-	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	return ..() && affected && is_thrall(target) && affected.open_enough_for_surgery() && target_zone == target.named_organ_parent("brain")
-
-/datum/surgery_step/internal/dethrall/begin_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
-	var/braincase = target.named_organ_parent("brain")
-	user.visible_message("[user] reaches into [target]'s head with [tool].", "<span class='notice'>You begin aligning [tool]'s light to the tumor on [target]'s brain...</span>")
-	to_chat(target, "<span class='boldannounce'>A small part of your [braincase] pulses with agony as the light impacts it.</span>")
+/datum/surgery_step/hardsuit/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	user.visible_message("[user] starts cutting through the support systems of [target]'s [target.back] with \the [tool]." , \
+	"You start cutting through the support systems of [target]'s [target.back] with \the [tool].")
 	..()
 
-/datum/surgery_step/internal/dethrall/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool,datum/surgery/surgery)
-	if(target.get_species() == "Lesser Shadowling") //Empowered thralls cannot be deconverted
-		to_chat(target, "<span class='shadowling'><b><i>NOT LIKE THIS!</i></b></span>")
-		user.visible_message("<span class='warning'>[target] suddenly slams upward and knocks down [user]!</span>", \
-							 "<span class='userdanger'>[target] suddenly bolts up and slams you with tremendous force!</span>")
-		user.resting = 0 //Remove all stuns
-		user.SetSleeping(0)
-		user.SetStunned(0)
-		user.SetWeakened(0)
-		user.SetParalysis(0)
-		if(iscarbon(user))
-			var/mob/living/carbon/C = user
-			C.Weaken(6)
-			C.apply_damage(20, BRUTE, "chest")
-		else if(issilicon(user))
-			var/mob/living/silicon/S = user
-			S.Weaken(8)
-			S.apply_damage(20, BRUTE)
-			playsound(S, 'sound/effects/bang.ogg', 50, 1)
+/datum/surgery_step/hardsuit/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+
+	var/obj/item/weapon/rig/rig = target.back
+	if(!istype(rig))
+		return
+	rig.reset()
+	user.visible_message("<span class='notice'>[user] has cut through the support systems of [target]'s [rig] with \the [tool].</span>", \
+		"<span class='notice'>You have cut through the support systems of [target]'s [rig] with \the [tool].</span>")
+
+/datum/surgery_step/hardsuit/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	user.visible_message("<span class='danger'>[user]'s [tool] can't quite seem to get through the metal...</span>", \
+	"<span class='danger'>Your [tool] can't quite seem to get through the metal. It's weakening, though - try again.</span>")
+
+
+//////////////////////////////////////////////////////////////////
+//	 Disinfection step
+//////////////////////////////////////////////////////////////////
+/datum/surgery_step/sterilize
+	priority = 2
+	allowed_tools = list(
+		/obj/item/weapon/reagent_containers/spray = 100,
+		/obj/item/weapon/reagent_containers/dropper = 100,
+		/obj/item/weapon/reagent_containers/glass/bottle = 90,
+		/obj/item/weapon/reagent_containers/food/drinks/flask = 90,
+		/obj/item/weapon/reagent_containers/glass/beaker = 75,
+		/obj/item/weapon/reagent_containers/food/drinks/bottle = 75,
+		/obj/item/weapon/reagent_containers/food/drinks/glass2 = 75,
+		/obj/item/weapon/reagent_containers/glass/bucket = 50
+	)
+
+	can_infect = 0
+	blood_level = 0
+
+	min_duration = 50
+	max_duration = 60
+
+/datum/surgery_step/sterilize/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	if(!hasorgans(target))
 		return 0
-	user.visible_message("[user] shines light onto the tumor in [target]'s head!", "<span class='notice'>You cleanse the contamination from [target]'s brain!</span>")
-	if(target.vision_type) //Turns off their darksight if it's still active.
-		to_chat(target, "<span class='boldannounce'>Your eyes are suddenly wrought with immense pain as your darksight is forcibly dismissed!</span>")
-		target.vision_type = null
-	ticker.mode.remove_thrall(target.mind, 0)
-	target.visible_message("<span class='warning'>A strange black mass falls from [target]'s head!</span>")
-	new /obj/item/organ/internal/shadowtumor(get_turf(target))
+	var/obj/item/organ/external/affected = target.get_organ(target_zone)
+	if(!istype(affected))
+		return 0
+	if(affected.is_disinfected())
+		return 0
+	var/obj/item/weapon/reagent_containers/container = tool
+	if(!istype(container))
+		return 0
+	if(!container.is_open_container())
+		return 0
+	var/datum/reagent/ethanol/booze = locate() in container.reagents.reagent_list
+	if(istype(booze) && booze.strength >= 40)
+		to_chat(user, "<span class='warning'>[booze] is too weak, you need something of higher proof for this...</span>")
+		return 0
+	if(!istype(booze) && !container.reagents.has_reagent("sterilizine"))
+		return 0
 	return 1
+
+/datum/surgery_step/sterilize/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	var/obj/item/organ/external/affected = target.get_organ(target_zone)
+	user.visible_message("[user] starts pouring [tool]'s contents on \the [target]'s [affected.name]." , \
+	"You start pouring [tool]'s contents on \the [target]'s [affected.name].")
+	target.custom_pain("Your [affected.name] is on fire!",50,affecting = affected)
+	..()
+
+/datum/surgery_step/sterilize/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	var/obj/item/organ/external/affected = target.get_organ(target_zone)
+
+	if (!istype(tool, /obj/item/weapon/reagent_containers))
+		return
+
+	var/obj/item/weapon/reagent_containers/container = tool
+
+	var/amount = container.amount_per_transfer_from_this
+	var/datum/reagents/temp = new(amount)
+	container.reagents.trans_to_holder(temp, amount)
+
+	var/trans = temp.trans_to_mob(target, temp.total_volume, CHEM_BLOOD) //technically it's contact, but the reagents are being applied to internal tissue
+	if (trans > 0)
+		user.visible_message("<span class='notice'>[user] rubs [target]'s [affected.name] down with \the [tool]'s contents</span>.", \
+			"<span class='notice'>You rub [target]'s [affected.name] down with \the [tool]'s contents.</span>")
+
+/datum/surgery_step/sterilize/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	var/obj/item/organ/external/affected = target.get_organ(target_zone)
+
+	if (!istype(tool, /obj/item/weapon/reagent_containers))
+		return
+
+	var/obj/item/weapon/reagent_containers/container = tool
+
+	container.reagents.trans_to_mob(target, container.amount_per_transfer_from_this, CHEM_BLOOD)
+
+	user.visible_message("<span class='warning'>[user]'s hand slips, splilling \the [tool]'s contents over the [target]'s [affected.name]!</span>" , \
+	"<span class='warning'>Your hand slips, splilling \the [tool]'s contents over the [target]'s [affected.name]!</span>")
+	affected.disinfect()
+

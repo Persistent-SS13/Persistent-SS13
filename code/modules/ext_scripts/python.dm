@@ -5,5 +5,5 @@
 		script = replacetext(script, "/", "\\")
 
 	var/command = config.python_path + " " + script + " " + args
-	shell("[command]")
-	return
+
+	return shell(command)

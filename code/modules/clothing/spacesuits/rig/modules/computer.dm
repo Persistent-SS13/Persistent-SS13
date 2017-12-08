@@ -23,7 +23,7 @@
 		to_chat(usr, "Your module is not installed in a hardsuit.")
 		return
 
-	module.holder.ui_interact(usr, nano_state = contained_state)
+	module.holder.ui_interact(usr, nano_state = GLOB.contained_state)
 
 /obj/item/rig_module/ai_container
 
@@ -43,8 +43,9 @@
 	interface_desc = "A socket that supports a range of artificial intelligence systems."
 
 	var/mob/integrated_ai // Direct reference to the actual mob held in the suit.
-	var/obj/item/ai_card  // Reference to the MMI, posibrain, intellicard or pAI card previously holding the AI.
+	var/obj/item/ai_card  // Reference to the MMI, posibrain, inteliCard or pAI card previously holding the AI.
 	var/obj/item/ai_verbs/verb_holder
+	origin_tech = list(TECH_DATA = 6, TECH_MATERIAL = 5, TECH_ENGINEERING = 6)
 
 /mob
 	var/get_rig_stats = 0
@@ -56,6 +57,13 @@
 			integrated_ai.get_rig_stats = 1
 		else
 			integrated_ai.get_rig_stats = 0
+
+/mob/living/Stat()
+	. = ..()
+	if(. && get_rig_stats)
+		var/obj/item/weapon/rig/rig = get_rig()
+		if(rig)
+			SetupStat(rig)
 
 /obj/item/rig_module/ai_container/proc/update_verb_holder()
 	if(!verb_holder)
@@ -74,21 +82,21 @@
 	else
 		target_ai = locate(/mob/living/silicon/ai) in input_device.contents
 
-	var/obj/item/device/aicard/card = ai_card
+	var/obj/item/weapon/aicard/card = ai_card
 
 	// Downloading from/loading to a terminal.
-	if(istype(input_device,/obj/machinery/computer/aifixer) || istype(input_device,/mob/living/silicon/ai) || istype(input_device,/obj/structure/AIcore/deactivated))
+	if(istype(input_device,/mob/living/silicon/ai) || istype(input_device,/obj/structure/AIcore/deactivated))
 
 		// If we're stealing an AI, make sure we have a card for it.
 		if(!card)
-			card = new /obj/item/device/aicard(src)
+			card = new /obj/item/weapon/aicard(src)
 
-		// Terminal interaction only works with an intellicarded AI.
+		// Terminal interaction only works with an inteliCarded AI.
 		if(!istype(card))
 			return 0
 
 		// Since we've explicitly checked for three types, this should be safe.
-		card.afterattack(input_device, user, 1)
+		input_device.attackby(card,user)
 
 		// If the transfer failed we can delete the card.
 		if(locate(/mob/living/silicon/ai) in card)
@@ -99,11 +107,10 @@
 		update_verb_holder()
 		return 1
 
-	if(istype(input_device,/obj/item/device/aicard))
+	if(istype(input_device,/obj/item/weapon/aicard))
 		// We are carding the AI in our suit.
 		if(integrated_ai)
-			var/obj/item/device/aicard/ext_card = input_device
-			ext_card.afterattack(integrated_ai, user, 1)
+			integrated_ai.attackby(input_device,user)
 			// If the transfer was successful, we can clear out our vars.
 			if(integrated_ai.loc != src)
 				integrated_ai = null
@@ -116,7 +123,7 @@
 		return 1
 
 	// Okay, it wasn't a terminal being touched, check for all the simple insertions.
-	if(input_device.type in list(/obj/item/device/paicard, /obj/item/device/mmi, /obj/item/device/mmi/posibrain))
+	if(input_device.type in list(/obj/item/device/paicard, /obj/item/device/mmi, /obj/item/device/mmi/digital/posibrain))
 		if(integrated_ai)
 			integrated_ai.attackby(input_device,user)
 			// If the transfer was successful, we can clear out our vars.
@@ -138,8 +145,8 @@
 
 	if(!target)
 		if(ai_card)
-			if(istype(ai_card,/obj/item/device/aicard))
-				ai_card.ui_interact(H, state = deep_inventory_state)
+			if(istype(ai_card,/obj/item/weapon/aicard))
+				ai_card.ui_interact(H, state = GLOB.deep_inventory_state)
 			else
 				eject_ai(H)
 		update_verb_holder()
@@ -157,7 +164,7 @@
 /obj/item/rig_module/ai_container/proc/eject_ai(var/mob/user)
 
 	if(ai_card)
-		if(istype(ai_card, /obj/item/device/aicard))
+		if(istype(ai_card, /obj/item/weapon/aicard))
 			if(integrated_ai && !integrated_ai.stat)
 				if(user)
 					to_chat(user, "<span class='danger'>You cannot eject your currently stored AI. Purge it manually.</span>")
@@ -178,39 +185,35 @@
 	integrated_ai = null
 	update_verb_holder()
 
-
-
 /obj/item/rig_module/ai_container/proc/integrate_ai(var/obj/item/ai,var/mob/user)
 	if(!ai) return
 
 	// The ONLY THING all the different AI systems have in common is that they all store the mob inside an item.
 	var/mob/living/ai_mob = locate(/mob/living) in ai.contents
 	if(ai_mob)
-		if(ai_mob.key && ai_mob.client)
-			if(istype(ai, /obj/item/device/aicard))
-				var/mob/living/silicon/ai/ROBUTT = ai_mob
-				if(istype(ROBUTT))
-					if(!ai_card)
-						ai_card = new /obj/item/device/aicard(src)
 
-					var/obj/item/device/aicard/source_card = ai
-					var/obj/item/device/aicard/target_card = ai_card
-					if(istype(source_card) && istype(target_card))
-						ROBUTT.forceMove(target_card)
-						ROBUTT.aiRestorePowerRoutine = 0//So the AI initially has power.
-						ROBUTT.control_disabled = 1//Can't control things remotely if you're stuck in a card!
-						ROBUTT.aiRadio.disabledAi = 1 	//No talking on the built-in radio for you either!
-						source_card.update_state()
-						target_card.update_state()
+		if(ai_mob.key && ai_mob.client)
+
+			if(istype(ai, /obj/item/weapon/aicard))
+
+				if(!ai_card)
+					ai_card = new /obj/item/weapon/aicard(src)
+
+				var/obj/item/weapon/aicard/source_card = ai
+				var/obj/item/weapon/aicard/target_card = ai_card
+				if(istype(source_card) && istype(target_card))
+					if(target_card.grab_ai(ai_mob, user))
+						source_card.clear()
 					else
 						return 0
-
+				else
+					return 0
 			else
-				user.unEquip(ai)
+				user.drop_from_inventory(ai)
 				ai.forceMove(src)
 				ai_card = ai
-				to_chat(ai_mob, "<font color='blue'>You have been transferred to \the [holder]'s [src].</font>")
-				to_chat(user, "<font color='blue'>You load [ai_mob] into \the [holder]'s [src].</font>")
+				to_chat(ai_mob, "<span class='notice'>You have been transferred to \the [holder]'s [src.name].</span>")
+				to_chat(user, "<span class='notice'>You load \the [ai_mob] into \the [holder]'s [src.name].</span>")
 
 			integrated_ai = ai_mob
 
@@ -222,6 +225,7 @@
 	else
 		to_chat(user, "<span class='warning'>There is no active AI within \the [ai].</span>")
 	update_verb_holder()
+	return
 
 /obj/item/rig_module/datajack
 
@@ -321,6 +325,7 @@
 	icon_state = "ewar"
 	toggleable = 1
 	usable = 0
+	active_power_cost = 100
 
 	activate_string = "Enable Countermeasures"
 	deactivate_string = "Disable Countermeasures"
@@ -345,8 +350,7 @@
 	var/mob/living/M = holder.wearer
 	M.digitalcamo = max(0,(M.digitalcamo-1))
 
-/* //Not easily compatible with our current powernet, and is
-/obj/item/rig_module/power_sink // quite stupid anyways, iyam
+/obj/item/rig_module/power_sink
 
 	name = "hardsuit power sink"
 	desc = "An heavy-duty power sink."
@@ -361,9 +365,11 @@
 	interface_name = "niling d-sink"
 	interface_desc = "Colloquially known as a power siphon, this module drains power through the suit hands into the suit battery."
 
+	origin_tech = list(TECH_POWER = 6, TECH_ENGINEERING = 6)
 	var/atom/interfaced_with // Currently draining power from this device.
 	var/total_power_drained = 0
 	var/drain_loc
+	var/max_draining_rate = 120 KILOWATTS // The same as unupgraded cyborg recharger.
 
 /obj/item/rig_module/power_sink/deactivate()
 
@@ -447,9 +453,7 @@
 		drain_complete(H)
 		return
 
-	// Attempts to drain up to 40kW, determines this value from remaining cell capacity to ensure we don't drain too much..
-	var/to_drain = min(40000, ((holder.cell.maxcharge - holder.cell.charge) / CELLRATE))
-	var/target_drained = interfaced_with.drain_power(0,0,to_drain)
+	var/target_drained = interfaced_with.drain_power(0,0,max_draining_rate)
 	if(target_drained <= 0)
 		to_chat(H, "<span class = 'danger'>Your power sink flashes a red light; there is no power left in [interfaced_with].</span>")
 		drain_complete(H)
@@ -458,19 +462,19 @@
 	holder.cell.give(target_drained * CELLRATE)
 	total_power_drained += target_drained
 
-	return 1
+	return
 
 /obj/item/rig_module/power_sink/proc/drain_complete(var/mob/living/M)
 
 	if(!interfaced_with)
-		to_chat(if(M) M, "<font color='blue'><b>Total power drained:</b> [round(total_power_drained/1000)]kJ.</font>")
+		if(M) to_chat(M, "<font color='blue'><b>Total power drained:</b> [round(total_power_drained*CELLRATE)] Wh.</font>")
 	else
-		to_chat(if(M) M, "<font color='blue'><b>Total power drained from [interfaced_with]:</b> [round(total_power_drained/1000)]kJ.</font>")
+		if(M) to_chat(M, "<font color='blue'><b>Total power drained from [interfaced_with]:</b> [round(total_power_drained*CELLRATE)] Wh.</font>")
 		interfaced_with.drain_power(0,1,0) // Damage the victim.
 
 	drain_loc = null
 	interfaced_with = null
-	total_power_drained = 0*/
+	total_power_drained = 0
 
 /*
 //Maybe make this use power when active or something

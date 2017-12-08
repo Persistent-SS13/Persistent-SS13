@@ -1,15 +1,15 @@
 <!--
 Title: Alarm Monitor Console (Main content)
 Used In File(s): \code\modules\nano\modules\alarm_monitor.dm
+"MD5 checks should be good enough"
  -->
-
 {{for data.categories}}
-	<h2 style="color: #e9c183;">{{:value.category}}</h2>
+	<H2><span class="itemLabelWidest">{{:value.category}}</span></H2>
 	{{for value.alarms :alarmValue:alarmIndex}}
 		{{if alarmValue.origin_lost}}
-			<b>{{:alarmValue.name}} <span class='notice'>Alarm Origin Lost</span></b><br />
+			{{:alarmValue.name}} <span class='notice'>Alarm Origin Lost</span><br>
 		{{else}}
-			<b>{{:alarmValue.name}}</b><br />
+			{{:alarmValue.name}}<br>
 		{{/if}}
 		{{if alarmValue.has_cameras || alarmValue.lost_sources != ""}}
 			<div class="item">
@@ -23,8 +23,6 @@ Used In File(s): \code\modules\nano\modules\alarm_monitor.dm
 							{{/if}}
 						{{/for}}
 					</div>		
-				{{else}}
-					No cameras found.
 				{{/if}}
 				{{if alarmValue.lost_sources != ""}}
 					<div class="itemContent" style="width: 100%;">

@@ -2,12 +2,6 @@
 	name = "shuttle"
 	icon = 'icons/turf/shuttle.dmi'
 
-/obj/structure/shuttle/shuttleRotate(rotation)
-	..()
-	var/matrix/M = transform
-	M.Turn(rotation)
-	transform = M
-
 /obj/structure/shuttle/window
 	name = "shuttle window"
 	icon = 'icons/obj/podwindows.dmi'
@@ -19,9 +13,6 @@
 	CanPass(atom/movable/mover, turf/target, height, air_group)
 		if(!height || air_group) return 0
 		else return ..()
-
-	CanAtmosPass(turf/T)
-		return !density
 
 /obj/structure/shuttle/engine
 	name = "engine"

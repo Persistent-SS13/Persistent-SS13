@@ -2,62 +2,56 @@
 
 //Illicit drugs~
 /obj/item/weapon/storage/pill_bottle/happy
-	name = "Happy pills"
+	name = "bottle of Happy pills"
 	desc = "Highly illegal drug. When you want to see the rainbow."
 
 /obj/item/weapon/storage/pill_bottle/happy/New()
 	..()
-	new /obj/item/weapon/reagent_containers/food/pill/happy( src )
-	new /obj/item/weapon/reagent_containers/food/pill/happy( src )
-	new /obj/item/weapon/reagent_containers/food/pill/happy( src )
-	new /obj/item/weapon/reagent_containers/food/pill/happy( src )
-	new /obj/item/weapon/reagent_containers/food/pill/happy( src )
-	new /obj/item/weapon/reagent_containers/food/pill/happy( src )
-	new /obj/item/weapon/reagent_containers/food/pill/happy( src )
+	new /obj/item/weapon/reagent_containers/pill/happy( src )
+	new /obj/item/weapon/reagent_containers/pill/happy( src )
+	new /obj/item/weapon/reagent_containers/pill/happy( src )
+	new /obj/item/weapon/reagent_containers/pill/happy( src )
+	new /obj/item/weapon/reagent_containers/pill/happy( src )
+	new /obj/item/weapon/reagent_containers/pill/happy( src )
+	new /obj/item/weapon/reagent_containers/pill/happy( src )
 
 /obj/item/weapon/storage/pill_bottle/zoom
-	name = "Zoom pills"
+	name = "bottle of Zoom pills"
 	desc = "Highly illegal drug. Trade brain for speed."
 
 /obj/item/weapon/storage/pill_bottle/zoom/New()
 	..()
-	new /obj/item/weapon/reagent_containers/food/pill/zoom( src )
-	new /obj/item/weapon/reagent_containers/food/pill/zoom( src )
-	new /obj/item/weapon/reagent_containers/food/pill/zoom( src )
-	new /obj/item/weapon/reagent_containers/food/pill/zoom( src )
-	new /obj/item/weapon/reagent_containers/food/pill/zoom( src )
-	new /obj/item/weapon/reagent_containers/food/pill/zoom( src )
-	new /obj/item/weapon/reagent_containers/food/pill/zoom( src )
+	new /obj/item/weapon/reagent_containers/pill/zoom( src )
+	new /obj/item/weapon/reagent_containers/pill/zoom( src )
+	new /obj/item/weapon/reagent_containers/pill/zoom( src )
+	new /obj/item/weapon/reagent_containers/pill/zoom( src )
+	new /obj/item/weapon/reagent_containers/pill/zoom( src )
+	new /obj/item/weapon/reagent_containers/pill/zoom( src )
+	new /obj/item/weapon/reagent_containers/pill/zoom( src )
 
-/obj/item/weapon/reagent_containers/food/pill/random_drugs
-	name = "pill"
-	desc = "A cocktail of illicit designer drugs, who knows what might be in here."
+/obj/item/weapon/reagent_containers/glass/beaker/vial/random
+	flags = 0
+	var/list/random_reagent_list = list(list("water" = 15) = 1, list("cleaner" = 15) = 1)
 
-/obj/item/weapon/reagent_containers/food/pill/random_drugs/New()
+/obj/item/weapon/reagent_containers/glass/beaker/vial/random/toxin
+	random_reagent_list = list(
+		list("mindbreaker" = 10, "space_drugs" = 20)	= 3,
+		list("carpotoxin" = 15)							= 2,
+		list("impedrezene" = 15)						= 2,
+		list("zombiepowder" = 10)						= 1)
+
+/obj/item/weapon/reagent_containers/glass/beaker/vial/random/New()
 	..()
-	icon_state = "pill" + pick("2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20")
+	if(is_open_container())
+		flags ^= OPENCONTAINER
 
-	name = "[pick_list("chemistry_tools.json", "CYBERPUNK_drug_prefixes")] [pick_list("chemistry_tools.json", "CYBERPUNK_drug_suffixes")]"
+	var/list/picked_reagents = pickweight(random_reagent_list)
+	for(var/reagent in picked_reagents)
+		reagents.add_reagent(reagent, picked_reagents[reagent])
 
-	var/primaries = rand(1,3)
-	var/adulterants = rand(2,4)
+	var/list/names = new
+	for(var/datum/reagent/R in reagents.reagent_list)
+		names += R.name
 
-	while(primaries > 0)
-		primaries--
-		reagents.add_reagent(pick_list("chemistry_tools.json", "CYBERPUNK_drug_primaries"), 6)
-	while(adulterants > 0)
-		adulterants--
-		reagents.add_reagent(pick_list("chemistry_tools.json", "CYBERPUNK_drug_adulterants"), 3)
-
-
-
-/obj/item/weapon/storage/pill_bottle/random_drug_bottle
-	name = "pill bottle (???)"
-	desc = "Huh."
-
-/obj/item/weapon/storage/pill_bottle/random_drug_bottle/New()
-	..()
-	for(var/i in 1 to 5)
-		new /obj/item/weapon/reagent_containers/food/pill/random_drugs(src)
-
-
+	desc = "Contains [english_list(names)]."
+	update_icon()

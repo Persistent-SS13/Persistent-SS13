@@ -52,47 +52,39 @@ datum/hSB
 				if("hsbtobj")
 					if(!admin) return
 					if(hsboxspawn)
-						to_chat(world, "<b>Sandbox:  [usr.key] has disabled object spawning!</b>")
+						to_world("<b>Sandbox:  [usr.key] has disabled object spawning!</b>")
 						hsboxspawn = 0
 						return
 					if(!hsboxspawn)
-						to_chat(world, "<b>Sandbox:  [usr.key] has enabled object spawning!</b>")
+						to_world"<b>Sandbox:  [usr.key] has enabled object spawning!</b>")
 						hsboxspawn = 1
 						return
 				if("hsbsuit")
 					var/mob/living/carbon/human/P = usr
 					if(P.wear_suit)
-						P.wear_suit.loc = P.loc
-						P.wear_suit.layer = initial(P.wear_suit.layer)
-						P.wear_suit.plane = initial(P.wear_suit.plane)
+						P.wear_suit.forceMove(P.loc)
+						P.wear_suit.reset_plane_and_layer()
 						P.wear_suit = null
 					P.wear_suit = new/obj/item/clothing/suit/space(P)
-					P.wear_suit.layer = 20
-					P.wear_suit.plane = HUD_PLANE
+					P.wear_suit.hud_layerise()
 					if(P.head)
-						P.head.loc = P.loc
-						P.head.layer = initial(P.head.layer)
-						P.head.plane = initial(P.head.plane)
+						P.head.forceMove(P.loc)
+						P.head.reset_plane_and_layer()
 						P.head = null
 					P.head = new/obj/item/clothing/head/helmet/space(P)
-					P.head.layer = 20
-					P.head.plane = HUD_PLANE
+					P.head.hud_layerise()
 					if(P.wear_mask)
-						P.wear_mask.loc = P.loc
-						P.wear_mask.layer = initial(P.wear_mask.layer)
-						P.wear_mask.plane = initial(P.wear_mask.plane)
+						P.wear_mask.forceMove(P.loc)
+						P.wear_mask.reset_plane_and_layer()
 						P.wear_mask = null
 					P.wear_mask = new/obj/item/clothing/mask/gas(P)
-					P.wear_mask.layer = 20
-					P.wear_mask.plane = HUD_PLANE
+					P.wear_mask.hud_layerise()
 					if(P.back)
-						P.back.loc = P.loc
-						P.back.layer = initial(P.back.layer)
-						P.back.plane = initial(P.back.plane)
+						P.back.forceMove(P.loc)
+						P.back.reset_plane_and_layer()
 						P.back = null
 					P.back = new/obj/item/weapon/tank/jetpack(P)
-					P.back.layer = 20
-					P.back.plane = HUD_PLANE
+					P.back.hud_layerise()
 					P.internal = P.back
 				if("hsbmetal")
 					var/obj/item/stack/sheet/hsb = new/obj/item/stack/sheet/metal
@@ -113,9 +105,9 @@ datum/hSB
 							hsb.req_access += A
 
 					hsb.loc = usr.loc
-					to_chat(usr, "<b>Sandbox:  Created an airlock.")
+					to_chat(usr, "<b>Sandbox:  Created an airlock.</b>")
 				if("hsbcanister")
-					var/list/hsbcanisters = subtypesof(/obj/machinery/portable_atmospherics/canister/)
+					var/list/hsbcanisters = typesof(/obj/machinery/portable_atmospherics/canister/) - /obj/machinery/portable_atmospherics/canister/
 					var/hsbcanister = input(usr, "Choose a canister to spawn.", "Sandbox:") in hsbcanisters + "Cancel"
 					if(!(hsbcanister == "Cancel"))
 						new hsbcanister(usr.loc)
@@ -146,11 +138,9 @@ datum/hSB
 							continue
 						if(istype(O, /obj/item/device/camera))
 							continue
-						if(istype(O, /obj/item/weapon/cloaking_device))
-							continue
 						if(istype(O, /obj/item/weapon/dummy))
 							continue
-						if(istype(O, /obj/item/weapon/melee/energy/sword/saber))
+						if(istype(O, /obj/item/weapon/melee/energy/sword))
 							continue
 						if(istype(O, /obj/structure))
 							continue

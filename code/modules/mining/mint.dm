@@ -7,103 +7,99 @@
 	icon_state = "coinpress0"
 	density = 1
 	anchored = 1.0
+	var/obj/machinery/mineral/input = null
+	var/obj/machinery/mineral/output = null
 	var/amt_silver = 0 //amount of silver
 	var/amt_gold = 0   //amount of gold
 	var/amt_diamond = 0
 	var/amt_iron = 0
-	var/amt_plasma = 0
+	var/amt_phoron = 0
 	var/amt_uranium = 0
-	var/amt_clown = 0
-	var/amt_mime = 0
-	var/amt_adamantine = 0
-	var/amt_mythril = 0
 	var/newCoins = 0   //how many coins the machine made in it's last load
 	var/processing = 0
-	var/chosen = "metal" //which material will be used to make coins
+	var/chosen //which material will be used to make coins
 	var/coinsToProduce = 10
-	speed_process = 1
+
+
+/obj/machinery/mineral/mint/New()
+	..()
+	spawn( 5 )
+		for (var/dir in GLOB.cardinal)
+			src.input = locate(/obj/machinery/mineral/input, get_step(src, dir))
+			if(src.input) break
+		for (var/dir in GLOB.cardinal)
+			src.output = locate(/obj/machinery/mineral/output, get_step(src, dir))
+			if(src.output) break
+		GLOB.processing_objects.Add(src)
+		return
+	return
+
 
 /obj/machinery/mineral/mint/process()
-	var/turf/T = get_step(src,input_dir)
-	if(T)
-		for(var/obj/item/stack/sheet/O in T)
-			if(istype(O, /obj/item/stack/sheet/mineral/gold))
-				amt_gold += 100 * O.amount
-				qdel(O)
-			if(istype(O, /obj/item/stack/sheet/mineral/silver))
-				amt_silver += 100 * O.amount
-				qdel(O)
-			if(istype(O, /obj/item/stack/sheet/mineral/diamond))
-				amt_diamond += 100 * O.amount
-				qdel(O)
-			if(istype(O, /obj/item/stack/sheet/mineral/plasma))
-				amt_plasma += 100 * O.amount
-				qdel(O)
-			if(istype(O, /obj/item/stack/sheet/mineral/uranium))
-				amt_uranium += 100 * O.amount
-				qdel(O)
-			if(istype(O, /obj/item/stack/sheet/metal))
-				amt_iron += 100 * O.amount
-				qdel(O)
-			if(istype(O, /obj/item/stack/sheet/mineral/bananium))
-				amt_clown += 100 * O.amount
-				qdel(O)
-			if(istype(O, /obj/item/stack/sheet/mineral/tranquillite))
-				amt_mime += 100 * O.amount
+	if ( src.input)
+		var/obj/item/stack/O
+		O = locate(/obj/item/stack, input.loc)
+		if(O)
+			var/processed = 1
+			switch(O.get_material_name())
+				if("gold")
+					amt_gold += 100 * O.get_amount()
+				if("silver")
+					amt_silver += 100 * O.get_amount()
+				if("diamond")
+					amt_diamond += 100 * O.get_amount()
+				if("phoron")
+					amt_phoron += 100 * O.get_amount()
+				if("uranium")
+					amt_uranium += 100 * O.get_amount()
+				if("iron")
+					amt_iron += 100 * O.get_amount()
+				else
+					processed = 0
+			if(processed)
 				qdel(O)
 
-
-/obj/machinery/mineral/mint/attack_hand(user as mob) //TODO: Adamantine coins! -Durandan
+/obj/machinery/mineral/mint/attack_hand(user as mob)
 
 	var/dat = "<b>Coin Press</b><br>"
 
+	if (!input)
+		dat += text("input connection status: ")
+		dat += text("<b><font color='red'>NOT CONNECTED</font></b><br>")
+	if (!output)
+		dat += text("<br>output connection status: ")
+		dat += text("<b><font color='red'>NOT CONNECTED</font></b><br>")
+
 	dat += text("<br><font color='#ffcc00'><b>Gold inserted: </b>[amt_gold]</font> ")
-	if(chosen == "gold")
+	if (chosen == "gold")
 		dat += text("chosen")
 	else
 		dat += text("<A href='?src=\ref[src];choose=gold'>Choose</A>")
 	dat += text("<br><font color='#888888'><b>Silver inserted: </b>[amt_silver]</font> ")
-	if(chosen == "silver")
+	if (chosen == "silver")
 		dat += text("chosen")
 	else
 		dat += text("<A href='?src=\ref[src];choose=silver'>Choose</A>")
 	dat += text("<br><font color='#555555'><b>Iron inserted: </b>[amt_iron]</font> ")
-	if(chosen == "metal")
+	if (chosen == "iron")
 		dat += text("chosen")
 	else
-		dat += text("<A href='?src=\ref[src];choose=metal'>Choose</A>")
+		dat += text("<A href='?src=\ref[src];choose=iron'>Choose</A>")
 	dat += text("<br><font color='#8888FF'><b>Diamond inserted: </b>[amt_diamond]</font> ")
-	if(chosen == "diamond")
+	if (chosen == "diamond")
 		dat += text("chosen")
 	else
 		dat += text("<A href='?src=\ref[src];choose=diamond'>Choose</A>")
-	dat += text("<br><font color='#FF8800'><b>Plasma inserted: </b>[amt_plasma]</font> ")
-	if(chosen == "plasma")
+	dat += text("<br><font color='#FF8800'><b>Phoron inserted: </b>[amt_phoron]</font> ")
+	if (chosen == "phoron")
 		dat += text("chosen")
 	else
-		dat += text("<A href='?src=\ref[src];choose=plasma'>Choose</A>")
+		dat += text("<A href='?src=\ref[src];choose=phoron'>Choose</A>")
 	dat += text("<br><font color='#008800'><b>Uranium inserted: </b>[amt_uranium]</font> ")
-	if(chosen == "uranium")
+	if (chosen == "uranium")
 		dat += text("chosen")
 	else
 		dat += text("<A href='?src=\ref[src];choose=uranium'>Choose</A>")
-	if(amt_clown > 0)
-		dat += text("<br><font color='#AAAA00'><b>Bananium inserted: </b>[amt_clown]</font> ")
-		if(chosen == "clown")
-			dat += text("chosen")
-		else
-			dat += text("<A href='?src=\ref[src];choose=clown'>Choose</A>")
-	if(amt_mime > 0)
-		dat += text("<br><font color='#666666'><b>Tranquillite inserted: </b>[amt_mime]</font> ")
-		if(chosen == "mime")
-			dat += text("chosen")
-		else
-			dat += text("<A href='?src=\ref[src];choose=mime'>Choose</A>")
-	dat += text("<br><font color='#888888'><b>Adamantine inserted: </b>[amt_adamantine]</font> ")//I don't even know these color codes, so fuck it.
-	if(chosen == "adamantine")
-		dat += text("chosen")
-	else
-		dat += text("<A href='?src=\ref[src];choose=adamantine'>Choose</A>")
 
 	dat += text("<br><br>Will produce [coinsToProduce] [chosen] coins if enough materials are available.<br>")
 	//dat += text("The dial which controls the number of conins to produce seems to be stuck. A technician has already been dispatched to fix this.")
@@ -120,7 +116,7 @@
 
 /obj/machinery/mineral/mint/Topic(href, href_list)
 	if(..())
-		return
+		return 1
 	usr.set_machine(src)
 	src.add_fingerprint(usr)
 	if(processing==1)
@@ -129,104 +125,64 @@
 	if(href_list["choose"])
 		chosen = href_list["choose"]
 	if(href_list["chooseAmt"])
-		coinsToProduce = Clamp(coinsToProduce + text2num(href_list["chooseAmt"]), 0, 1000)
+		coinsToProduce = between(0, coinsToProduce + text2num(href_list["chooseAmt"]), 1000)
 	if(href_list["makeCoins"])
 		var/temp_coins = coinsToProduce
-		processing = 1;
-		icon_state = "coinpress1"
-		switch(chosen)
-			if("metal")
-				while(amt_iron > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/iron)
-					amt_iron -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("gold")
-				while(amt_gold > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/gold)
-					amt_gold -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("silver")
-				while(amt_silver > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/silver)
-					amt_silver -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("diamond")
-				while(amt_diamond > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/diamond)
-					amt_diamond -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("plasma")
-				while(amt_plasma > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/plasma)
-					amt_plasma -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("uranium")
-				while(amt_uranium > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/uranium)
-					amt_uranium -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("clown")
-				while(amt_clown > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/clown)
-					amt_clown -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("mime")
-				while(amt_mime > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/mime)
-					amt_mime -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("adamantine")
-				while(amt_adamantine > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/adamantine)
-					amt_adamantine -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-			if("mythril")
-				while(amt_adamantine > 0 && coinsToProduce > 0)
-					create_coins(/obj/item/weapon/coin/mythril)
-					amt_mythril -= 20
-					coinsToProduce--
-					newCoins++
-					src.updateUsrDialog()
-					sleep(5)
-		icon_state = "coinpress0"
-		processing = 0
-		coinsToProduce = temp_coins
+		if (src.output)
+			processing = 1;
+			icon_state = "coinpress1"
+			var/M = output.loc
+			switch(chosen)
+				if("iron")
+					while(amt_iron > 0 && coinsToProduce > 0)
+						new/obj/item/weapon/coin/iron(M)
+						amt_iron -= 20
+						coinsToProduce--
+						newCoins++
+						src.updateUsrDialog()
+						sleep(5);
+				if("gold")
+					while(amt_gold > 0 && coinsToProduce > 0)
+						new /obj/item/weapon/coin/gold(M)
+						amt_gold -= 20
+						coinsToProduce--
+						newCoins++
+						src.updateUsrDialog()
+						sleep(5);
+				if("silver")
+					while(amt_silver > 0 && coinsToProduce > 0)
+						new /obj/item/weapon/coin/silver(M)
+						amt_silver -= 20
+						coinsToProduce--
+						newCoins++
+						src.updateUsrDialog()
+						sleep(5);
+				if("diamond")
+					while(amt_diamond > 0 && coinsToProduce > 0)
+						new /obj/item/weapon/coin/diamond(M)
+						amt_diamond -= 20
+						coinsToProduce--
+						newCoins++
+						src.updateUsrDialog()
+						sleep(5);
+				if("phoron")
+					while(amt_phoron > 0 && coinsToProduce > 0)
+						new /obj/item/weapon/coin/phoron(M)
+						amt_phoron -= 20
+						coinsToProduce--
+						newCoins++
+						src.updateUsrDialog()
+						sleep(5);
+				if("uranium")
+					while(amt_uranium > 0 && coinsToProduce > 0)
+						new /obj/item/weapon/coin/uranium(M)
+						amt_uranium -= 20
+						coinsToProduce--
+						newCoins++
+						src.updateUsrDialog()
+						sleep(5)
+			icon_state = "coinpress0"
+			processing = 0;
+			coinsToProduce = temp_coins
 	src.updateUsrDialog()
 	return
-
-/obj/machinery/mineral/mint/proc/create_coins(var/P)
-	var/turf/T = get_step(src,output_dir)
-	if(T)
-		var/obj/item/O = new P(src)
-		var/obj/item/weapon/moneybag/M = locate(/obj/item/weapon/moneybag/, T)
-		if(!M)
-			M = new /obj/item/weapon/moneybag(src)
-			unload_mineral(M)
-		O.loc = M

@@ -5,11 +5,11 @@
 	simulated = 0
 	anchored = 1
 	icon = LIGHTING_ICON
+	plane = LIGHTING_PLANE
 	layer = LIGHTING_LAYER
 	invisibility = INVISIBILITY_LIGHTING
 	color = LIGHTING_BASE_MATRIX
 	icon_state = "light1"
-	auto_init = 0 // doesn't need special init
 	blend_mode = BLEND_MULTIPLY
 
 	var/lum_r = 0
@@ -18,17 +18,25 @@
 
 	var/needs_update = FALSE
 
-/atom/movable/lighting_overlay/New(var/atom/loc, var/no_update = FALSE)
-	. = ..()
-	verbs.Cut()
-	total_lighting_overlays++
+/atom/movable/lighting_overlay/Initialize()
+	// doesn't need special init
+	initialized = TRUE
+	return INITIALIZE_HINT_NORMAL
 
+/atom/movable/lighting_overlay/New(var/atom/loc, var/no_update = FALSE)
 	var/turf/T = loc //If this runtimes atleast we'll know what's creating overlays outside of turfs.
-	T.lighting_overlay = src
-	T.luminosity = 0
-	if(no_update)
-		return
-	update_overlay()
+	if(T.dynamic_lighting)
+		. = ..()
+		verbs.Cut()
+		total_lighting_overlays++
+
+		T.lighting_overlay = src
+		T.luminosity = 0
+		if(no_update)
+			return
+		update_overlay()
+	else
+		qdel(src)
 
 /atom/movable/lighting_overlay/proc/update_overlay()
 	set waitfor = FALSE
@@ -39,6 +47,9 @@
 			log_debug("A lighting overlay realised its loc was NOT a turf (actual loc: [loc][loc ? ", " + loc.type : "null"]) in update_overlay() and got qdel'ed!")
 		else
 			log_debug("A lighting overlay realised it was in nullspace in update_overlay() and got pooled!")
+		qdel(src)
+		return
+	if(!T.dynamic_lighting)
 		qdel(src)
 		return
 
@@ -59,18 +70,51 @@
 
 	var/max = max(cr.cache_mx, cg.cache_mx, cb.cache_mx, ca.cache_mx)
 
-	color  = list(
-		cr.cache_r, cr.cache_g, cr.cache_b, 0,
-		cg.cache_r, cg.cache_g, cg.cache_b, 0,
-		cb.cache_r, cb.cache_g, cb.cache_b, 0,
-		ca.cache_r, ca.cache_g, ca.cache_b, 0,
-		0, 0, 0, 1
+	var/rr = cr.cache_r
+	var/rg = cr.cache_g
+	var/rb = cr.cache_b
+
+	var/gr = cg.cache_r
+	var/gg = cg.cache_g
+	var/gb = cg.cache_b
+
+	var/br = cb.cache_r
+	var/bg = cb.cache_g
+	var/bb = cb.cache_b
+
+	var/ar = ca.cache_r
+	var/ag = ca.cache_g
+	var/ab = ca.cache_b
+
+	#if LIGHTING_SOFT_THRESHOLD != 0
+	var/set_luminosity = max > LIGHTING_SOFT_THRESHOLD
+	#else
+	// Because of floating points, it won't even be a flat 0.
+	// This number is mostly arbitrary.
+	var/set_luminosity = max > 1e-6
+	#endif
+
+	if((rr & gr & br & ar) && (rg + gg + bg + ag + rb + gb + bb + ab == 8))
+	//anything that passes the first case is very likely to pass the second, and addition is a little faster in this case
+		icon_state = "transparent"
+		color = null
+	else if(!set_luminosity)
+		icon_state = LIGHTING_ICON_STATE_DARK
+		color = null
+	else
+		icon_state = null
+		color = list(
+			rr, rg, rb, 00,
+			gr, gg, gb, 00,
+			br, bg, bb, 00,
+			ar, ag, ab, 00,
+			00, 00, 00, 01
 		)
-	luminosity = max > LIGHTING_SOFT_THRESHOLD
 
+	luminosity = set_luminosity
 
-
-/atom/movable/lighting_overlay/singularity_act()
+// Variety of overrides so the overlays don't get affected by weird things.
+/atom/movable/lighting_overlay/ex_act()
 	return
 
 /atom/movable/lighting_overlay/singularity_pull()
@@ -84,6 +128,14 @@
 	var/turf/T = loc
 	if(istype(T))
 		T.lighting_overlay = null
-		T.luminosity = 1
 
-	return ..()
+	. = ..()
+
+/atom/movable/lighting_overlay/forceMove()
+	return 0 //should never move
+
+/atom/movable/lighting_overlay/Move()
+	return 0
+
+/atom/movable/lighting_overlay/throw_at()
+	return 0

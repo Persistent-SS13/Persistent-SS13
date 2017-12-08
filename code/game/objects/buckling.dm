@@ -1,116 +1,107 @@
-
-
-/atom/movable
+/obj
 	var/can_buckle = 0
-	var/buckle_lying = -1 //bed-like behaviour, forces mob.lying = buckle_lying if != -1 //except -1 actually means "rotate 90 degrees to the left" as it is used by 1*buckle_lying.
-	var/buckle_requires_restraints = 0 //require people to be handcuffed before being able to buckle. eg: pipes
+	var/buckle_movable = 0
+	var/buckle_dir = 0
+	var/buckle_lying = -1 //bed-like behavior, forces mob.lying = buckle_lying if != -1
+	var/buckle_pixel_shift = "x=0;y=0" //where the buckled mob should be pixel shifted to, or null for no pixel shift control
+	var/buckle_require_restraints = 0 //require people to be handcuffed before being able to buckle. eg: pipes
 	var/mob/living/buckled_mob = null
 
-//Interaction
-/atom/movable/attack_hand(mob/living/user)
+/obj/attack_hand(mob/living/user)
 	. = ..()
 	if(can_buckle && buckled_mob)
-		return user_unbuckle_mob(user)
+		user_unbuckle_mob(user)
 
-/atom/movable/attack_robot(mob/living/user)
-	. = ..()
-	if(can_buckle && buckled_mob && Adjacent(user)) // attack_robot is called on all ranges, so the Adjacent check is needed
-		return user_unbuckle_mob(user)
-
-/atom/movable/MouseDrop_T(mob/living/M, mob/living/user)
+/obj/MouseDrop_T(mob/living/M, mob/living/user)
 	. = ..()
 	if(can_buckle && istype(M))
-		return user_buckle_mob(M, user)
+		user_buckle_mob(M, user)
 
-
-//Cleanup
-/atom/movable/Destroy()
-	. = ..()
+/obj/Destroy()
 	unbuckle_mob()
+	return ..()
 
-//procs that handle the actual buckling and unbuckling
-/atom/movable/proc/buckle_mob(mob/living/M)
-	if(!can_buckle || !istype(M) || (M.loc != loc) || M.buckled || M.buckled_mob || buckled_mob || (buckle_requires_restraints && !M.restrained()) || M == src)
+
+/obj/proc/buckle_mob(mob/living/M)
+	if(buckled_mob) //unless buckled_mob becomes a list this can cause problems
 		return 0
-
-	if(isslime(M) || isAI(M))
-		if(M == usr)
-			to_chat(M, "<span class='warning'>You are unable to buckle yourself to the [src]!</span>")
-		else
-			to_chat(usr, "<span class='warning'>You are unable to buckle [M] to the [src]!</span>")
+	if(!istype(M) || (M.loc != loc) || M.buckled || M.pinned.len || (buckle_require_restraints && !M.restrained()))
 		return 0
 
 	M.buckled = src
-	M.dir = dir
-	buckled_mob = M
+	M.facing_dir = null
+	M.set_dir(buckle_dir ? buckle_dir : dir)
 	M.update_canmove()
+	M.update_floating()
+	buckled_mob = M
+
 	post_buckle_mob(M)
-	M.throw_alert("buckled", /obj/screen/alert/restrained/buckled, new_master = src)
 	return 1
 
-/obj/buckle_mob(mob/living/M)
-	. = ..()
-	if(.)
-		if(burn_state == ON_FIRE) //Sets the mob on fire if you buckle them to a burning atom/movableect
-			M.adjust_fire_stacks(1)
-			M.IgniteMob()
-
-/atom/movable/proc/unbuckle_mob()
-	if(buckled_mob && buckled_mob.buckled == src && buckled_mob.can_unbuckle(usr))
-		if(buckled_mob.on_ride)
-			for(var/obj/item/riding_offhand/O in buckled_mob.contents)
-				qdel(O)
-			buckled_mob.on_ride=0
-			buckled_mob.pixel_x = 0
-			buckled_mob.pixel_y = 0 //just to ensure that the player goes back to where they should be.
+/obj/proc/unbuckle_mob()
+	if(buckled_mob && buckled_mob.buckled == src)
 		. = buckled_mob
 		buckled_mob.buckled = null
 		buckled_mob.anchored = initial(buckled_mob.anchored)
 		buckled_mob.update_canmove()
-		buckled_mob.clear_alert("buckled")
+		buckled_mob.update_floating()
 		buckled_mob = null
 
 		post_buckle_mob(.)
 
+/obj/proc/post_buckle_mob(mob/living/M)
+	if(buckle_pixel_shift)
+		if(M == buckled_mob)
+			var/list/pixel_shift = cached_key_number_decode(buckle_pixel_shift)
+			animate(M, pixel_x = M.default_pixel_x + pixel_shift["x"], pixel_y = M.default_pixel_y + pixel_shift["y"], 4, 1, LINEAR_EASING)
+		else
+			animate(M, pixel_x = M.default_pixel_x, pixel_y = M.default_pixel_y, 4, 1, LINEAR_EASING)
 
-//Handle any extras after buckling/unbuckling
-//Called on buckle_mob() and unbuckle_mob()
-/atom/movable/proc/post_buckle_mob(mob/living/M)
-	return
-
-
-//Wrapper procs that handle sanity and user feedback
-/atom/movable/proc/user_buckle_mob(mob/living/M, mob/user)
-	if(!in_range(user, src) || user.stat || user.restrained())
-		return
+/obj/proc/user_buckle_mob(mob/living/M, mob/user)
+	if(!ticker) //why do we need to check this?
+		to_chat(user, "<span class='warning'>You can't buckle anyone in before the game starts.</span>")
+		return 0
+	if(!user.Adjacent(M) || user.restrained() || user.lying || user.stat || istype(user, /mob/living/silicon/pai))
+		return 0
+	if(M == buckled_mob)
+		return 0
+	if(istype(M, /mob/living/carbon/slime))
+		to_chat(user, "<span class='warning'>The [M] is too squishy to buckle in.</span>")
+		return 0
 
 	add_fingerprint(user)
+	unbuckle_mob()
 
-	if(buckle_mob(M))
+	//can't buckle unless you share locs so try to move M to the obj.
+	if(M.loc != src.loc)
+		step_towards(M, src)
+
+	. = buckle_mob(M)
+	if(.)
 		if(M == user)
 			M.visible_message(\
-				"<span class='notice'>[M] buckles themself to [src].</span>",\
+				"<span class='notice'>[M.name] buckles themselves to [src].</span>",\
 				"<span class='notice'>You buckle yourself to [src].</span>",\
-				"<span class='italics'>You hear metal clanking.</span>")
+				"<span class='notice'>You hear metal clanking.</span>")
 		else
 			M.visible_message(\
-				"<span class='warning'>[user] buckles [M] to [src]!</span>",\
-				"<span class='warning'>[user] buckles you to [src]!</span>",\
-				"<span class='italics'>You hear metal clanking.</span>")
-		return 1
+				"<span class='danger'>[M.name] is buckled to [src] by [user.name]!</span>",\
+				"<span class='danger'>You are buckled to [src] by [user.name]!</span>",\
+				"<span class='notice'>You hear metal clanking.</span>")
 
-/atom/movable/proc/user_unbuckle_mob(mob/user)
+/obj/proc/user_unbuckle_mob(mob/user)
 	var/mob/living/M = unbuckle_mob()
 	if(M)
 		if(M != user)
 			M.visible_message(\
-				"<span class='notice'>[user] unbuckles [M] from [src].</span>",\
-				"<span class='notice'>[user] unbuckles you from [src].</span>",\
-				"<span class='italics'>You hear metal clanking.</span>")
+				"<span class='notice'>[M.name] was unbuckled by [user.name]!</span>",\
+				"<span class='notice'>You were unbuckled from [src] by [user.name].</span>",\
+				"<span class='notice'>You hear metal clanking.</span>")
 		else
 			M.visible_message(\
-				"<span class='notice'>[M] unbuckles themselves from [src].</span>",\
+				"<span class='notice'>[M.name] unbuckled themselves!</span>",\
 				"<span class='notice'>You unbuckle yourself from [src].</span>",\
-				"<span class='italics'>You hear metal clanking.</span>")
+				"<span class='notice'>You hear metal clanking.</span>")
 		add_fingerprint(user)
 	return M
+

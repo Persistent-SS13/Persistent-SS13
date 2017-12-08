@@ -25,7 +25,7 @@
 			to_chat(src, "Hardsuit activation mode set to control-click.")
 		else
 			// should never get here, but just in case:
-			log_debug("Bad hardsuit click mode: [hardsuit_click_mode] - expected 0 to [MAX_HARDSUIT_CLICK_MODE]")
+			soft_assert(0, "Bad hardsuit click mode: [hardsuit_click_mode] - expected 0 to [MAX_HARDSUIT_CLICK_MODE]")
 			to_chat(src, "Somehow you bugged the system. Setting your hardsuit mode to middle-click.")
 			hardsuit_click_mode = MIDDLE_CLICK
 
@@ -57,13 +57,13 @@
 	return istype(loc, /obj/item/device/mmi)
 
 /mob/living/silicon/ai/can_use_rig()
-	return istype(loc, /obj/item/device/aicard)
+	return carded
 
 /mob/living/silicon/pai/can_use_rig()
 	return loc == card
 
 /mob/living/proc/HardsuitClickOn(var/atom/A, var/alert_ai = 0)
-	if(!can_use_rig() || (next_move > world.time))
+	if(!can_use_rig() || !canClick())
 		return 0
 	var/obj/item/weapon/rig/rig = get_rig()
 	if(istype(rig) && !rig.offline && rig.selected_module)
@@ -74,7 +74,7 @@
 				return 0
 		rig.selected_module.engage(A, alert_ai)
 		if(ismob(A)) // No instant mob attacking - though modules have their own cooldowns
-			changeNext_move(CLICK_CD_MELEE)
+			setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 		return 1
 	return 0
 

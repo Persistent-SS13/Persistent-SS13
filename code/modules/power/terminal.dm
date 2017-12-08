@@ -8,41 +8,32 @@
 	icon_state = "term"
 	desc = "It's an underfloor wiring terminal for power equipment."
 	level = 1
-	layer = TURF_LAYER
+	plane = ABOVE_TURF_PLANE
+	layer = EXPOSED_WIRE_TERMINAL_LAYER
 	var/obj/machinery/power/master = null
 	anchored = 1
-	layer = 2.6 // a bit above wires
 
 
 /obj/machinery/power/terminal/New()
 	..()
 	var/turf/T = src.loc
-	if(!T)
-		return
-	if(level==1) hide(T.intact)
+	if(level==1) hide(!T.is_plating())
 	return
-	
+
 /obj/machinery/power/terminal/Destroy()
 	if(master)
-		master.disconnect_terminal()
+		master.disconnect_terminal(src)
+		master = null
 	return ..()
 
-
-/obj/machinery/power/terminal/hide(var/i)
-	if(i)
-		invisibility = 101
-		icon_state = "term-f"
+/obj/machinery/power/terminal/hide(var/do_hide)
+	if(do_hide && level == 1)
+		plane = ABOVE_PLATING_PLANE
+		layer = WIRE_TERMINAL_LAYER
 	else
-		invisibility = 0
-		icon_state = "term"
+		reset_plane_and_layer()
 
-/obj/machinery/power/terminal/connect_to_network()
-	var/turf/T = src.loc
-	if(!T || !istype(T))
-		return 0
-	for(var/obj/structure/cable/C in T.contents) //check if we have a node cable on the machine turf, the first found is picked
-		if(!C || !C.powernet)
-			continue
-		C.powernet.add_machine(src)
-		break
+// Needed so terminals are not removed from machines list.
+// Powernet rebuilds need this to work properly.
+/obj/machinery/power/terminal/process()
 	return 1

@@ -11,14 +11,9 @@
 	//I've used ticks of 2 before to help with serious singulo lags
 	if(newtick && newtick <= 2 && newtick > 0)
 		log_admin("[key_name(src)] has modified world.tick_lag to [newtick]", 0)
-		message_admins("[key_name_admin(src)] has modified world.tick_lag to [newtick]", 0)
+		message_admins("[key_name(src)] has modified world.tick_lag to [newtick]", 0)
 		world.tick_lag = newtick
 		feedback_add_details("admin_verb","TICKLAG") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
-		switch(alert("Enable Tick Compensation?","Tick Comp is currently: [config.Tickcomp]","Yes","No"))
-			if("Yes")	config.Tickcomp = 1
-			else		config.Tickcomp = 0
 	else
-		to_chat(src, "\red Error: ticklag(): Invalid world.ticklag value. No changes made.")
-
+		to_chat(src, "<span class='warning'>Error: ticklag(): Invalid world.ticklag value. No changes made.</span>")
 

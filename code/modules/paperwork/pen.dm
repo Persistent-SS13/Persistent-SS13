@@ -2,7 +2,7 @@
  * Contains:
  *		Pens
  *		Sleepy Pens
- *		Edaggers
+ *		Parapens
  */
 
 
@@ -17,168 +17,177 @@
 	item_state = "pen"
 	slot_flags = SLOT_BELT | SLOT_EARS
 	throwforce = 0
-	w_class = 1
-	throw_speed = 3
-	throw_range = 7
-	materials = list(MAT_METAL=10)
+	w_class = ITEM_SIZE_TINY
+	throw_speed = 7
+	throw_range = 15
+	matter = list(DEFAULT_WALL_MATERIAL = 10)
 	var/colour = "black"	//what colour the ink is!
-	pressure_resistance = 2
 
-/obj/item/weapon/pen/suicide_act(mob/user)
-	to_chat(viewers(user), "<span class='suicide'>[user] starts scribbling numbers over \himself with the [src.name]! It looks like \he's trying to commit sudoku.</span>")
-	return (BRUTELOSS)
 
 /obj/item/weapon/pen/blue
-	name = "blue-ink pen"
 	desc = "It's a normal blue ink pen."
 	icon_state = "pen_blue"
 	colour = "blue"
 
 /obj/item/weapon/pen/red
-	name = "red-ink pen"
 	desc = "It's a normal red ink pen."
 	icon_state = "pen_red"
 	colour = "red"
 
-/obj/item/weapon/pen/gray
-	name = "gray-ink pen"
-	desc = "It's a normal gray ink pen."
-	colour = "gray"
+/obj/item/weapon/pen/multi
+	desc = "It's a pen with multiple colors of ink!"
+	var/selectedColor = 1
+	var/colors = list("black","blue","red")
+
+/obj/item/weapon/pen/multi/attack_self(mob/user)
+	if(++selectedColor > 3)
+		selectedColor = 1
+
+	colour = colors[selectedColor]
+
+	if(colour == "black")
+		icon_state = "pen"
+	else
+		icon_state = "pen_[colour]"
+
+	to_chat(user, "<span class='notice'>Changed color to '[colour].'</span>")
 
 /obj/item/weapon/pen/invisible
 	desc = "It's an invisble pen marker."
 	icon_state = "pen"
 	colour = "white"
 
-/obj/item/weapon/pen/multi
-	name = "multicolor pen"
-	desc = "It's a cool looking pen. Lots of colors!"
 
-	// these values are for the overlay
-	var/list/colour_choices = list(
-		"black" = list(0.25, 0.25, 0.25),
-		"red" = list(1, 0.25, 0.25),
-		"green" = list(0, 1, 0),
-		"blue" = list(0.5, 0.5, 1),
-		"yellow" = list(1, 1, 0))
-	var/pen_color_iconstate = "pencolor"
-	var/pen_color_shift = 3
+/obj/item/weapon/pen/attack(mob/M as mob, mob/user as mob)
+	if(!ismob(M))
+		return
+	to_chat(user, "<span class='warning'>You stab [M] with the pen.</span>")
+	admin_attack_log(user, M, "Stabbed using \a [src]", "Was stabbed with \a [src]", "used \a [src] to stab")
 
-/obj/item/weapon/pen/multi/New()
+	return
+
+/*
+ * Reagent pens
+ */
+
+/obj/item/weapon/pen/reagent
+	flags = OPENCONTAINER
+	origin_tech = list(TECH_MATERIAL = 2, TECH_ILLEGAL = 5)
+
+/obj/item/weapon/pen/reagent/New()
 	..()
-	update_icon()
+	create_reagents(30)
 
-/obj/item/weapon/pen/multi/proc/select_colour(mob/user as mob)
-	var/newcolour = input(user, "Which colour would you like to use?", name, colour) as null|anything in colour_choices
-	if(newcolour)
-		colour = newcolour
-		playsound(loc, 'sound/effects/pop.ogg', 50, 1)
-		update_icon()
+/obj/item/weapon/pen/reagent/attack(mob/living/M, mob/user, var/target_zone)
 
-/obj/item/weapon/pen/multi/attack_self(mob/living/user as mob)
-	select_colour(user)
-
-/obj/item/weapon/pen/multi/update_icon()
-	overlays.Cut()
-	var/icon/o = new(icon, pen_color_iconstate)
-	var/list/c = colour_choices[colour]
-	o.SetIntensity(c[1], c[2], c[3])
-	if(pen_color_shift)
-		o.Shift(SOUTH, pen_color_shift)
-	overlays += o
-
-/obj/item/weapon/pen/fancy
-	name = "fancy pen"
-	desc = "A fancy metal pen. It uses blue ink. An inscription on one side reads,\"L.L. - L.R.\""
-	icon_state = "fancypen"
-
-/obj/item/weapon/pen/multi/gold
-	name = "Gilded Pen"
-	desc = "A golden pen that is gilded with a meager amount of gold material. The word 'Nanotrasen' is etched on the clip of the pen."
-	icon_state = "goldpen"
-	pen_color_shift = 0
-
-/obj/item/weapon/pen/multi/fountain
-	name = "Engraved Fountain Pen"
-	desc = "An expensive looking pen."
-	icon_state = "fountainpen"
-	pen_color_shift = 0
-
-/obj/item/weapon/pen/attack(mob/living/M, mob/user)
 	if(!istype(M))
 		return
 
-	if(!force)
-		if(M.can_inject(user, 1))
-			to_chat(user, "<span class='warning'>You stab [M] with the pen.</span>")
-//			to_chat(M, "<span class='danger'>You feel a tiny prick!</span>")
-			. = 1
+	. = ..()
 
-		add_logs(M, user, "stabbed", object="[name]")
-
-	else
-		. = ..()
-
-/*
- * Sleepypens
- */
-/obj/item/weapon/pen/sleepy
-	flags = OPENCONTAINER
-	origin_tech = "materials=2;syndicate=5"
-
-
-/obj/item/weapon/pen/sleepy/attack(mob/living/M, mob/user)
-	if(!istype(M))	return
-
-	if(..())
+	if(M.can_inject(user, target_zone))
 		if(reagents.total_volume)
 			if(M.reagents)
-				reagents.trans_to(M, 50)
+				var/contained_reagents = reagents.get_reagents()
+				var/trans = reagents.trans_to_mob(M, 30, CHEM_BLOOD)
+				admin_inject_log(user, M, src, contained_reagents, trans)
 
+/*
+ * Sleepy Pens
+ */
+/obj/item/weapon/pen/reagent/sleepy
+	desc = "It's a black ink pen with a sharp point and a carefully engraved \"Waffle Co.\"."
+	origin_tech = list(TECH_MATERIAL = 2, TECH_ILLEGAL = 5)
 
-/obj/item/weapon/pen/sleepy/New()
-	create_reagents(100)
-	reagents.add_reagent("ketamine", 100)
+/obj/item/weapon/pen/reagent/sleepy/New()
 	..()
+	reagents.add_reagent("chloralhydrate", 22)	//Used to be 100 sleep toxin//30 Chloral seems to be fatal, reducing it to 22./N
 
 
 /*
- * (Alan) Edaggers
+ * Parapens
  */
-/obj/item/weapon/pen/edagger
-	origin_tech = "combat=3;syndicate=5"
-	attack_verb = list("slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut") //these wont show up if the pen is off
-	var/on = 0
+/obj/item/weapon/pen/reagent/paralysis
+	origin_tech = list(TECH_MATERIAL = 2, TECH_ILLEGAL = 5)
 
-/obj/item/weapon/pen/edagger/attack_self(mob/living/user)
-	if(on)
-		on = 0
-		force = initial(force)
-		sharp = 0
-		edge = 0
-		w_class = initial(w_class)
-		name = initial(name)
-		hitsound = initial(hitsound)
-		throwforce = initial(throwforce)
-		playsound(user, 'sound/weapons/saberoff.ogg', 5, 1)
-		to_chat(user, "<span class='warning'>[src] can now be concealed.</span>")
-	else
-		on = 1
-		force = 18
-		sharp = 1
-		edge = 1
-		w_class = 3
-		name = "energy dagger"
-		hitsound = 'sound/weapons/blade1.ogg'
-		throwforce = 35
-		playsound(user, 'sound/weapons/saberon.ogg', 5, 1)
-		to_chat(user, "<span class='warning'>[src] is now active.</span>")
-	update_icon()
+/obj/item/weapon/pen/reagent/paralysis/New()
+	..()
+	reagents.add_reagent("zombiepowder", 10)
+	reagents.add_reagent("cryptobiolin", 15)
 
-/obj/item/weapon/pen/edagger/update_icon()
-	if(on)
-		icon_state = "edagger"
-		item_state = "edagger"
-	else
-		icon_state = initial(icon_state) //looks like a normal pen when off.
-		item_state = initial(item_state)
+/*
+ * Chameleon pen
+ */
+/obj/item/weapon/pen/chameleon
+	var/signature = ""
+
+/obj/item/weapon/pen/chameleon/attack_self(mob/user as mob)
+	/*
+	// Limit signatures to official crew members
+	var/personnel_list[] = list()
+	for(var/datum/data/record/t in data_core.locked) //Look in data core locked.
+		personnel_list.Add(t.fields["name"])
+	personnel_list.Add("Anonymous")
+
+	var/new_signature = input("Enter new signature pattern.", "New Signature") as null|anything in personnel_list
+	if(new_signature)
+		signature = new_signature
+	*/
+	signature = sanitize(input("Enter new signature. Leave blank for 'Anonymous'", "New Signature", signature))
+
+/obj/item/weapon/pen/proc/get_signature(var/mob/user)
+	return (user && user.real_name) ? user.real_name : "Anonymous"
+
+/obj/item/weapon/pen/chameleon/get_signature(var/mob/user)
+	return signature ? signature : "Anonymous"
+
+/obj/item/weapon/pen/chameleon/verb/set_colour()
+	set name = "Change Pen Colour"
+	set category = "Object"
+
+	var/list/possible_colours = list ("Yellow", "Green", "Pink", "Blue", "Orange", "Cyan", "Red", "Invisible", "Black")
+	var/selected_type = input("Pick new colour.", "Pen Colour", null, null) as null|anything in possible_colours
+
+	if(selected_type)
+		switch(selected_type)
+			if("Yellow")
+				colour = COLOR_YELLOW
+			if("Green")
+				colour = COLOR_LIME
+			if("Pink")
+				colour = COLOR_PINK
+			if("Blue")
+				colour = COLOR_BLUE
+			if("Orange")
+				colour = COLOR_ORANGE
+			if("Cyan")
+				colour = COLOR_CYAN
+			if("Red")
+				colour = COLOR_RED
+			if("Invisible")
+				colour = COLOR_WHITE
+			else
+				colour = COLOR_BLACK
+		to_chat(usr, "<span class='info'>You select the [lowertext(selected_type)] ink container.</span>")
+
+
+/*
+ * Crayons
+ */
+
+/obj/item/weapon/pen/crayon
+	name = "crayon"
+	desc = "A colourful crayon. Please refrain from eating it or putting it in your nose."
+	icon = 'icons/obj/crayons.dmi'
+	icon_state = "crayonred"
+	w_class = ITEM_SIZE_TINY
+	attack_verb = list("attacked", "coloured")
+	colour = "#FF0000" //RGB
+	var/shadeColour = "#220000" //RGB
+	var/uses = 30 //0 for unlimited uses
+	var/instant = 0
+	var/colourName = "red" //for updateIcon purposes
+
+	New()
+		name = "[colourName] crayon"
+		..()

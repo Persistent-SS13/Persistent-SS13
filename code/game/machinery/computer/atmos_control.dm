@@ -1,20 +1,29 @@
+/obj/item/weapon/circuitboard/atmoscontrol
+	name = "\improper Central Atmospherics Computer Circuitboard"
+	build_path = /obj/machinery/computer/atmoscontrol
+
 /obj/machinery/computer/atmoscontrol
 	name = "\improper Central Atmospherics Computer"
 	icon = 'icons/obj/computer.dmi'
-	icon_keyboard = "atmos_key"
-	icon_screen = "tank"
-	light_color = LIGHT_COLOR_GREEN
+	icon_keyboard = "generic_key"
+	icon_screen = "comm_logs"
+	light_color = "#00b000"
 	density = 1
 	anchored = 1.0
 	circuit = /obj/item/weapon/circuitboard/atmoscontrol
-	req_access = list(access_atmospherics)
+	req_access = list(access_ce)
 	var/list/monitored_alarm_ids = null
 	var/datum/nano_module/atmos_control/atmos_control
 
+/obj/machinery/computer/atmoscontrol/New()
+	..()
+
 /obj/machinery/computer/atmoscontrol/laptop
-	name = "atmospherics laptop"
-	desc = "Cheap Nanotrasen laptop."
-	icon_state = "medlaptop"
+	name = "Atmospherics Laptop"
+	desc = "A cheap laptop."
+	icon_state = "laptop"
+	icon_keyboard = "laptop_key"
+	icon_screen = "atmoslaptop"
 	density = 0
 
 /obj/machinery/computer/atmoscontrol/attack_ai(var/mob/user as mob)

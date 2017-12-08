@@ -1,54 +1,37 @@
+//This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:32
+
 /**********************************************************************
 						Cyborg Spec Items
 ***********************************************************************/
-
-/obj/item/device/pda/borg
-	name = "Cyborg PDA module"
-	icon_state = "pda_cyborg"
-
-/obj/item/device/pda/borg/attack_self(mob/user as mob)
-	if(!id)
-		owner = null
-		ownjob = null
-		ownrank = null
-		name = null
-	user.set_machine(src)
-	if(active_uplink_check(user))
-		return
-	ui_interact(user) //NanoUI requires this proc	
-	
-	
 //Might want to move this into several files later but for now it works here
+// Consider changing this to a child of the stun baton class. ~Z
 /obj/item/borg/stun
 	name = "electrified arm"
-	icon = 'icons/obj/items.dmi'
-	icon_state = "elecarm"
-	var/charge_cost = 30
+	icon = 'icons/obj/decals.dmi'
+	icon_state = "shock"
 
-/obj/item/borg/stun/attack(mob/living/M, mob/living/silicon/robot/user)
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		if(H.check_shields(0, "[M]'s [name]", src, MELEE_ATTACK))
-			playsound(M, 'sound/weapons/Genhit.ogg', 50, 1)
-			return 0
+/obj/item/borg/stun/apply_hit_effect(mob/living/M, mob/living/silicon/robot/user, var/hit_zone)
+	if(!istype(user))
+		return 0
 
-	if(!user.cell.use(charge_cost))
-		return
+	user.visible_message("<span class='danger'>\The [user] has prodded \the [M] with \a [src]!</span>")
 
-	user.do_attack_animation(M)
-	M.Weaken(5)
-	M.apply_effect(STUTTER, 5)
-	M.Stun(5)
-
-	M.visible_message("<span class='danger'>[user] has prodded [M] with [src]!</span>", \
-					"<span class='userdanger'>[user] has prodded you with [src]!</span>")
+	if(!user.cell || !user.cell.checked_use(1250)) //Slightly more than a baton.
+		return 0
 
 	playsound(loc, 'sound/weapons/Egloves.ogg', 50, 1, -1)
 
-	add_logs(M, user, "stunned", src, "(INTENT: [uppertext(user.a_intent)])")
+	M.apply_effect(5, STUTTER)
+	M.stun_effect_act(0, 70, check_zone(hit_zone), src)
+
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		H.forcesay(GLOB.hit_appends)
+
+	return 0
 
 /obj/item/borg/overdrive
-	name = "Overdrive"
+	name = "overdrive"
 	icon = 'icons/obj/decals.dmi'
 	icon_state = "shock"
 
@@ -60,42 +43,51 @@
 	icon_state = "securearea"
 	var/sight_mode = null
 
+
 /obj/item/borg/sight/xray
-	name = "X-ray Vision"
+	name = "\proper x-ray vision"
 	sight_mode = BORGXRAY
 
+
 /obj/item/borg/sight/thermal
-	name = "Thermal Vision"
+	name = "\proper thermal vision"
 	sight_mode = BORGTHERM
 	icon_state = "thermal"
 	icon = 'icons/obj/clothing/glasses.dmi'
 
+
 /obj/item/borg/sight/meson
-	name = "Meson Vision"
+	name = "\proper meson vision"
 	sight_mode = BORGMESON
 	icon_state = "meson"
 	icon = 'icons/obj/clothing/glasses.dmi'
 
+/obj/item/borg/sight/material
+	name = "\proper material scanner vision"
+	sight_mode = BORGMATERIAL
+
 /obj/item/borg/sight/hud
-	name = "Hud"
+	name = "hud"
 	var/obj/item/clothing/glasses/hud/hud = null
+
 
 /obj/item/borg/sight/hud/med
 	name = "medical hud"
 	icon_state = "healthhud"
 	icon = 'icons/obj/clothing/glasses.dmi'
 
-/obj/item/borg/sight/hud/med/New()
-	..()
-	hud = new /obj/item/clothing/glasses/hud/health(src)
-	return
+	New()
+		..()
+		hud = new /obj/item/clothing/glasses/hud/health(src)
+		return
+
 
 /obj/item/borg/sight/hud/sec
 	name = "security hud"
 	icon_state = "securityhud"
 	icon = 'icons/obj/clothing/glasses.dmi'
 
-/obj/item/borg/sight/hud/sec/New()
-	..()
-	hud = new /obj/item/clothing/glasses/hud/security(src)
-	return
+	New()
+		..()
+		hud = new /obj/item/clothing/glasses/hud/security(src)
+		return

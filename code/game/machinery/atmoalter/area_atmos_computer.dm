@@ -1,16 +1,15 @@
 /obj/machinery/computer/area_atmos
-	name = "area air control"
+	name = "Area Air Control"
 	desc = "A computer used to control the stationary scrubbers and pumps in the area."
-	icon_screen = "area_atmos"
 	icon_keyboard = "atmos_key"
+	icon_screen = "area_atmos"
+	light_color = "#e6ffff"
 	circuit = /obj/item/weapon/circuitboard/area_atmos
 
 	var/list/connectedscrubbers = new()
 	var/status = ""
 
 	var/range = 25
-
-	light_color = LIGHT_COLOR_CYAN
 
 	//Simple variable to prevent me from doing attack_hand in both this and the child computer
 	var/zone = "This computer is working on a wireless range, the range is currently limited to 25 meters."
@@ -22,9 +21,7 @@
 			scanscrubbers()
 
 	attack_ai(var/mob/user as mob)
-		src.add_hiddenprint(user)
 		return src.attack_hand(user)
-
 
 	attack_hand(var/mob/user as mob)
 		if(..(user))
@@ -73,11 +70,19 @@
 				<font color="red">[status]</font><br>
 				<a href="?src=\ref[src];scan=1">Scan</a>
 				<table border="1" width="90%">"}
-		for(var/obj/machinery/portable_atmospherics/scrubber/huge/scrubber in connectedscrubbers)
+		for(var/obj/machinery/portable_atmospherics/powered/scrubber/huge/scrubber in connectedscrubbers)
 			dat += {"
 					<tr>
-						<td>[scrubber.name]</td>
-						<td width="150"><a class="green" href="?src=\ref[src];scrub=\ref[scrubber];toggle=1">Turn On</a> <a class="red" href="?src=\ref[src];scrub=\ref[scrubber];toggle=0">Turn Off</a></td>
+						<td>
+							[scrubber.name]<br>
+							Pressure: [round(scrubber.air_contents.return_pressure(), 0.01)] kPa<br>
+							Flow Rate: [round(scrubber.last_flow_rate,0.1)] L/s<br>
+						</td>
+						<td width="150">
+							<a class="green" href="?src=\ref[src];scrub=\ref[scrubber];toggle=1">Turn On</a>
+							<a class="red" href="?src=\ref[src];scrub=\ref[scrubber];toggle=0">Turn Off</a><br>
+							Load: [round(scrubber.last_power_draw)] W
+						</td>
 					</tr>"}
 
 		dat += {"
@@ -85,9 +90,7 @@
 				<i>[zone]</i>
 			</body>
 		</html>"}
-		var/datum/browser/popup = new(user, "area_atmos", name, 400, 400)
-		popup.set_content(dat)
-		popup.open(0)
+		user << browse("[dat]", "window=miningshuttle;size=400x400")
 		status = ""
 
 	Topic(href, href_list)
@@ -100,7 +103,7 @@
 		if(href_list["scan"])
 			scanscrubbers()
 		else if(href_list["toggle"])
-			var/obj/machinery/portable_atmospherics/scrubber/huge/scrubber = locate(href_list["scrub"])
+			var/obj/machinery/portable_atmospherics/powered/scrubber/huge/scrubber = locate(href_list["scrub"])
 
 			if(!validscrubber(scrubber))
 				spawn(20)
@@ -112,7 +115,7 @@
 			scrubber.on = text2num(href_list["toggle"])
 			scrubber.update_icon()
 
-	proc/validscrubber( var/obj/machinery/portable_atmospherics/scrubber/huge/scrubber as obj )
+	proc/validscrubber( var/obj/machinery/portable_atmospherics/powered/scrubber/huge/scrubber as obj )
 		if(!isobj(scrubber) || get_dist(scrubber.loc, src.loc) > src.range || scrubber.loc.z != src.loc.z)
 			return 0
 
@@ -122,7 +125,7 @@
 		connectedscrubbers = new()
 
 		var/found = 0
-		for(var/obj/machinery/portable_atmospherics/scrubber/huge/scrubber in range(range, src.loc))
+		for(var/obj/machinery/portable_atmospherics/powered/scrubber/huge/scrubber in range(range, src.loc))
 			if(istype(scrubber))
 				found = 1
 				connectedscrubbers += scrubber
@@ -136,7 +139,7 @@
 /obj/machinery/computer/area_atmos/area
 	zone = "This computer is working in a wired network limited to this area."
 
-	validscrubber( var/obj/machinery/portable_atmospherics/scrubber/huge/scrubber as obj )
+	validscrubber( var/obj/machinery/portable_atmospherics/powered/scrubber/huge/scrubber as obj )
 		if(!isobj(scrubber))
 			return 0
 
@@ -163,12 +166,12 @@
 
 		var/turf/T = get_turf(src)
 		if(!T.loc) return
-		var/area/A = get_area_master(T)
-		for(var/obj/machinery/portable_atmospherics/scrubber/huge/scrubber in world )
+		var/area/A = T.loc
+		for(var/obj/machinery/portable_atmospherics/powered/scrubber/huge/scrubber in world )
 			var/turf/T2 = get_turf(scrubber)
 			if(T2 && T2.loc)
 				var/area/A2 = T2.loc
-				if(istype(A2) && A2 == A )
+				if(istype(A2) && A2 == A)
 					connectedscrubbers += scrubber
 					found = 1
 

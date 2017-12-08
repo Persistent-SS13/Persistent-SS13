@@ -1,22 +1,20 @@
 /obj/item/assembly/shock_kit
 	name = "electrohelmet assembly"
 	desc = "This appears to be made from both an electropack and a helmet."
-	icon = 'icons/obj/assemblies.dmi'
 	icon_state = "shock_kit"
 	var/obj/item/clothing/head/helmet/part1 = null
 	var/obj/item/device/radio/electropack/part2 = null
 	var/status = 0
-	w_class = 5
+	w_class = ITEM_SIZE_HUGE
 	flags = CONDUCT
 
 /obj/item/assembly/shock_kit/Destroy()
 	qdel(part1)
-	part1 = null
 	qdel(part2)
-	part2 = null
-	return ..()
+	..()
+	return
 
-/obj/item/assembly/shock_kit/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
+/obj/item/assembly/shock_kit/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/wrench) && !status)
 		var/turf/T = loc
 		if(ismob(T))
@@ -42,7 +40,7 @@
 	return
 
 /obj/item/assembly/shock_kit/receive_signal()
-	if(istype(loc, /obj/structure/stool/bed/chair/e_chair))
-		var/obj/structure/stool/bed/chair/e_chair/C = loc
+	if(istype(loc, /obj/structure/bed/chair/e_chair))
+		var/obj/structure/bed/chair/e_chair/C = loc
 		C.shock()
 	return

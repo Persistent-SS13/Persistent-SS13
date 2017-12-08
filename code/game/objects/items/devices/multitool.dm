@@ -10,56 +10,62 @@
 	icon_state = "multitool"
 	flags = CONDUCT
 	force = 5.0
-	w_class = 2
+	w_class = ITEM_SIZE_SMALL
 	throwforce = 5.0
 	throw_range = 15
 	throw_speed = 3
 	desc = "You can use this on airlocks or APCs to try to hack them without cutting wires."
-	materials = list(MAT_METAL=50, MAT_GLASS=20)
-	origin_tech = "magnets=1;engineering=1"
-	var/obj/machinery/buffer // simple machine buffer for device linkage
 
-/obj/item/device/multitool/proc/IsBufferA(var/typepath)
-	if(!buffer)
-		return 0
-	return istype(buffer,typepath)
+	matter = list(DEFAULT_WALL_MATERIAL = 50,"glass" = 20)
 
-// Syndicate device disguised as a multitool; it will turn red when an AI camera is nearby.
+	origin_tech = list(TECH_MAGNET = 1, TECH_ENGINEERING = 1)
 
+	var/buffer_name
+	var/atom/buffer_object
 
-/obj/item/device/multitool/ai_detect
-	var/track_delay = 0
-
-/obj/item/device/multitool/ai_detect/New()
-	..()
-	processing_objects += src
-
-
-/obj/item/device/multitool/ai_detect/Destroy()
-	processing_objects -= src
+/obj/item/device/multitool/Destroy()
+	unregister_buffer(buffer_object)
 	return ..()
 
-/obj/item/device/multitool/ai_detect/process()
+/obj/item/device/multitool/proc/get_buffer(var/typepath)
+	// Only allow clearing the buffer name when someone fetches the buffer.
+	// Means you cannot be sure the source hasn't been destroyed until the very moment it's needed.
+	get_buffer_name(TRUE)
+	if(buffer_object && (!typepath || istype(buffer_object, typepath)))
+		return buffer_object
 
-	if(track_delay > world.time)
-		return
+/obj/item/device/multitool/proc/get_buffer_name(var/null_name_if_missing = FALSE)
+	if(buffer_object)
+		buffer_name = buffer_object.name
+	else if(null_name_if_missing)
+		buffer_name = null
+	return buffer_name
 
-	var/found_eye = 0
+/obj/item/device/multitool/proc/set_buffer(var/atom/buffer)
+	if(!buffer || istype(buffer))
+		buffer_name = buffer ? buffer.name : null
+		if(buffer != buffer_object)
+			unregister_buffer(buffer_object)
+			buffer_object = buffer
+			if(buffer_object)
+				GLOB.destroyed_event.register(buffer_object, src, /obj/item/device/multitool/proc/unregister_buffer)
 
-	for(var/mob/camera/aiEye/A in living_mob_list)
+/obj/item/device/multitool/proc/unregister_buffer(var/atom/buffer_to_unregister)
+	// Only remove the buffered object, don't reset the name
+	// This means one cannot know if the buffer has been destroyed until one attempts to use it.
+	if(buffer_to_unregister == buffer_object && buffer_object)
+		GLOB.destroyed_event.unregister(buffer_object, src)
+		buffer_object = null
 
-		var/turf/our_turf = get_turf(src)
-		var/turf/eye_turf = get_turf(A)
+/obj/item/device/multitool/resolve_attackby(atom/A, mob/user)
+	if(!isobj(A))
+		return ..(A, user)
 
-		if(get_dist(our_turf, eye_turf) < 9)
-			found_eye = 1
-			break
+	var/obj/O = A
+	var/datum/extension/interactive/multitool/MT = get_extension(O, /datum/extension/interactive/multitool)
+	if(!MT)
+		return ..(A, user)
 
-	if(found_eye)
-		icon_state = "[initial(icon_state)]_red"
-	else
-		icon_state = initial(icon_state)
-
-	track_delay = world.time + 10 // 1 second
-	return
-
+	user.AddTopicPrint(src)
+	MT.interact(src, user)
+	return 1

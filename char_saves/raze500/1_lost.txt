@@ -1,3 +1,0 @@
-//Orphan savefile buffer '' found on Tue Dec 05 11:06:27 2017
-
-//End of exported data.

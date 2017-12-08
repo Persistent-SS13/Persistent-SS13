@@ -1,132 +1,102 @@
 /obj/item/weapon/gun/energy/gun
 	name = "energy gun"
-	desc = "A basic energy-based gun with two settings: kill and disable."
-	icon_state = "energy"
+	desc = "Another bestseller of Lawson Arms and the FTU, the LAEP90 Perun is a versatile energy based sidearm, capable of switching between low, medium and high power projectile settings. In other words: stun, shock or kill."
+	icon_state = "energystun100"
 	item_state = null	//so the human update icon uses the icon_state instead.
-	ammo_type = list(/obj/item/ammo_casing/energy/disabler, /obj/item/ammo_casing/energy/laser)
-	origin_tech = "combat=3;magnets=2"
-	modifystate = 2
-	can_flashlight = 1
-	ammo_x_offset = 3
-	flight_x_offset = 15
-	flight_y_offset = 10
+	max_shots = 10
+	fire_delay = 10 // To balance for the fact that it is a pistol and can be used one-handed without penalty
 
-/obj/item/weapon/gun/energy/gun/cyborg
-	desc = "An energy-based laser gun that draws power from the cyborg's internal energy cell directly. So this is what freedom looks like?"
+	projectile_type = /obj/item/projectile/beam/stun
+	origin_tech = list(TECH_COMBAT = 3, TECH_MAGNET = 2)
+	modifystate = "energystun"
 
-/obj/item/weapon/gun/energy/gun/cyborg/newshot()
-	..()
-	robocharge()
+	firemodes = list(
+		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun, modifystate="energystun"),
+		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock, modifystate="energyshock"),
+		list(mode_name="lethal", projectile_type=/obj/item/projectile/beam, modifystate="energykill"),
+		)
 
-/obj/item/weapon/gun/energy/gun/cyborg/emp_act()
-	return
+/obj/item/weapon/gun/energy/gun/small
+	name = "small energy gun"
+	desc = "A smaller model of the versatile LAEP90 Perun, packing considerable utility in a smaller package. Best used in situations where full-sized sidearms are inappropriate."
+	icon_state = "smallgunstun"
+	max_shots = 5
+	w_class = ITEM_SIZE_SMALL
+	force = 2 //it's the size of a car key, what did you expect?
+	modifystate = "smallgunstun"
+
+	firemodes = list(
+		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun, modifystate="smallgunstun"),
+		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock, modifystate="smallgunshock"),
+		list(mode_name="lethal", projectile_type=/obj/item/projectile/beam/smalllaser, modifystate="smallgunkill"),
+		)
 
 /obj/item/weapon/gun/energy/gun/mounted
 	name = "mounted energy gun"
-	selfcharge = 1
+	self_recharge = 1
 	use_external_power = 1
-
-/obj/item/weapon/gun/energy/gun/mini
-	name = "miniature energy gun"
-	desc = "A small, pistol-sized energy gun with a built-in flashlight. It has two settings: stun and kill."
-	icon_state = "mini"
-	item_state = "gun"
-	w_class = 2
-	ammo_x_offset = 2
-	charge_sections = 3
-	can_flashlight = 0 // Can't attach or detach the flashlight, and override it's icon update
-
-/obj/item/weapon/gun/energy/gun/mini/New()
-	F = new /obj/item/device/flashlight/seclite(src)
-	..()
-	power_supply.maxcharge = 6000
-	power_supply.charge = 6000
-
-/obj/item/weapon/gun/energy/gun/mini/update_icon()
-	..()
-	if(F && F.on)
-		overlays += "mini-light"
-
-/obj/item/weapon/gun/energy/gun/hos
-	name = "\improper X-01 MultiPhase Energy Gun"
-	desc = "This is a expensive, modern recreation of a antique laser gun. This gun has several unique firemodes, but lacks the ability to recharge over time."
-	icon_state = "hoslaser"
-	force = 10
-	ammo_type = list(/obj/item/ammo_casing/energy/electrode/hos, /obj/item/ammo_casing/energy/laser/hos, /obj/item/ammo_casing/energy/disabler)
-	ammo_x_offset = 4
-
-/obj/item/weapon/gun/energy/gun/blueshield
-	name = "advanced stun revolver"
-	desc = "An advanced stun revolver with the capacity to shoot both electrodes and lasers."
-	icon_state = "bsgun"
-	force = 7
-	ammo_type = list(/obj/item/ammo_casing/energy/electrode/hos, /obj/item/ammo_casing/energy/laser/hos)
-	ammo_x_offset = 1
-	shaded_charge = 1
-
-/obj/item/weapon/gun/energy/gun/turret
-	name = "hybrid turret gun"
-	desc = "A heavy hybrid energy cannon with two settings: Stun and kill."
-	icon_state = "turretlaser"
-	item_state = "turretlaser"
-	slot_flags = null
-	w_class = 5
-	ammo_type = list(/obj/item/ammo_casing/energy/electrode, /obj/item/ammo_casing/energy/laser)
-	weapon_weight = WEAPON_MEDIUM
-	can_flashlight = 0
-	trigger_guard = TRIGGER_GUARD_NONE
-	ammo_x_offset = 2
 
 /obj/item/weapon/gun/energy/gun/nuclear
 	name = "advanced energy gun"
-	desc = "An energy gun with an experimental miniaturized nuclear reactor that automatically charges the internal power cell."
+	desc = "An energy gun with an experimental miniaturized reactor."
 	icon_state = "nucgun"
-	item_state = "nucgun"
-	origin_tech = "combat=3;materials=5;powerstorage=3"
-	var/fail_tick = 0
-	charge_delay = 5
-	can_charge = 0
-	ammo_x_offset = 1
-	ammo_type = list(/obj/item/ammo_casing/energy/electrode, /obj/item/ammo_casing/energy/laser, /obj/item/ammo_casing/energy/disabler)
-	selfcharge = 1
+	origin_tech = list(TECH_COMBAT = 3, TECH_MATERIAL = 5, TECH_POWER = 3)
+	slot_flags = SLOT_BELT
+	w_class = ITEM_SIZE_LARGE
+	force = 8 //looks heavier than a pistol
+	self_recharge = 1
+	modifystate = null
+	one_hand_penalty = 1 //bulkier than an e-gun, but not quite the size of a carbine
 
+	firemodes = list(
+		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun),
+		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock),
+		list(mode_name="lethal", projectile_type=/obj/item/projectile/beam),
+		)
+
+	var/fail_counter = 0
+
+//override for failcheck behaviour
 /obj/item/weapon/gun/energy/gun/nuclear/process()
-	if(fail_tick > 0)
-		fail_tick--
-	..()
+	if(fail_counter > 0)
+		radiation_repository.radiate(src, fail_counter--)
 
-/obj/item/weapon/gun/energy/gun/nuclear/shoot_live_shot()
-	failcheck()
-	update_icon()
-	..()
-
-/obj/item/weapon/gun/energy/gun/nuclear/proc/failcheck()
-	if(!prob(reliability) && istype(loc, /mob/living))
-		var/mob/living/M = loc
-		switch(fail_tick)
-			if(0 to 200)
-				fail_tick += (2*(100-reliability))
-				M.apply_effect(rand(3,120), IRRADIATE)
-				to_chat(M, "<span class='userdanger'>Your [name] feels warmer.</span>")
-			if(201 to INFINITY)
-				processing_objects.Remove(src)
-				M.apply_effect(300, IRRADIATE)
-				crit_fail = 1
-				to_chat(M, "<span class='userdanger'>Your [name]'s reactor overloads!</span>")
+	return ..()
 
 /obj/item/weapon/gun/energy/gun/nuclear/emp_act(severity)
 	..()
-	reliability = max(reliability - round(15/severity), 0) //Do not allow it to go negative!
+	switch(severity)
+		if(1)
+			fail_counter = max(fail_counter, 30)
+			visible_message("\The [src]'s reactor overloads!")
+		if(2)
+			fail_counter = max(fail_counter, 10)
+			if(ismob(loc))
+				to_chat(loc, "<span class='warning'>\The [src] feels pleasantly warm.</span>")
+
+/obj/item/weapon/gun/energy/gun/nuclear/proc/get_charge_overlay()
+	var/ratio = power_supply.percent()
+	ratio = round(ratio, 25)
+	return "nucgun-[ratio]"
+
+/obj/item/weapon/gun/energy/gun/nuclear/proc/get_reactor_overlay()
+	if(fail_counter)
+		return "nucgun-medium"
+	if (power_supply.percent() <= 50)
+		return "nucgun-light"
+	return "nucgun-clean"
+
+/obj/item/weapon/gun/energy/gun/nuclear/proc/get_mode_overlay()
+	var/datum/firemode/current_mode = firemodes[sel_mode]
+	switch(current_mode.name)
+		if("stun") return "nucgun-stun"
+		if("lethal") return "nucgun-kill"
 
 /obj/item/weapon/gun/energy/gun/nuclear/update_icon()
-	..()
-	if(crit_fail)
-		overlays += "[icon_state]_fail_3"
-	else
-		switch(fail_tick)
-			if(0)
-				overlays += "[icon_state]_fail_0"
-			if(1 to 150)
-				overlays += "[icon_state]_fail_1"
-			if(151 to INFINITY)
-				overlays += "[icon_state]_fail_2"
+	var/list/new_overlays = list()
+
+	new_overlays += get_charge_overlay()
+	new_overlays += get_reactor_overlay()
+	new_overlays += get_mode_overlay()
+
+	overlays = new_overlays

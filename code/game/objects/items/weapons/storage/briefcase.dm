@@ -4,16 +4,9 @@
 	icon_state = "briefcase"
 	item_state = "briefcase"
 	flags = CONDUCT
-	hitsound = "swing_hit"
 	force = 8.0
-	throw_speed = 2
+	throw_speed = 1
 	throw_range = 4
-	w_class = 4
-	max_w_class = 3
-	max_combined_w_class = 21
-	attack_verb = list("bashed", "battered", "bludgeoned", "thrashed", "whacked")
-	burn_state = FLAMMABLE
-	burntime = 20
-
-/obj/item/weapon/storage/briefcase/New()
-	..()
+	w_class = ITEM_SIZE_HUGE
+	max_w_class = ITEM_SIZE_NORMAL
+	max_storage_space = DEFAULT_BACKPACK_STORAGE

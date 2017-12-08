@@ -8,10 +8,11 @@
 	icon_gib = "pine_1"
 	speak_chance = 0
 	turns_per_move = 5
-	response_help = "brushes the"
-	response_disarm = "pushes the"
-	response_harm = "hits the"
-	speed = 1
+	meat_type = /obj/item/weapon/reagent_containers/food/snacks/carpmeat
+	response_help = "brushes"
+	response_disarm = "pushes"
+	response_harm = "hits"
+	speed = -1
 	maxHealth = 250
 	health = 250
 
@@ -20,23 +21,26 @@
 	harm_intent_damage = 5
 	melee_damage_lower = 8
 	melee_damage_upper = 12
-	attacktext = "bites"
+	attacktext = "bitten"
 	attack_sound = 'sound/weapons/bite.ogg'
-	speak_emote = list("pines")
 
-	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
+	//Space carp aren't affected by atmos.
+	min_oxy = 0
+	max_oxy = 0
+	min_tox = 0
+	max_tox = 0
+	min_co2 = 0
+	max_co2 = 0
+	min_n2 = 0
+	max_n2 = 0
 	minbodytemp = 0
 
-	faction = list("hostile", "winter")
-	loot = list(/obj/item/stack/sheet/wood)
-	gold_core_spawnable = CHEM_MOB_SPAWN_HOSTILE
-	deathmessage = "is hacked into pieces!"
-	del_on_death = 1
+	faction = "carp"
 
 /mob/living/simple_animal/hostile/tree/FindTarget()
 	. = ..()
 	if(.)
-		custom_emote(1, "growls at [.]")
+		audible_emote("growls at [.]")
 
 /mob/living/simple_animal/hostile/tree/AttackingTarget()
 	. =..()
@@ -45,3 +49,8 @@
 		if(prob(15))
 			L.Weaken(3)
 			L.visible_message("<span class='danger'>\the [src] knocks down \the [L]!</span>")
+
+/mob/living/simple_animal/hostile/tree/death(gibbed, deathmessage, show_dead_message)
+	..(null,"is hacked into pieces!", show_dead_message)
+	new /obj/item/stack/material/wood(loc)
+	qdel(src)

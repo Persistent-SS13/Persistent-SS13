@@ -3,7 +3,7 @@
 	// Update name.
 	if(seed)
 		if(mechanical)
-			name = "[base_name] (#[seed.uid])"
+			name = "[base_name] ([seed.seed_name])"
 		else
 			name = "[seed.seed_name]"
 	else
@@ -30,7 +30,8 @@
 			if(!seed.growth_stages)
 				seed.update_growth_stages()
 			if(!seed.growth_stages)
-				to_chat(world, "<span class='danger'>Seed type [seed.get_trait(TRAIT_PLANT_ICON)] cannot find a growth stage value.</span>")
+				log_error("<span class='danger'>Seed type [seed.get_trait(TRAIT_PLANT_ICON)] cannot find a growth stage value.</span>")
+
 				return
 			var/overlay_stage = 1
 			if(age >= seed.get_trait(TRAIT_MATURATION))
@@ -47,7 +48,6 @@
 				plant_overlay.color = seed.get_trait(TRAIT_PLANT_COLOUR)
 				plant_controller.plant_icon_cache["[ikey]-[seed.get_trait(TRAIT_PLANT_COLOUR)]"] = plant_overlay
 			overlays |= plant_overlay
-			last_plant_ikey = ikey
 
 			if(harvest && overlay_stage == seed.growth_stages)
 				ikey = "[seed.get_trait(TRAIT_PRODUCT_ICON)]"

@@ -1,273 +1,202 @@
-#define TRANSITIONEDGE	7 //Distance from edge to move to another z-level
+#define DEBUG
+// Turf-only flags.
+#define NOJAUNT 1 // This is used in literally one place, turf.dm, to block ethereal jaunt.
 
-//Object specific defines
-#define CANDLE_LUM 3 //For how bright candles are
+#define TRANSITIONEDGE 7 // Distance from edge to move to another z-level.
 
-//Security levels
-#define SEC_LEVEL_GREEN	0
-#define SEC_LEVEL_BLUE	1
-#define SEC_LEVEL_RED	2
-#define SEC_LEVEL_GAMMA	3
-#define SEC_LEVEL_EPSILON	4
-#define SEC_LEVEL_DELTA	5
+// Invisibility constants.
+#define INVISIBILITY_LIGHTING    20
+#define INVISIBILITY_LEVEL_ONE   35
+#define INVISIBILITY_LEVEL_TWO   45
+#define INVISIBILITY_OBSERVER    60
+#define INVISIBILITY_EYE         61
+#define INVISIBILITY_SYSTEM      99
 
-//Click cooldowns, in tenths of a second
-#define CLICK_CD_MELEE 8
-#define CLICK_CD_RANGE 4
-#define CLICK_CD_BREAKOUT 100
-#define CLICK_CD_HANDCUFFED 10
-#define CLICK_CD_TKSTRANGLE 10
-#define CLICK_CD_POINT 10
-#define CLICK_CD_RESIST 20
+#define SEE_INVISIBLE_LIVING     25
+#define SEE_INVISIBLE_NOLIGHTING 15
+#define SEE_INVISIBLE_LEVEL_ONE  INVISIBILITY_LEVEL_ONE
+#define SEE_INVISIBLE_LEVEL_TWO  INVISIBILITY_LEVEL_TWO
+#define SEE_INVISIBLE_CULT       INVISIBILITY_OBSERVER
+#define SEE_INVISIBLE_OBSERVER   INVISIBILITY_EYE
+#define SEE_INVISIBLE_SYSTEM     INVISIBILITY_SYSTEM
 
-///
-#define ROUNDSTART_LOGOUT_REPORT_TIME 6000 //Amount of time (in deciseconds) after the rounds starts, that the player disconnect report is issued.
+#define SEE_IN_DARK_DEFAULT 2
 
-// DOOR CRUSHING DAMAGE!
-#define DOOR_CRUSH_DAMAGE 10
+#define SEE_INVISIBLE_MINIMUM 5
+#define INVISIBILITY_MAXIMUM 100
 
-////////////GERMS AND INFECTIONS////////////
-#define GERM_LEVEL_AMBIENT		110		//maximum germ level you can reach by standing still
-#define GERM_LEVEL_MOVE_CAP		200		//maximum germ level you can reach by running around
+// Some arbitrary defines to be used by self-pruning global lists. (see master_controller)
+#define PROCESS_KILL 26 // Used to trigger removal from a processing list.
+#define MAX_GEAR_COST 10 // Used in chargen for accessory loadout limit.
 
-#define INFECTION_LEVEL_ONE		100
-#define INFECTION_LEVEL_TWO		500
-#define INFECTION_LEVEL_THREE	1000
+// For secHUDs and medHUDs and variants. The number is the location of the image on the list hud_list of humans.
+#define      HEALTH_HUD 1 // A simple line rounding the mob's number health.
+#define      STATUS_HUD 2 // Alive, dead, diseased, etc.
+#define          ID_HUD 3 // The job asigned to your ID.
+#define      WANTED_HUD 4 // Wanted, released, paroled, security status.
+#define    IMPLOYAL_HUD 5 // Loyality implant.
+#define     IMPCHEM_HUD 6 // Chemical implant.
+#define    IMPTRACK_HUD 7 // Tracking implant.
+#define SPECIALROLE_HUD 8 // AntagHUD image.
+#define  STATUS_HUD_OOC 9 // STATUS_HUD without virus DB check for someone being ill.
+#define 	  LIFE_HUD 10 // STATUS_HUD that only reports dead or alive
 
-// Damage above this value must be repaired with surgery.
-#define ROBOLIMB_SELF_REPAIR_CAP 60
+// Shuttle moving status.
+#define SHUTTLE_IDLE      0
+#define SHUTTLE_WARMUP    1
+#define SHUTTLE_INTRANSIT 2
 
-//metal, glass, rod stacks
-#define MAX_STACK_AMOUNT_METAL	50
-#define MAX_STACK_AMOUNT_GLASS	50
-#define MAX_STACK_AMOUNT_RODS	60
+// Autodock shuttle processing status.
+#define IDLE_STATE   0
+#define WAIT_LAUNCH  1
+#define FORCE_LAUNCH 2
+#define WAIT_ARRIVE  3
+#define WAIT_FINISH  4
 
-//some colors
-#define COLOR_RED 		"#FF0000"
-#define COLOR_GREEN 	"#00FF00"
-#define COLOR_BLUE 		"#0000FF"
-#define COLOR_CYAN 		"#00FFFF"
-#define COLOR_PINK 		"#FF00FF"
-#define COLOR_YELLOW 	"#FFFF00"
-#define COLOR_ORANGE 	"#FF9900"
-#define COLOR_WHITE 	"#FFFFFF"
-#define COLOR_GRAY      "#808080"
+// Setting this much higher than 1024 could allow spammers to DOS the server easily.
+#define MAX_MESSAGE_LEN       1024
+#define MAX_PAPER_MESSAGE_LEN 3072
+#define MAX_BOOK_MESSAGE_LEN  9216
+#define MAX_LNAME_LEN         64
+#define MAX_NAME_LEN          26
+#define MAX_DESC_LEN          128
 
-//some arbitrary defines to be used by self-pruning global lists. (see master_controller)
-#define PROCESS_KILL 26	//Used to trigger removal from a processing list
-
-//Flags for zone sleeping
-#define ZONE_ACTIVE 1
-#define ZONE_SLEEPING 0
-
-#define shuttle_time_in_station 1800 // 3 minutes in the station
-#define shuttle_time_to_arrive 6000 // 10 minutes to arrive
-
-#define EVENT_LEVEL_MUNDANE 1
+// Event defines.
+#define EVENT_LEVEL_MUNDANE  1
 #define EVENT_LEVEL_MODERATE 2
-#define EVENT_LEVEL_MAJOR 3
+#define EVENT_LEVEL_MAJOR    3
 
-#define JANUARY		1
-#define FEBRUARY	2
-#define MARCH		3
-#define APRIL		4
-#define MAY			5
-#define JUNE		6
-#define JULY		7
-#define AUGUST		8
-#define SEPTEMBER	9
-#define OCTOBER		10
-#define NOVEMBER	11
-#define DECEMBER	12
+//General-purpose life speed define for plants.
+#define HYDRO_SPEED_MULTIPLIER 1
 
-//Select holiday names -- If you test for a holiday in the code, make the holiday's name a define and test for that instead
-#define NEW_YEAR				"New Year"
-#define VALENTINES				"Valentine's Day"
-#define APRIL_FOOLS				"April Fool's Day"
-#define EASTER					"Easter"
-#define HALLOWEEN				"Halloween"
-#define CHRISTMAS				"Christmas"
-#define FRIDAY_13TH				"Friday the 13th"
+#define DEFAULT_JOB_TYPE /datum/job/assistant
 
-//Light color defs, for light-emitting things
-//Some defs may be pure color- this is for neatness, and configurability. Changing #define COLOR_ is a bad idea.
-#define LIGHT_COLOR_CYAN		"#7BF9FF"
-#define LIGHT_COLOR_PURE_CYAN	"#00FFFF"
+//Area flags, possibly more to come
+#define AREA_RAD_SHIELDED 1 // shielded from radiation, clearly
+#define AREA_EXTERNAL     2 // External as in exposed to space, not outside in a nice, green, forest
 
-#define LIGHT_COLOR_RED			"#B40000"
-#define LIGHT_COLOR_ORANGE		"#FF9933"
-#define LIGHT_COLOR_DARKRED		"#A91515"
-#define LIGHT_COLOR_PURE_RED	"#FF0000"
+// Convoluted setup so defines can be supplied by Bay12 main server compile script.
+// Should still work fine for people jamming the icons into their repo.
+#ifndef CUSTOM_ITEM_OBJ
+#define CUSTOM_ITEM_OBJ 'icons/obj/custom_items_obj.dmi'
+#endif
+#ifndef CUSTOM_ITEM_MOB
+#define CUSTOM_ITEM_MOB 'icons/mob/custom_items_mob.dmi'
+#endif
+#ifndef CUSTOM_ITEM_SYNTH
+#define CUSTOM_ITEM_SYNTH 'icons/mob/custom_synthetic.dmi'
+#endif
 
-#define LIGHT_COLOR_GREEN		"#00CC00"
-#define LIGHT_COLOR_DARKGREEN	"#50AB00"
-#define LIGHT_COLOR_PURE_GREEN	"#00FF00"
+#define WALL_CAN_OPEN 1
+#define WALL_OPENING 2
 
-#define LIGHT_COLOR_LIGHTBLUE	"#0099FF"
-#define LIGHT_COLOR_DARKBLUE	"#315AB4"
-#define LIGHT_COLOR_PURE_BLUE	"#0000FF"
+#define DEFAULT_TABLE_MATERIAL "plastic"
+#define DEFAULT_WALL_MATERIAL "steel"
 
-#define LIGHT_COLOR_FADEDPURPLE	"#A97FAA"
-#define LIGHT_COLOR_PURPLE		"#CD00CD"
-#define LIGHT_COLOR_PINK		"#FF33CC"
+#define SHARD_SHARD "shard"
+#define SHARD_SHRAPNEL "shrapnel"
+#define SHARD_STONE_PIECE "piece"
+#define SHARD_SPLINTER "splinters"
+#define SHARD_NONE ""
 
-#define LIGHT_COLOR_WHITE		"#FFFFFF"
+#define OBJ_ANCHORABLE 0x1
+#define OBJ_CLIMBABLE 0x2
 
-#define RESIZE_DEFAULT_SIZE 1
+#define MATERIAL_UNMELTABLE 0x1
+#define MATERIAL_BRITTLE    0x2
+#define MATERIAL_PADDING    0x4
 
-//transfer_ai() defines. Main proc in ai_core.dm
-#define AI_TRANS_TO_CARD	1 //Downloading AI to InteliCard.
-#define AI_TRANS_FROM_CARD	2 //Uploading AI from InteliCard
-#define AI_MECH_HACK		3 //Malfunctioning AI hijacking mecha
+#define TABLE_BRITTLE_MATERIAL_MULTIPLIER 4 // Amount table damage is multiplied by if it is made of a brittle material (e.g. glass)
 
-//singularity defines
-#define STAGE_ONE 1
-#define STAGE_TWO 3
-#define STAGE_THREE 5
-#define STAGE_FOUR 7
-#define STAGE_FIVE 9
-#define STAGE_SIX 11 //From supermatter shard
+#define BOMBCAP_DVSTN_RADIUS (GLOB.max_explosion_range/4)
+#define BOMBCAP_HEAVY_RADIUS (GLOB.max_explosion_range/2)
+#define BOMBCAP_LIGHT_RADIUS GLOB.max_explosion_range
+#define BOMBCAP_FLASH_RADIUS (GLOB.max_explosion_range*1.5)
+									// NTNet module-configuration values. Do not change these. If you need to add another use larger number (5..6..7 etc)
+#define NTNET_SOFTWAREDOWNLOAD 1 	// Downloads of software from NTNet
+#define NTNET_PEERTOPEER 2			// P2P transfers of files between devices
+#define NTNET_COMMUNICATION 3		// Communication (messaging)
+#define NTNET_SYSTEMCONTROL 4		// Control of various systems, RCon, air alarm control, etc.
 
-#define in_range(source, user)		(get_dist(source, user) <= 1)
+// NTNet transfer speeds, used when downloading/uploading a file/program.
+#define NTNETSPEED_LOWSIGNAL 0.25	// GQ/s transfer speed when the device is wirelessly connected and on Low signal
+#define NTNETSPEED_HIGHSIGNAL 0.5	// GQ/s transfer speed when the device is wirelessly connected and on High signal
+#define NTNETSPEED_ETHERNET 1		// GQ/s transfer speed when the device is using wired connection
+#define NTNETSPEED_DOS_AMPLIFICATION 5	// Multiplier for Denial of Service program. Resulting load on NTNet relay is this multiplied by NTNETSPEED of the device
 
-#define RANGE_TURFS(RADIUS, CENTER) \
-  block( \
-	locate(max(CENTER.x-(RADIUS),1),		  max(CENTER.y-(RADIUS),1),		  CENTER.z), \
-	locate(min(CENTER.x+(RADIUS),world.maxx), min(CENTER.y+(RADIUS),world.maxy), CENTER.z) \
-  )
+// Program bitflags
+#define PROGRAM_ALL 15
+#define PROGRAM_CONSOLE 1
+#define PROGRAM_LAPTOP 2
+#define PROGRAM_TABLET 4
+#define PROGRAM_TELESCREEN 8
 
-#define FOR_DVIEW(type, range, center, invis_flags) \
-	dview_mob.loc = center; \
-	dview_mob.see_invisible = invis_flags; \
-	for(type in view(range, dview_mob))
-#define END_FOR_DVIEW dview_mob.loc = null
+#define PROGRAM_STATE_KILLED 0
+#define PROGRAM_STATE_BACKGROUND 1
+#define PROGRAM_STATE_ACTIVE 2
 
-#define get_turf(A) (get_step(A, 0))
+// Caps for NTNet logging. Less than 10 would make logging useless anyway, more than 500 may make the log browser too laggy. Defaults to 100 unless user changes it.
+#define MAX_NTNET_LOGS 500
+#define MIN_NTNET_LOGS 10
 
-#define MIN_SUPPLIED_LAW_NUMBER 15
-#define MAX_SUPPLIED_LAW_NUMBER 50
+//Affects the chance that armour will block an attack. Should be between 0 and 1.
+//If set to 0, then armor will always prevent the same amount of damage, always, with no randomness whatsoever.
+//Of course, this will affect code that checks for blocked < 100, as blocked will be less likely to actually be 100.
+#define ARMOR_BLOCK_CHANCE_MULT 1.0
 
-//Material defines
-#define MAT_METAL			"$metal"
-#define MAT_GLASS			"$glass"
-#define MAT_SILVER			"$silver"
-#define MAT_GOLD			"$gold"
-#define MAT_DIAMOND			"$diamond"
-#define MAT_URANIUM			"$uranium"
-#define MAT_PLASMA			"$plasma"
-#define MAT_BANANIUM		"$bananium"
-#define MAT_TRANQUILLITE	"$tranquillite"
+// Special return values from bullet_act(). Positive return values are already used to indicate the blocked level of the projectile.
+#define PROJECTILE_CONTINUE   -1 //if the projectile should continue flying after calling bullet_act()
+#define PROJECTILE_FORCE_MISS -2 //if the projectile should treat the attack as a miss (suppresses attack and admin logs) - only applies to mobs.
 
-#define MAX_STACK_SIZE 50
+//Camera capture modes
+#define CAPTURE_MODE_REGULAR 0 //Regular polaroid camera mode
+#define CAPTURE_MODE_ALL 1 //Admin camera mode
+#define CAPTURE_MODE_PARTIAL 3 //Simular to regular mode, but does not do dummy check
 
-//unmagic-strings for types of polls
-#define POLLTYPE_OPTION		"OPTION"
-#define POLLTYPE_TEXT		"TEXT"
-#define POLLTYPE_RATING		"NUMVAL"
-#define POLLTYPE_MULTI		"MULTICHOICE"
+//objectives
+#define CONFIG_OBJECTIVE_NONE 2
+#define CONFIG_OBJECTIVE_VERB 1
+#define CONFIG_OBJECTIVE_ALL  0
 
-#define MIDNIGHT_ROLLOVER	864000 //number of deciseconds in a day
+// How many times an AI tries to connect to APC before switching to low power mode.
+#define AI_POWER_RESTORE_MAX_ATTEMPTS 3
 
-#define MANIFEST_ERROR_NAME		1
-#define MANIFEST_ERROR_COUNT	2
-#define MANIFEST_ERROR_ITEM		4
+// AI power restoration routine steps.
+#define AI_RESTOREPOWER_FAILED -1
+#define AI_RESTOREPOWER_IDLE 0
+#define AI_RESTOREPOWER_STARTING 1
+#define AI_RESTOREPOWER_DIAGNOSTICS 2
+#define AI_RESTOREPOWER_CONNECTING 3
+#define AI_RESTOREPOWER_CONNECTED 4
+#define AI_RESTOREPOWER_COMPLETED 5
 
-//Turf wet states
-#define TURF_DRY		0
-#define TURF_WET_WATER	1
-#define TURF_WET_LUBE	2
-#define TURF_WET_ICE	3
 
-#define APPEARANCE_UI_IGNORE_ALPHA			RESET_COLOR|RESET_TRANSFORM|NO_CLIENT_COLOR|RESET_ALPHA
+// Values represented as Oxyloss. Can be tweaked, but make sure to use integers only.
+#define AI_POWERUSAGE_LOWPOWER 1
+#define AI_POWERUSAGE_RESTORATION 2
+#define AI_POWERUSAGE_NORMAL 5
+#define AI_POWERUSAGE_RECHARGING 7
 
-// Metal foam states
-// teehee no one will find these here
-#define MFOAM_ALUMINUM 	1
-#define MFOAM_IRON 		2
+// Above values get multiplied by this when converting AI oxyloss -> watts.
+// For now, one oxyloss point equals 10kJ of energy, so normal AI uses 5 oxyloss per tick (50kW or 70kW if charging)
+#define AI_POWERUSAGE_OXYLOSS_TO_WATTS_MULTIPLIER 10000
 
-//Human Overlays Indexes/////////
-#define MUTANTRACE_LAYER		1
-#define TAIL_UNDERLIMBS_LAYER	2
-#define LIMBS_LAYER				3
-#define MARKINGS_LAYER			4
-#define UNDERWEAR_LAYER			5
-#define MUTATIONS_LAYER			6
-#define DAMAGE_LAYER			7
-#define UNIFORM_LAYER			8
-#define ID_LAYER				9
-#define SHOES_LAYER				10
-#define GLOVES_LAYER			11
-#define EARS_LAYER				12
-#define SUIT_LAYER				13
-#define GLASSES_LAYER			14
-#define BELT_LAYER				15	//Possible make this an overlay of somethign required to wear a belt?
-#define SUIT_STORE_LAYER		16
-#define BACK_LAYER				17
-#define TAIL_LAYER				18	//bs12 specific. this hack is probably gonna come back to haunt me
-#define HAIR_LAYER				19	//TODO: make part of head layer?
-#define HEAD_ACCESSORY_LAYER	20
-#define FHAIR_LAYER				21
-#define FACEMASK_LAYER			22
-#define HEAD_LAYER				23
-#define COLLAR_LAYER			24
-#define HANDCUFF_LAYER			25
-#define LEGCUFF_LAYER			26
-#define L_HAND_LAYER			27
-#define R_HAND_LAYER			28
-#define TARGETED_LAYER			29	//BS12: Layer for the target overlay from weapon targeting system
-#define FIRE_LAYER				30	//If you're on fire
-#define TOTAL_LAYERS			30
+//Grid for Item Placement
+#define CELLS 8								//Amount of cells per row/column in grid
+#define CELLSIZE (world.icon_size/CELLS)	//Size of a cell in pixels
 
-///Access Region Codes///
-#define REGION_ALL			0
-#define REGION_GENERAL		1
-#define REGION_SECURITY		2
-#define REGION_MEDBAY		3
-#define REGION_RESEARCH		4
-#define REGION_ENGINEERING	5
-#define REGION_SUPPLY		6
-#define REGION_COMMAND		7
-#define REGION_CENTCOMM		8
+#define WORLD_ICON_SIZE 32
+#define PIXEL_MULTIPLIER WORLD_ICON_SIZE/32
 
-//used for maploader
-#define MAP_MINX 1
-#define MAP_MINY 2
-#define MAP_MINZ 3
-#define MAP_MAXX 4
-#define MAP_MAXY 5
-#define MAP_MAXZ 6
+#define DEFAULT_SPAWNPOINT_ID "Default"
 
-//Matricies
-#define MATRIX_DEFAULT list(1, 0, 0, 0,\
-                            0, 1, 0, 0,\
-                            0, 0, 1, 0,\
-                            0, 0, 0, 1)
+#define MIDNIGHT_ROLLOVER		864000	//number of deciseconds in a day
 
-#define MATRIX_GREYSCALE list(0.3, 0.3, 0.3, 0,\
-                              0.3, 0.3, 0.3, 0,\
-                              0.3, 0.3, 0.3, 0,\
-                              0,   0,   0,   1)
-//Gun trigger guards
-#define TRIGGER_GUARD_ALLOW_ALL -1
-#define TRIGGER_GUARD_NONE 0
-#define TRIGGER_GUARD_NORMAL 1
+//Virus badness defines
+#define VIRUS_MILD			1
+#define VIRUS_COMMON		2	//Random events don't go higher (mutations aside)
+#define VIRUS_ENGINEERED	3
+#define VIRUS_EXOTIC		4	//Usually adminbus only
 
-// Macro to get the current elapsed round time, rather than total world runtime
-#define ROUND_TIME (round_start_time ? (world.time - round_start_time) : 0)
-
-// Macro that returns true if it's too early in a round to freely ghost out
-#define TOO_EARLY_TO_GHOST (config && (ROUND_TIME < (config.round_abandon_penalty_period)))
-
-// Used by radios to indicate that they have sent a message via something other than subspace
-#define RADIO_CONNECTION_FAIL 0
-#define RADIO_CONNECTION_NON_SUBSPACE 1
-
-//Fire stuff, for burn_state
-#define LAVA_PROOF -2
-#define FIRE_PROOF -1
-#define FLAMMABLE 0
-#define ON_FIRE 1
-
-// Sound
-#define SOUND_MINIMUM_PRESSURE 10
-#define FALLOFF_SOUNDS 0.5
+//Error handler defines
+#define ERROR_USEFUL_LEN 2

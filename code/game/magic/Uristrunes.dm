@@ -16,7 +16,6 @@ var/list/word_to_uristrune_table = null
 			words -= w
 			bit <<= 1
 
-
 	return word_to_uristrune_table[word]
 
 
@@ -69,7 +68,7 @@ var/list/uristrune_cache = list()
 	var/icon/I = icon('icons/effects/uristrunes.dmi', "blank")
 
 	for(var/i = 0, i < 10, i++)
-		if(symbol_bits & (1 << i))
+		if(BITTEST(symbol_bits, i))
 			I.Blend(icon('icons/effects/uristrunes.dmi', "rune-[1 << i]"), ICON_OVERLAY)
 
 

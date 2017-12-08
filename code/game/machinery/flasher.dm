@@ -9,72 +9,92 @@
 	var/range = 2 //this is roughly the size of brig cell
 	var/disable = 0
 	var/last_flash = 0 //Don't want it getting spammed like regular flashes
-	var/strength = 5 //How weakened targets are when flashed.
+	var/strength = 10 //How weakened targets are when flashed.
 	var/base_state = "mflash"
 	anchored = 1
+	use_power = 1
+	idle_power_usage = 2
+	flags = PROXMOVE
+	var/_wifi_id
+	var/datum/wifi/receiver/button/flasher/wifi_receiver
 
 /obj/machinery/flasher/portable //Portable version of the flasher. Only flashes when anchored
 	name = "portable flasher"
 	desc = "A portable flashing device. Wrench to activate and deactivate. Cannot detect slow movements."
 	icon_state = "pflash1"
-	strength = 4
+	strength = 8
 	anchored = 0
 	base_state = "pflash"
 	density = 1
 
-/*
-/obj/machinery/flasher/New()
-	sleep(4)					//<--- What the fuck are you doing? D=
-	src.sd_set_light(2)
-*/
-/obj/machinery/flasher/power_change()
-	if( powered() )
-		stat &= ~NOPOWER
+/obj/machinery/flasher/Initialize()
+	. = ..()
+	if(_wifi_id)
+		wifi_receiver = new(_wifi_id, src)
+
+/obj/machinery/flasher/Destroy()
+	qdel(wifi_receiver)
+	wifi_receiver = null
+	return ..()
+
+/obj/machinery/flasher/update_icon()
+	if ( !(stat & (BROKEN|NOPOWER)) )
 		icon_state = "[base_state]1"
-//		src.sd_set_light(2)
+//		src.sd_SetLuminosity(2)
 	else
-		stat |= ~NOPOWER
 		icon_state = "[base_state]1-p"
-//		src.sd_set_light(0)
+//		src.sd_SetLuminosity(0)
 
 //Don't want to render prison breaks impossible
-/obj/machinery/flasher/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/weapon/wirecutters))
+/obj/machinery/flasher/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if (istype(W, /obj/item/weapon/wirecutters))
 		add_fingerprint(user)
 		src.disable = !src.disable
-		if(src.disable)
-			user.visible_message("\red [user] has disconnected the [src]'s flashbulb!", "\red You disconnect the [src]'s flashbulb!")
-		if(!src.disable)
-			user.visible_message("\red [user] has connected the [src]'s flashbulb!", "\red You connect the [src]'s flashbulb!")
+		if (src.disable)
+			user.visible_message("<span class='warning'>[user] has disconnected the [src]'s flashbulb!</span>", "<span class='warning'>You disconnect the [src]'s flashbulb!</span>")
+		if (!src.disable)
+			user.visible_message("<span class='warning'>[user] has connected the [src]'s flashbulb!</span>", "<span class='warning'>You connect the [src]'s flashbulb!</span>")
 
 //Let the AI trigger them directly.
 /obj/machinery/flasher/attack_ai()
-	if(src.anchored)
+	if (src.anchored)
 		return src.flash()
 	else
 		return
 
 /obj/machinery/flasher/proc/flash()
-	if(!(powered()))
+	if (!(powered()))
 		return
 
-	if((src.disable) || (src.last_flash && world.time < src.last_flash + 150))
+	if ((src.disable) || (src.last_flash && world.time < src.last_flash + 150))
 		return
 
 	playsound(src.loc, 'sound/weapons/flash.ogg', 100, 1)
 	flick("[base_state]_flash", src)
 	src.last_flash = world.time
-	use_power(1000)
+	use_power(1500)
 
-	for(var/mob/living/L in viewers(src, null))
-		if(get_dist(src, L) > src.range)
+	for (var/mob/O in viewers(src, null))
+		if (get_dist(src, O) > src.range)
 			continue
 
-		if(L.flash_eyes(affect_silicon = 1))
-			L.Weaken(strength)
-			if(L.weakeyes)
-				L.Weaken(strength * 1.5)
-				L.visible_message("<span class='disarm'><b>[L]</b> gasps and shields their eyes!</span>")
+		var/flash_time = strength
+		if (istype(O, /mob/living/carbon/human))
+			var/mob/living/carbon/human/H = O
+			if(!H.eyecheck() <= 0)
+				continue
+			flash_time *= H.species.flash_mod
+			var/obj/item/organ/internal/eyes/E = H.internal_organs_by_name[BP_EYES]
+			if(!E)
+				return
+			if(E.is_bruised() && prob(E.damage + 50))
+				H.flash_eyes()
+				E.damage += rand(1, 5)
+		else
+			if(!O.blinded && isliving(O))
+				var/mob/living/L = O
+				L.flash_eyes()
+		O.Weaken(flash_time)
 
 /obj/machinery/flasher/emp_act(severity)
 	if(stat & (BROKEN|NOPOWER))
@@ -85,38 +105,34 @@
 	..(severity)
 
 /obj/machinery/flasher/portable/HasProximity(atom/movable/AM as mob|obj)
-	if((src.disable) || (src.last_flash && world.time < src.last_flash + 150))
+	if ((src.disable) || (src.last_flash && world.time < src.last_flash + 150))
 		return
 
 	if(istype(AM, /mob/living/carbon))
 		var/mob/living/carbon/M = AM
-		if((M.m_intent != "walk") && (src.anchored))
+		if ((M.m_intent != "walk") && (src.anchored))
 			src.flash()
 
-/obj/machinery/flasher/portable/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/weapon/wrench))
+/obj/machinery/flasher/portable/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if (istype(W, /obj/item/weapon/wrench))
 		add_fingerprint(user)
 		src.anchored = !src.anchored
 
-		if(!src.anchored)
-			user.show_message(text("\red [src] can now be moved."))
+		if (!src.anchored)
+			user.show_message(text("<span class='warning'>[src] can now be moved.</span>"))
 			src.overlays.Cut()
 
-		else if(src.anchored)
-			user.show_message(text("\red [src] is now secured."))
+		else if (src.anchored)
+			user.show_message(text("<span class='warning'>[src] is now secured.</span>"))
 			src.overlays += "[base_state]-s"
 
-/obj/machinery/flasher_button/attack_ai(mob/user as mob)
-	return src.attack_hand(user)
+/obj/machinery/button/flasher
+	name = "flasher button"
+	desc = "A remote control switch for a mounted flasher."
 
-/obj/machinery/flasher_button/attackby(obj/item/weapon/W, mob/user as mob, params)
-	return src.attack_hand(user)
+/obj/machinery/button/flasher/attack_hand(mob/user as mob)
 
-/obj/machinery/flasher_button/attack_hand(mob/user as mob)
-
-	if(stat & (NOPOWER|BROKEN))
-		return
-	if(active)
+	if(..())
 		return
 
 	use_power(5)
@@ -124,7 +140,7 @@
 	active = 1
 	icon_state = "launcheract"
 
-	for(var/obj/machinery/flasher/M in world)
+	for(var/obj/machinery/flasher/M in GLOB.machines)
 		if(M.id == src.id)
 			spawn()
 				M.flash()

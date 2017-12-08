@@ -42,10 +42,9 @@
 		var/area/A = control_area
 		if(A && istype(A))
 			A.turret_controls -= src
-	return ..()
-
-/obj/machinery/turretid/initialize()
 	..()
+
+/obj/machinery/turretid/Initialize()
 	if(!control_area)
 		control_area = get_area(src)
 	else if(istext(control_area))
@@ -62,14 +61,14 @@
 			control_area = null
 
 	power_change() //Checks power and initial settings
-	return
+	. = ..()
 
 /obj/machinery/turretid/proc/isLocked(mob/user)
-	if(ailock && (isrobot(user) || isAI(user)))
+	if(ailock && issilicon(user))
 		to_chat(user, "<span class='notice'>There seems to be a firewall preventing you from accessing this device.</span>")
 		return 1
 
-	if(locked && !(isrobot(user) || isAI(user) || isobserver(user)))
+	if(locked && !issilicon(user))
 		to_chat(user, "<span class='notice'>Access denied.</span>")
 		return 1
 
@@ -95,21 +94,18 @@
 		return
 	return ..()
 
-/obj/machinery/turretid/emag_act(user as mob)
+/obj/machinery/turretid/emag_act(var/remaining_charges, var/mob/user)
 	if(!emagged)
 		to_chat(user, "<span class='danger'>You short out the turret controls' access analysis module.</span>")
 		emagged = 1
 		locked = 0
 		ailock = 0
-		return
+		return 1
 
 /obj/machinery/turretid/attack_ai(mob/user as mob)
 	if(isLocked(user))
 		return
 
-	ui_interact(user)
-
-/obj/machinery/turretid/attack_ghost(mob/user as mob)
 	ui_interact(user)
 
 /obj/machinery/turretid/attack_hand(mob/user as mob)
@@ -133,29 +129,33 @@
 		settings[++settings.len] = list("category" = "Check Security Records", "setting" = "check_records", "value" = check_records)
 		settings[++settings.len] = list("category" = "Check Arrest Status", "setting" = "check_arrest", "value" = check_arrest)
 		settings[++settings.len] = list("category" = "Check Access Authorization", "setting" = "check_access", "value" = check_access)
-		settings[++settings.len] = list("category" = "Check Misc. Lifeforms", "setting" = "check_anomalies", "value" = check_anomalies)
+		settings[++settings.len] = list("category" = "Check misc. Lifeforms", "setting" = "check_anomalies", "value" = check_anomalies)
 		data["settings"] = settings
 
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
-	if(!ui)
+	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	if (!ui)
 		ui = new(user, src, ui_key, "turret_control.tmpl", "Turret Controls", 500, 300)
 		ui.set_initial_data(data)
 		ui.open()
 		ui.set_auto_update(1)
 
-/obj/machinery/turretid/Topic(href, href_list, var/nowindow = 0)
+/obj/machinery/turretid/Topic(href, href_list)
 	if(..())
 		return 1
 
-	if(isLocked(usr))
-		return 1
 
 	if(href_list["command"] && href_list["value"])
+		var/log_action = null
+
+		var/list/toggle = list("disabled","enabled")
+
 		var/value = text2num(href_list["value"])
 		if(href_list["command"] == "enable")
 			enabled = value
+			log_action = "[toggle[enabled+1]] the turrets"
 		else if(href_list["command"] == "lethal")
 			lethal = value
+			log_action = "[toggle[lethal+1]] the turrets lethal mode."
 		else if(href_list["command"] == "check_synth")
 			check_synth = value
 		else if(href_list["command"] == "check_weapons")
@@ -168,6 +168,10 @@
 			check_access = value
 		else if(href_list["command"] == "check_anomalies")
 			check_anomalies = value
+
+		if(!isnull(log_action))
+			log_admin("[key_name(usr)] has [log_action]")
+			message_admins("[key_name_admin(usr)] has [log_action]", 1)
 
 		updateTurrets()
 		return 1
@@ -185,23 +189,23 @@
 	TC.ailock = ailock
 
 	if(istype(control_area))
-		for(var/obj/machinery/porta_turret/aTurret in control_area)
+		for (var/obj/machinery/porta_turret/aTurret in control_area)
 			aTurret.setState(TC)
 
 	update_icon()
 
 /obj/machinery/turretid/power_change()
-	..()
-	updateTurrets()
-	update_icon()
+	. = ..()
+	if(.)
+		updateTurrets()
 
 /obj/machinery/turretid/update_icon()
 	..()
 	if(stat & NOPOWER)
 		icon_state = "control_off"
 		set_light(0)
-	else if(enabled)
-		if(lethal)
+	else if (enabled)
+		if (lethal)
 			icon_state = "control_kill"
 			set_light(1.5, 1,"#990000")
 		else

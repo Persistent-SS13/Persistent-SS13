@@ -2,49 +2,34 @@
 /mob/living/silicon/robot/drone/verb/set_mail_tag()
 	set name = "Set Mail Tag"
 	set desc = "Tag yourself for delivery through the disposals system."
-	set category = "Drone"
+	set category = "Silicon Commands"
 
-	var/tag = input("Select the desired destination.", "Set Mail Tag", null) as null|anything in TAGGERLOCATIONS
+	var/new_tag = input("Select the desired destination.", "Set Mail Tag", null) as null|anything in GLOB.tagger_locations
 
-	if(!tag || TAGGERLOCATIONS[tag])
-		mail_destination = 0
+	if(!new_tag)
+		mail_destination = ""
 		return
 
-	to_chat(src, "\blue You configure your internal beacon, tagging yourself for delivery to '[tag]'.")
-	mail_destination = TAGGERLOCATIONS.Find(tag)
+	to_chat(src, "<span class='notice'>You configure your internal beacon, tagging yourself for delivery to '[new_tag]'.</span>")
+	mail_destination = new_tag
 
 	//Auto flush if we use this verb inside a disposal chute.
 	var/obj/machinery/disposal/D = src.loc
 	if(istype(D))
-		to_chat(src, "\blue \The [D] acknowledges your signal.")
+		to_chat(src, "<span class='notice'>\The [D] acknowledges your signal.</span>")
 		D.flush_count = D.flush_every_ticks
 
 	return
 
-/mob/living/silicon/robot/drone/verb/hide()
-	set name = "Hide"
-	set desc = "Allows you to hide beneath tables or certain items. Toggled on or off."
-	set category = "Drone"
+/mob/living/silicon/robot/drone/MouseDrop(atom/over_object)
+	var/mob/living/carbon/H = over_object
 
-	if(layer != TURF_LAYER+0.2)
-		layer = TURF_LAYER+0.2
-		to_chat(src, text("\blue You are now hiding."))
-	else
-		layer = MOB_LAYER
-		to_chat(src, text("\blue You have stopped hiding."))
+	if(istype(H) && Adjacent(H) && (usr == H) && (H.a_intent == "grab") && hat && !(H.l_hand && H.r_hand))
+		hat.forceMove(get_turf(src))
+		H.put_in_hands(hat)
+		H.visible_message("<span class='danger'>\The [H] removes \the [src]'s [hat].</span>")
+		hat = null
+		update_icons()
+		return
 
-/mob/living/silicon/robot/drone/verb/light()
-	set name = "Light On/Off"
-	set desc = "Activate a low power omnidirectional LED. Toggled on or off."
-	set category = "Drone"
-
-	if(lamp_intensity)
-		lamp_intensity = lamp_max // setting this to lamp_max will make control_headlamp shutoff the lamp
-	control_headlamp()
-
-//Actual picking-up event.
-/mob/living/silicon/robot/drone/attack_hand(mob/living/carbon/human/M as mob)
-	if(M.a_intent == I_HELP)
-		get_scooped(M)
-
-	..()
+	return ..()

@@ -8,14 +8,13 @@
 	deflect_chance = 25
 	damage_absorption = list("brute"=0.5,"fire"=0.7,"bullet"=0.45,"laser"=0.6,"energy"=0.7,"bomb"=0.7)
 	max_temperature = 60000
-	burn_state = LAVA_PROOF
 	infra_luminosity = 3
 	var/zoom = 0
 	var/thrusters = 0
 	var/smoke = 5
 	var/smoke_ready = 1
 	var/smoke_cooldown = 100
-	var/datum/effect/system/harmless_smoke_spread/smoke_system = new
+	var/datum/effect/effect/system/smoke_spread/smoke_system = new
 	operation_req_access = list(access_cent_specops)
 	wreckage = /obj/effect/decal/mecha_wreckage/marauder
 	add_req_access = 0
@@ -28,7 +27,7 @@
 	name = "Seraph"
 	icon_state = "seraph"
 	initial_icon = "seraph"
-	operation_req_access = list(access_cent_commander)
+	operation_req_access = list(access_cent_creed)
 	step_in = 3
 	health = 550
 	wreckage = /obj/effect/decal/mecha_wreckage/seraph
@@ -44,69 +43,87 @@
 	operation_req_access = list(access_syndicate)
 	wreckage = /obj/effect/decal/mecha_wreckage/mauler
 
-/obj/mecha/combat/marauder/mauler/loaded/New()
-	..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg(src)
-	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot(src)
-	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack(src)
-	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay(src)
-	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster(src)
-	ME.attach(src)
-	src.smoke_system.set_up(3, 0, src)
-	src.smoke_system.attach(src)
-	return
-
-/obj/mecha/combat/marauder/loaded/New()
+/obj/mecha/combat/marauder/New()
 	..()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/energy/pulse
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack
+	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/explosive
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay(src)
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/armor_booster/antiproj_armor_booster(src)
 	ME.attach(src)
 	src.smoke_system.set_up(3, 0, src)
 	src.smoke_system.attach(src)
 	return
 
-/obj/mecha/combat/marauder/seraph/loaded/New()
+/obj/mecha/combat/marauder/seraph/New()
 	..()//Let it equip whatever is needed.
 	var/obj/item/mecha_parts/mecha_equipment/ME
 	if(equipment.len)//Now to remove it and equip anew.
 		for(ME in equipment)
-			equipment -= ME
+			ME.detach(src)
 			qdel(ME)
 	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot(src)
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/explosive(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/teleporter(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay(src)
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/armor_booster/antiproj_armor_booster(src)
 	ME.attach(src)
 	return
 
+/obj/mecha/combat/marauder/Destroy()
+	qdel(smoke_system)
+	..()
+
 /obj/mecha/combat/marauder/relaymove(mob/user,direction)
+	if(user != src.occupant) //While not "realistic", this piece is player friendly.
+		user.loc = get_turf(src)
+		to_chat(user, "You climb out from [src]")
+		return 0
+	if(!can_move)
+		return 0
 	if(zoom)
 		if(world.time - last_message > 20)
 			src.occupant_message("Unable to move while in zoom mode.")
 			last_message = world.time
 		return 0
-	return ..()
+	if(connected_port)
+		if(world.time - last_message > 20)
+			src.occupant_message("Unable to move while connected to the air system port")
+			last_message = world.time
+		return 0
+	if(!thrusters && src.pr_inertial_movement.active())
+		return 0
+	if(state || !has_charge(step_energy_drain))
+		return 0
+	var/tmp_step_in = step_in
+	var/tmp_step_energy_drain = step_energy_drain
+	var/move_result = 0
+	if(internal_damage&MECHA_INT_CONTROL_LOST)
+		move_result = mechsteprand()
+	else if(src.dir!=direction)
+		move_result = mechturn(direction)
+	else
+		move_result	= mechstep(direction)
+	if(move_result)
+		if(istype(src.loc, /turf/space))
+			if(!src.check_for_support())
+				src.pr_inertial_movement.start(list(src,direction))
+				if(thrusters)
+					src.pr_inertial_movement.set_process_args(list(src,direction))
+					tmp_step_energy_drain = step_energy_drain*2
 
-/obj/mecha/combat/marauder/Process_Spacemove(var/movement_dir = 0)
-	if(..())
-		return 1
-	if(thrusters && movement_dir && use_power(step_energy_drain))
+		can_move = 0
+		spawn(tmp_step_in) can_move = 1
+		use_power(tmp_step_energy_drain)
 		return 1
 	return 0
+
 
 /obj/mecha/combat/marauder/verb/toggle_thrusters()
 	set category = "Exosuit Interface"
@@ -119,7 +136,7 @@
 		if(get_charge() > 0)
 			thrusters = !thrusters
 			src.log_message("Toggled thrusters.")
-			src.occupant_message("<font color='[src.thrusters?"blue":"red"]'>Thrusters [thrusters?"en":"dis"]abled.")
+			src.occupant_message("<font color='[src.thrusters?"blue":"red"]'>Thrusters [thrusters?"en":"dis"]abled.</font>")
 	return
 
 
@@ -138,6 +155,7 @@
 			smoke_ready = 1
 	return
 
+//TODO replace this with zoom code that doesn't increase peripherial vision
 /obj/mecha/combat/marauder/verb/zoom()
 	set category = "Exosuit Interface"
 	set name = "Zoom"
@@ -151,7 +169,7 @@
 		src.occupant_message("<font color='[src.zoom?"blue":"red"]'>Zoom mode [zoom?"en":"dis"]abled.</font>")
 		if(zoom)
 			src.occupant.client.view = 12
-			to_chat(src.occupant, sound('sound/mecha/imag_enh.ogg',volume=50))
+			sound_to(src.occupant, sound('sound/mecha/imag_enh.ogg',volume=50))
 		else
 			src.occupant.client.view = world.view//world.view - default mob view size
 	return
@@ -189,10 +207,10 @@
 
 /obj/mecha/combat/marauder/Topic(href, href_list)
 	..()
-	if(href_list["toggle_thrusters"])
+	if (href_list["toggle_thrusters"])
 		src.toggle_thrusters()
-	if(href_list["smoke"])
+	if (href_list["smoke"])
 		src.smoke()
-	if(href_list["toggle_zoom"])
-		src.zoom()
+	if (href_list["toggle_zoom"])
+		src.zoom(usr)
 	return

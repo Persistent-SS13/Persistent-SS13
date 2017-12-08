@@ -3,47 +3,81 @@
 	icon_state = "spark"
 	damage = 0
 	damage_type = BURN
-	flag = "energy"
+	check_armour = "energy"
+
+
+//releases a burst of light on impact or after travelling a distance
+/obj/item/projectile/energy/flash
+	name = "chemical shell"
+	icon_state = "bullet"
+	fire_sound = 'sound/weapons/gunshot/gunshot_pistol.ogg'
+	damage = 5
+	agony = 10
+	kill_count = 15 //if the shell hasn't hit anything after travelling this far it just explodes.
+	muzzle_type = /obj/effect/projectile/bullet/muzzle
+	var/flash_range = 0
+	var/brightness = 7
+	var/light_colour = "#ffffff"
+
+/obj/item/projectile/energy/flash/on_impact(var/atom/A)
+	var/turf/T = flash_range? src.loc : get_turf(A)
+	if(!istype(T)) return
+
+	//blind adjacent people
+	for (var/mob/living/carbon/M in viewers(T, flash_range))
+		if(M.eyecheck() < FLASH_PROTECTION_MODERATE)
+			M.flash_eyes()
+
+	//snap pop
+	playsound(src, 'sound/effects/snap.ogg', 50, 1)
+	src.visible_message("<span class='warning'>\The [src] explodes in a bright flash!</span>")
+
+	var/datum/effect/effect/system/spark_spread/sparks = new /datum/effect/effect/system/spark_spread()
+	sparks.set_up(2, 1, T)
+	sparks.start()
+
+	new /obj/effect/decal/cleanable/ash(src.loc) //always use src.loc so that ash doesn't end up inside windows
+	new /obj/effect/effect/smoke/illumination(T, 5, brightness, brightness, light_colour)
+
+//blinds people like the flash round, but in a small area and can also be used for temporary illumination
+/obj/item/projectile/energy/flash/flare
+	damage = 10
+	fire_sound = 'sound/weapons/gunshot/shotgun.ogg'
+	flash_range = 2
+	brightness = 15
+
+/obj/item/projectile/energy/flash/flare/on_impact(var/atom/A)
+	light_colour = pick("#e58775", "#ffffff", "#90ff90", "#a09030")
+
+	..() //initial flash
+
+	//residual illumination
+	new /obj/effect/effect/smoke/illumination(src.loc, rand(190,240) SECONDS, range=8, power=3, color=light_colour) //same lighting power as flare
 
 /obj/item/projectile/energy/electrode
 	name = "electrode"
 	icon_state = "spark"
-	color = "#FFFF00"
+	fire_sound = 'sound/weapons/Taser.ogg'
 	nodamage = 1
-	stun = 5
-	weaken = 5
-	stutter = 5
-	jitter = 20
-	hitsound = 'sound/weapons/tase.ogg'
-	range = 7
+	taser_effect = 1
+	agony = 60
+	damage_type = PAIN
 	//Damage will be handled on the MOB side, to prevent window shattering.
 
-/obj/item/projectile/energy/electrode/on_hit(var/atom/target, var/blocked = 0)
-	. = ..()
-	if(!ismob(target) || blocked >= 100) //Fully blocked by mob or collided with dense object - burst into sparks!
-		var/datum/effect/system/spark_spread/sparks = new /datum/effect/system/spark_spread
-		sparks.set_up(1, 1, src)
-		sparks.start()
-	else if(iscarbon(target))
-		var/mob/living/carbon/C = target
-		if(HULK in C.mutations)
-			C.say(pick(";RAAAAAAAARGH!", ";HNNNNNNNNNGGGGGGH!", ";GWAAAAAAAARRRHHH!", "NNNNNNNNGGGGGGGGHH!", ";AAAAAAARRRGH!" ))
-		else if(C.status_flags & CANWEAKEN)
-			spawn(5)
-				C.do_jitter_animation(jitter)
-
-/obj/item/projectile/energy/electrode/on_range() //to ensure the bolt sparks when it reaches the end of its range if it didn't hit a target yet
-	var/datum/effect/system/spark_spread/sparks = new /datum/effect/system/spark_spread
-	sparks.set_up(1, 1, src)
-	sparks.start()
-	..()
+/obj/item/projectile/energy/electrode/stunshot
+	nodamage = 0
+	damage = 10
+	agony = 80
+	damage_type = BURN
 
 /obj/item/projectile/energy/declone
-	name = "declone"
+	name = "decloner beam"
 	icon_state = "declone"
-	damage = 20
+	fire_sound = 'sound/weapons/pulse3.ogg'
+	damage = 30
 	damage_type = CLONE
-	irradiate = 10
+	irradiate = 40
+
 
 /obj/item/projectile/energy/dart
 	name = "dart"
@@ -51,48 +85,81 @@
 	damage = 5
 	damage_type = TOX
 	weaken = 5
-	range = 7
 
-/obj/item/projectile/energy/shuriken
-	name = "shuriken"
-	icon_state = "toxin"
-	damage = 10
-	damage_type = TOX
-	weaken = 5
-	stutter = 5
 
 /obj/item/projectile/energy/bolt
 	name = "bolt"
 	icon_state = "cbbolt"
-	damage = 15
+	damage = 10
 	damage_type = TOX
 	nodamage = 0
-	weaken = 5
-	stutter = 5
+	agony = 40
+	stutter = 10
+
 
 /obj/item/projectile/energy/bolt/large
+	name = "largebolt"
 	damage = 20
+	agony = 60
 
-/obj/item/projectile/energy/shock_revolver
-	name = "shock bolt"
-	icon_state = "purple_laser"
-	var/chain
 
-/obj/item/ammo_casing/energy/shock_revolver/ready_proj(atom/target, mob/living/user, quiet, zone_override = "")
-	..()
-	var/obj/item/projectile/energy/shock_revolver/P = BB
-	spawn(1)
-		P.chain = P.Beam(user,icon_state="purple_lightning",icon = 'icons/effects/effects.dmi',time=1000, maxdistance = 30)
+/obj/item/projectile/energy/neurotoxin
+	name = "neuro"
+	icon_state = "neurotoxin"
+	damage = 5
+	damage_type = TOX
+	weaken = 5
 
-/obj/item/projectile/energy/shock_revolver/on_hit(atom/target)
-	. = ..()
-	if(isliving(target))
-		tesla_zap(src, 3, 10000)
-	qdel(chain)
-
-/obj/item/projectile/energy/toxplasma
-	name = "plasma bolt"
+/obj/item/projectile/energy/phoron
+	name = "phoron bolt"
 	icon_state = "energy"
+	fire_sound = 'sound/effects/stealthoff.ogg'
 	damage = 20
 	damage_type = TOX
 	irradiate = 20
+
+/obj/item/projectile/energy/plasmastun
+	name = "plasma pulse"
+	icon_state = "plasma_stun"
+	fire_sound = 'sound/weapons/blaster.ogg'
+	armor_penetration = 10
+	kill_count = 4
+	damage = 5
+	agony = 70
+	damage_type = BURN
+	vacuum_traversal = 0
+
+/obj/item/projectile/energy/plasmastun/proc/bang(var/mob/living/carbon/M)
+
+	to_chat(M, "<span class='danger'>You hear a loud roar.</span>")
+	var/ear_safety = 0
+	var/mob/living/carbon/human/H = M
+	if(iscarbon(M))
+		if(ishuman(M))
+			if(istype(H.l_ear, /obj/item/clothing/ears/earmuffs) || istype(H.r_ear, /obj/item/clothing/ears/earmuffs))
+				ear_safety += 2
+			if(HULK in M.mutations)
+				ear_safety += 1
+			if(istype(H.head, /obj/item/clothing/head/helmet))
+				ear_safety += 1
+	if(ear_safety == 1)
+		M.make_dizzy(120)
+	else if (ear_safety > 1)
+		M.make_dizzy(60)
+	else if (!ear_safety)
+		M.make_dizzy(300)
+		M.ear_damage += rand(1, 10)
+		M.ear_deaf = max(M.ear_deaf,15)
+	if (M.ear_damage >= 15)
+		to_chat(M, "<span class='danger'>Your ears start to ring badly!</span>")
+		if (prob(M.ear_damage - 5))
+			to_chat(M, "<span class='danger'>You can't hear anything!</span>")
+			M.sdisabilities |= DEAF
+	else
+		if (M.ear_damage >= 5)
+			to_chat(M, "<span class='danger'>Your ears start to ring!</span>")
+	M.update_icons()
+
+/obj/item/projectile/energy/plasmastun/on_hit(var/atom/target)
+	bang(target)
+	. = ..()

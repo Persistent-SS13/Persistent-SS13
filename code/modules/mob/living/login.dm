@@ -1,17 +1,9 @@
+
 /mob/living/Login()
 	..()
 	//Mind updates
-	sync_mind()
-
+	mind_initialize()	//updates the mind (or creates and initializes one if one doesn't exist)
+	mind.active = 1		//indicates that the mind is currently synced with a client
 	//If they're SSD, remove it so they can wake back up.
-	player_logged = 0
-
-	//Vents
-	if(ventcrawler)
-		to_chat(src, "<span class='notice'>You can ventcrawl! Use alt+click on vents to quickly travel about the station.</span>")
-	//Should update regardless of if we can ventcrawl, since we can end up in pipes in other ways.
-	update_pipe_vision()
-
-	update_interface()
-
+	update_antag_icons(mind)
 	return .

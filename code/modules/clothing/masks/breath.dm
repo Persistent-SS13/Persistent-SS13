@@ -3,39 +3,34 @@
 	name = "breath mask"
 	icon_state = "breath"
 	item_state = "breath"
-	flags = MASKCOVERSMOUTH | AIRTIGHT
-	w_class = 2
+	item_flags = AIRTIGHT|FLEXIBLEMATERIAL
+	body_parts_covered = FACE
+	w_class = ITEM_SIZE_SMALL
 	gas_transfer_coefficient = 0.10
 	permeability_coefficient = 0.50
-	actions_types = list(/datum/action/item_action/adjust)
-	burn_state = FIRE_PROOF
-	species_fit = list("Vox", "Vox Armalis", "Unathi", "Tajaran", "Vulpkanin")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi',
-		"Drask" = 'icons/mob/species/drask/mask.dmi'
-		)
-
-/obj/item/clothing/mask/breath/attack_self(var/mob/user)
-	adjustmask(user)
+	down_gas_transfer_coefficient = 1
+	down_body_parts_covered = null
+	down_item_flags = FLEXIBLEMATERIAL
+	down_icon_state = "breathdown"
+	pull_mask = 1
 
 /obj/item/clothing/mask/breath/medical
-	desc = "A close-fitting sterile mask that can be connected to an air supply."
+	desc = "A close-fitting sterile mask that can be manually connected to an air supply for treatment."
 	name = "medical mask"
 	icon_state = "medical"
 	item_state = "medical"
 	permeability_coefficient = 0.01
-	put_on_delay = 10
-	species_fit = list("Vox", "Unathi", "Tajaran", "Vulpkanin")
 
-/obj/item/clothing/mask/breath/vox
-	desc = "A weirdly-shaped breath mask."
-	name = "vox breath mask"
-	icon_state = "voxmask"
-	item_state = "voxmask"
+/obj/item/clothing/mask/breath/anesthetic
+	desc = "A close-fitting sterile mask that is used by the anesthetic wallmounted pump."
+	name = "anesthetic mask"
+	icon_state = "medical"
+	item_state = "medical"
 	permeability_coefficient = 0.01
-	species_restricted = list("Vox")
-	actions_types = list()
+	
+/obj/item/clothing/mask/breath/emergency
+	desc = "A close-fitting  mask that is used by the wallmounted emergency oxygen pump."
+	name = "emergency mask"
+	icon_state = "breath"
+	item_state = "breath"
+	permeability_coefficient = 0.50

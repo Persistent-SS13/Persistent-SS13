@@ -9,9 +9,10 @@
 	icon = 'icons/obj/objects.dmi'
 	icon_state = "floor_magnet-f"
 	name = "Electromagnetic Generator"
-	desc = "A device that uses station power to create points of magnetic energy."
+	desc = "A device that uses powernet to create points of magnetic energy."
 	level = 1		// underfloor
-	layer = 2.5
+	plane = ABOVE_PLATING_PLANE
+	layer = ABOVE_WIRE_LAYER
 	anchored = 1
 	use_power = 1
 	idle_power_usage = 50
@@ -32,7 +33,7 @@
 	New()
 		..()
 		var/turf/T = loc
-		hide(T.intact)
+		hide(!T.is_plating())
 		center = T
 
 		spawn(10)	// must wait for map loading to finish
@@ -45,10 +46,10 @@
 	// update the invisibility and icon
 	hide(var/intact)
 		invisibility = intact ? 101 : 0
-		updateicon()
+		update_icon()
 
 	// update the icon_state
-	proc/updateicon()
+	update_icon()
 		var/state="floor_magnet"
 		var/onstate=""
 		if(!on)
@@ -167,7 +168,7 @@
 						qdel(src)
 		*/
 
-		updateicon()
+		update_icon()
 
 
 	proc/magnetic_process() // proc that actually does the pulling
@@ -190,8 +191,10 @@
 
 		pulling = 0
 
-
-
+/obj/machinery/magnetic_module/Destroy()
+	if(radio_controller)
+		radio_controller.remove_object(src, freq)
+	..()
 
 /obj/machinery/magnetic_controller
 	name = "Magnetic Control Console"
@@ -315,7 +318,7 @@
 		if(href_list["operation"])
 			switch(href_list["operation"])
 				if("plusspeed")
-					speed++
+					speed ++
 					if(speed > 10)
 						speed = 10
 				if("minusspeed")
@@ -323,7 +326,7 @@
 					if(speed <= 0)
 						speed = 1
 				if("setpath")
-					var/newpath = sanitize(copytext(input(usr, "Please define a new path!",,path) as text|null,1,MAX_MESSAGE_LEN))
+					var/newpath = sanitize(input(usr, "Please define a new path!",,path) as text|null)
 					if(newpath && newpath != "")
 						moving = 0 // stop moving
 						path = newpath
@@ -399,25 +402,7 @@
 
 			// there doesn't HAVE to be separators but it makes paths syntatically visible
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/obj/machinery/magnetic_controller/Destroy()
+	if(radio_controller)
+		radio_controller.remove_object(src, frequency)
+	..()

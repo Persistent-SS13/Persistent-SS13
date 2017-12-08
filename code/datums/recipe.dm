@@ -26,33 +26,28 @@
  *
  *  Functions you do not need to call directly but could:
  *  /datum/recipe/proc/check_reagents(var/datum/reagents/avail_reagents)
- *    //1=precisely,  0=insufficiently, -1=superfluous
- *
  *  /datum/recipe/proc/check_items(var/obj/container as obj)
- *    //1=precisely, 0=insufficiently, -1=superfluous
  *
  * */
 
 /datum/recipe
-	var/list/reagents	// example: = list("berryjuice" = 5) // do not list same reagent twice
-	var/list/items		// example: = list(/obj/item/weapon/crowbar, /obj/item/weapon/welder) // place /foo/bar before /foo
-	var/list/fruit		// example: = list("fruit" = 3)
-	var/result			// example: = /obj/item/weapon/reagent_containers/food/snacks/donut/normal
-	var/time = 100		// 1/10 part of second
-	var/byproduct		// example: = /obj/item/weapon/kitchen/mould		// byproduct to return, such as a mould or trash
+	var/list/reagents // example: = list("berryjuice" = 5) // do not list same reagent twice
+	var/list/items    // example: = list(/obj/item/weapon/crowbar, /obj/item/weapon/welder) // place /foo/bar before /foo
+	var/list/fruit    // example: = list("fruit" = 3)
+	var/result        // example: = /obj/item/weapon/reagent_containers/food/snacks/donut/normal
+	var/time = 100    // 1/10 part of second
 
-
-/datum/recipe/proc/check_reagents(var/datum/reagents/avail_reagents) //1=precisely, 0=insufficiently, -1=superfluous
+/datum/recipe/proc/check_reagents(var/datum/reagents/avail_reagents)
 	. = 1
-	for(var/r_r in reagents)
+	for (var/r_r in reagents)
 		var/aval_r_amnt = avail_reagents.get_reagent_amount(r_r)
-		if(!(abs(aval_r_amnt - reagents[r_r])<0.5)) //if NOT equals
-			if(aval_r_amnt>reagents[r_r])
-				. = -1
+		if (!(abs(aval_r_amnt - reagents[r_r])<0.5)) //if NOT equals
+			if (aval_r_amnt>reagents[r_r])
+				. = 0
 			else
-				return 0
-	if((reagents?(reagents.len):(0)) < avail_reagents.reagent_list.len)
-		return -1
+				return -1
+	if ((reagents?(reagents.len):(0)) < avail_reagents.reagent_list.len)
+		return 0
 	return .
 
 /datum/recipe/proc/check_fruit(var/obj/container)
@@ -76,80 +71,70 @@
 
 /datum/recipe/proc/check_items(var/obj/container as obj)
 	. = 1
-	if(items && items.len)
+	if (items && items.len)
 		var/list/checklist = list()
 		checklist = items.Copy() // You should really trust Copy
-		for(var/obj/O in container)
+		for(var/obj/O in container.InsertedContents())
 			if(istype(O,/obj/item/weapon/reagent_containers/food/snacks/grown))
 				continue // Fruit is handled in check_fruit().
 			var/found = 0
 			for(var/i = 1; i < checklist.len+1; i++)
 				var/item_type = checklist[i]
-				if(istype(O,item_type))
+				if (istype(O,item_type))
 					checklist.Cut(i, i+1)
 					found = 1
 					break
-			if(!found)
+			if (!found)
 				. = 0
-		if(checklist.len)
+		if (checklist.len)
 			. = -1
 	return .
 
 //general version
 /datum/recipe/proc/make(var/obj/container as obj)
 	var/obj/result_obj = new result(container)
-	for(var/obj/O in (container.contents-result_obj))
-		O.reagents.trans_to(result_obj, O.reagents.total_volume)
+	for (var/obj/O in (container.InsertedContents()-result_obj))
+		O.reagents.trans_to_obj(result_obj, O.reagents.total_volume)
 		qdel(O)
 	container.reagents.clear_reagents()
-	score_meals++
 	return result_obj
 
 // food-related
 /datum/recipe/proc/make_food(var/obj/container as obj)
+	if(!result)
+		log_error("<span class='danger'>Recipe [type] is defined without a result, please bug this.</span>")
+
+		return
 	var/obj/result_obj = new result(container)
-	for(var/obj/O in (container.contents-result_obj))
-		if(O.reagents)
+	for (var/obj/O in (container.InsertedContents()-result_obj))
+		if (O.reagents)
 			O.reagents.del_reagent("nutriment")
 			O.reagents.update_total()
-			O.reagents.trans_to(result_obj, O.reagents.total_volume)
+			O.reagents.trans_to_obj(result_obj, O.reagents.total_volume)
+		if(istype(O,/obj/item/weapon/holder/))
+			var/obj/item/weapon/holder/H = O
+			H.destroy_all()
 		qdel(O)
 	container.reagents.clear_reagents()
-	score_meals++
 	return result_obj
 
-/proc/select_recipe(var/list/datum/recipe/avaiable_recipes, var/obj/obj as obj, var/exact = 1 as num)
-	if(!exact)
-		exact = -1
+/proc/select_recipe(var/list/datum/recipe/avaiable_recipes, var/obj/obj as obj, var/exact)
 	var/list/datum/recipe/possible_recipes = new
-	for(var/datum/recipe/recipe in avaiable_recipes)
-		if(recipe.check_reagents(obj.reagents)==exact && recipe.check_items(obj)==exact && recipe.check_fruit(obj)==exact)
-			possible_recipes+=recipe
-	if(possible_recipes.len==0)
+	var/target = exact ? 0 : 1
+	for (var/datum/recipe/recipe in avaiable_recipes)
+		if((recipe.check_reagents(obj.reagents) < target) || (recipe.check_items(obj) < target) || (recipe.check_fruit(obj) < target))
+			continue
+		possible_recipes |= recipe
+	if (possible_recipes.len==0)
 		return null
-	else if(possible_recipes.len==1)
+	else if (possible_recipes.len==1)
 		return possible_recipes[1]
 	else //okay, let's select the most complicated recipe
 		var/highest_count = 0
 		. = possible_recipes[1]
-		for(var/datum/recipe/recipe in possible_recipes)
+		for (var/datum/recipe/recipe in possible_recipes)
 			var/count = ((recipe.items)?(recipe.items.len):0) + ((recipe.reagents)?(recipe.reagents.len):0) + ((recipe.fruit)?(recipe.fruit.len):0)
-			if(count >= highest_count)
+			if (count >= highest_count)
 				highest_count = count
 				. = recipe
 		return .
-
-/datum/recipe/proc/get_byproduct()
-	if(byproduct)
-		return byproduct
-	else
-		return null
-
-/datum/recipe/proc/count_n_items()
-	var/count = 0
-	if(items && items.len)
-		count += items.len
-	if(fruit && fruit.len)
-		for(var/ktag in fruit)
-			count += fruit[ktag]
-	return count

@@ -17,15 +17,15 @@ var/const/WIRE_EXPLODE = 1
 			if(!mended)
 				explode()
 
-/datum/wires/explosive/gibtonite
-	holder_type = /obj/item/weapon/twohanded/required/gibtonite
+/datum/wires/explosive/c4
+	holder_type = /obj/item/weapon/plastique
 
-/datum/wires/explosive/gibtonite/CanUse(var/mob/living/L)
-	return 1
+/datum/wires/explosive/c4/CanUse(var/mob/living/L)
+	var/obj/item/weapon/plastique/P = holder
+	if(P.open_panel)
+		return 1
+	return 0
 
-/datum/wires/explosive/gibtonite/UpdateCut(var/index, var/mended)
-	return
-
-/datum/wires/explosive/gibtonite/explode()
-	var/obj/item/weapon/twohanded/required/gibtonite/P = holder
-	P.GibtoniteReaction(null, 2)
+/datum/wires/explosive/c4/explode()
+	var/obj/item/weapon/plastique/P = holder
+	P.explode(get_turf(P))

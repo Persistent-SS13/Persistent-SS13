@@ -1,1 +1,0 @@
-keyslot1%0d%0a=&keyslot2%0d%0a=&ks1type%0d%0a=&ks2type

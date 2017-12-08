@@ -1,98 +1,52 @@
+/*
+Space dust
+Commonish random event that causes small clumps of "space dust" to hit the station at high speeds.
+The "dust" will damage the hull of the station causin minor hull breaches.
+*/
+
 /datum/event/dust
-	var/qnty = 1
+	startWhen	= 10
+	endWhen		= 30
+	var/min_delay = 30
+	var/last_wave
 
-/datum/event/dust/setup()
-	qnty = rand(1,5)
+/datum/event/dust/announce()
+	command_announcement.Announce("The [station_name()] is now passing through a belt of space dust.", "[station_name()] Sensor Array")
 
-/datum/event/dust/start()
-	while(qnty-- > 0)
-		new /obj/effect/space_dust/weak()
+/datum/event/dust/tick()
+	if(world.time > last_wave + min_delay && prob(10))
+		dust_swarm(severity)
 
-/obj/effect/space_dust
-	name = "Space Dust"
-	desc = "Dust in space."
-	icon = 'icons/obj/meteor.dmi'
-	icon_state = "space_dust"
-	density = 1
-	anchored = 1
-	var/strength = 2 //ex_act severity number
-	var/life = 2 //how many things we hit before del(src)
-	var/atom/goal = null
+/datum/event/dust/end()
+	command_announcement.Announce("The [station_name()] has now passed through the belt of space dust.", "[station_name()] Sensor Array")
 
-/obj/effect/space_dust/weak
-	strength = 3
-	life = 1
+/proc/dust_swarm(var/strength = EVENT_LEVEL_MUNDANE)
+	var/numbers = rand(strength * 10, strength * 15)
 
-/obj/effect/space_dust/strong
-	strength = 1
-	life = 6
-
-/obj/effect/space_dust/super
-	strength = 1
-	life = 40
-
-/obj/effect/space_dust/New()
-	var/startx = 0
-	var/starty = 0
-	var/endy = 0
-	var/endx = 0
-	var/startside = pick(cardinal)
-
-	switch(startside)
+	var/start_dir = pick(GLOB.cardinal)
+	var/turf/startloc
+	var/turf/targloc
+	var/randomz = pick(GLOB.using_map.station_levels)
+	var/randomx = rand(1+TRANSITIONEDGE*2, world.maxx-TRANSITIONEDGE*2)
+	var/randomy = rand(1+TRANSITIONEDGE*2, world.maxx-TRANSITIONEDGE*2)
+	switch(start_dir)
 		if(NORTH)
-			starty = world.maxy-(TRANSITIONEDGE+1)
-			startx = rand((TRANSITIONEDGE+1), world.maxx-(TRANSITIONEDGE+1))
-			endy = TRANSITIONEDGE
-			endx = rand(TRANSITIONEDGE, world.maxx-TRANSITIONEDGE)
-		if(EAST)
-			starty = rand((TRANSITIONEDGE+1),world.maxy-(TRANSITIONEDGE+1))
-			startx = world.maxx-(TRANSITIONEDGE+1)
-			endy = rand(TRANSITIONEDGE, world.maxy-TRANSITIONEDGE)
-			endx = TRANSITIONEDGE
+			startloc = locate(randomx, world.maxy - TRANSITIONEDGE, randomz)
+			targloc = locate(world.maxx - randomx,  1 + TRANSITIONEDGE, randomz)
 		if(SOUTH)
-			starty = (TRANSITIONEDGE+1)
-			startx = rand((TRANSITIONEDGE+1), world.maxx-(TRANSITIONEDGE+1))
-			endy = world.maxy-TRANSITIONEDGE
-			endx = rand(TRANSITIONEDGE, world.maxx-TRANSITIONEDGE)
+			startloc = locate(randomx, 1 + TRANSITIONEDGE, randomz)
+			targloc = locate(world.maxx - randomx, world.maxy - TRANSITIONEDGE, randomz)
+		if(EAST)
+			startloc = locate(world.maxx - TRANSITIONEDGE, randomy, randomz)
+			targloc = locate(1 + TRANSITIONEDGE, world.maxy - randomy, randomz)
 		if(WEST)
-			starty = rand((TRANSITIONEDGE+1), world.maxy-(TRANSITIONEDGE+1))
-			startx = (TRANSITIONEDGE+1)
-			endy = rand(TRANSITIONEDGE,world.maxy-TRANSITIONEDGE)
-			endx = world.maxx-TRANSITIONEDGE
-	goal = locate(endx, endy, 1)
-	src.x = startx
-	src.y = starty
-	src.z = level_name_to_num(MAIN_STATION)
-	spawn(0)
-		walk_towards(src, goal, 1)
-	return
+			startloc = locate(1 + TRANSITIONEDGE, randomy, randomz)
+			targloc = locate(world.maxx - TRANSITIONEDGE, world.maxy - randomy, randomz)
+	var/list/starters = getcircle(startloc, 3)
+	starters += startloc
 
-/obj/effect/space_dust/Bump(atom/A)
-	spawn(0)
-		if(prob(50))
-			for(var/mob/M in range(10, src))
-				if(!M.stat && !istype(M, /mob/living/silicon/ai))
-					shake_camera(M, 3, 1)
-		if(A)
-			playsound(src.loc, 'sound/effects/meteorimpact.ogg', 40, 1)
-
-			if(ismob(A))
-				A.ex_act(strength)//This should work for now I guess
-			else if(!istype(A,/obj/machinery/power/emitter) && !istype(A,/obj/machinery/field/generator)) //Protect the singularity from getting released every round!
-				A.ex_act(strength) //Changing emitter/field gen ex_act would make it immune to bombs and C4
-
-			life--
-			if(life <= 0)
-				walk(src,0)
-				spawn(1)
-					qdel(src)
-				return 0
-	return
-
-/obj/effect/space_dust/Bumped(atom/A)
-	Bump(A)
-	return
-
-/obj/effect/space_dust/ex_act(severity)
-	qdel(src)
-	return
+	var/rocks_per_tile = round(numbers/starters.len)
+	for(var/turf/T in starters)
+		for(var/i = 1 to rocks_per_tile)
+			var/obj/item/projectile/bullet/rock/R = new(T)
+			R.launch(targloc, null, startloc.x - T.x, startloc.y - T.y)

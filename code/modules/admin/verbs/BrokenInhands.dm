@@ -1,15 +1,14 @@
 /proc/getbrokeninhands()
-	set name = "Broken Sprite List"
-	set category = "Debug"
+	var/icon/IL = new('icons/mob/items/lefthand.dmi')
+	var/list/Lstates = IL.IconStates()
+	var/icon/IR = new('icons/mob/items/righthand.dmi')
+	var/list/Rstates = IR.IconStates()
+
 
 	var/text
 	for(var/A in typesof(/obj/item))
 		var/obj/item/O = new A( locate(1,1,1) )
 		if(!O) continue
-		var/icon/IL = new(O.lefthand_file)
-		var/list/Lstates = IL.IconStates()
-		var/icon/IR = new(O.righthand_file)
-		var/list/Rstates = IR.IconStates()
 		var/icon/J = new(O.icon)
 		var/list/istates = J.IconStates()
 		if(!Lstates.Find(O.icon_state) && !Lstates.Find(O.item_state))
@@ -29,8 +28,10 @@
 		//text+="\n"
 		qdel(O)
 	if(text)
-		var/F = file("broken_hand_icons.txt")
+		var/F = file("broken_icons.txt")
 		fdel(F)
-		to_chat(F, text)
-		to_chat(world, "Completed and written to [F]")
+		F << text
+		log_debug("Completeled successfully and written to [F]")
+
+
 

@@ -1,50 +1,97 @@
-//objective defines
-#define TARGET_INVALID_IS_OWNER		1
-#define TARGET_INVALID_NOT_HUMAN	2
-#define TARGET_INVALID_DEAD			3
+#define GAME_STATE_PREGAME		1
+#define GAME_STATE_SETTING_UP	2
+#define GAME_STATE_PLAYING		3
+#define GAME_STATE_FINISHED		4
 
-//gamemode istype helpers
-#define GAMEMODE_IS_BLOB		(ticker && istype(ticker.mode, /datum/game_mode/blob))
-#define GAMEMODE_IS_CULT		(ticker && istype(ticker.mode, /datum/game_mode/cult))
-#define GAMEMODE_IS_HEIST		(ticker && istype(ticker.mode, /datum/game_mode/heist))
-#define GAMEMODE_IS_MALF		(ticker && istype(ticker.mode, /datum/game_mode/malfunction))
-#define GAMEMODE_IS_NATIONS		(ticker && istype(ticker.mode, /datum/game_mode/nations))
-#define GAMEMODE_IS_NUCLEAR		(ticker && istype(ticker.mode, /datum/game_mode/nuclear))
-#define GAMEMODE_IS_REVOLUTION	(ticker && istype(ticker.mode, /datum/game_mode/revolution))
+// Security levels.
+#define SEC_LEVEL_GREEN 0
+#define SEC_LEVEL_BLUE  1
+#define SEC_LEVEL_RED   2
+#define SEC_LEVEL_DELTA 3
 
-//special roles
-// Distinct from the ROLE_X defines because some antags have multiple special roles but only one ban type
-#define SPECIAL_ROLE_ABDUCTOR_AGENT "Abductor Agent"
-#define SPECIAL_ROLE_ABDUCTOR_SCIENTIST "Abductor Scientist"
-#define SPECIAL_ROLE_BLOB "Blob"
-#define SPECIAL_ROLE_BLOB_OVERMIND "Blob Overmind"
-#define SPECIAL_ROLE_BORER "Borer"
-#define SPECIAL_ROLE_CHANGELING "Changeling"
-#define SPECIAL_ROLE_CULTIST "Cultist"
-#define SPECIAL_ROLE_DEATHSQUAD "Death Commando"
-#define SPECIAL_ROLE_ERT "Response Team"
-#define SPECIAL_ROLE_GOLEM "Golem"
-#define SPECIAL_ROLE_HEAD_REV "Head Revolutionary"
-#define SPECIAL_ROLE_HONKSQUAD "Honksquad"
-#define SPECIAL_ROLE_REV "Revolutionary"
-#define SPECIAL_ROLE_MALF "Malfunction"
-#define SPECIAL_ROLE_MORPH "Morph"
-#define SPECIAL_ROLE_MULTIVERSE "Multiverse Traveller"
-#define SPECIAL_ROLE_NUKEOPS "Syndicate"
-#define SPECIAL_ROLE_RAIDER "Vox Raider"
-#define SPECIAL_ROLE_REVENANT "Revenant"
-#define SPECIAL_ROLE_SHADOWLING "Shadowling"
-#define SPECIAL_ROLE_SHADOWLING_THRALL "Shadowling Thrall"
-#define SPECIAL_ROLE_SLAUGHTER_DEMON "Slaughter Demon"
-#define SPECIAL_ROLE_SYNDICATE_DEATHSQUAD "Syndicate Commando"
-#define SPECIAL_ROLE_TRAITOR "Traitor"
-#define SPECIAL_ROLE_VAMPIRE "Vampire"
-#define SPECIAL_ROLE_VAMPIRE_THRALL "Vampire Thrall"
-#define SPECIAL_ROLE_WIZARD "Wizard"
-#define SPECIAL_ROLE_WIZARD_APPRENTICE "Wizard Apprentice"
-#define SPECIAL_ROLE_XENOMORPH "Xenomorph"
-#define SPECIAL_ROLE_XENOMORPH_QUEEN "Xenomorph Queen"
-#define SPECIAL_ROLE_XENOMORPH_HUNTER "Xenomorph Hunter"
-#define SPECIAL_ROLE_XENOMORPH_DRONE "Xenomorph Drone"
-#define SPECIAL_ROLE_XENOMORPH_SENTINEL "Xenomorph Sentinel"
-#define SPECIAL_ROLE_XENOMORPH_LARVA "Xenomorph Larva"
+#define BE_PLANT "BE_PLANT"
+#define BE_SYNTH "BE_SYNTH"
+#define BE_PAI   "BE_PAI"
+
+// Antagonist datum flags.
+#define ANTAG_OVERRIDE_JOB        0x1 // Assigned job is set to MODE when spawning.
+#define ANTAG_OVERRIDE_MOB        0x2 // Mob is recreated from datum mob_type var when spawning.
+#define ANTAG_CLEAR_EQUIPMENT     0x4 // All preexisting equipment is purged.
+#define ANTAG_CHOOSE_NAME         0x8 // Antagonists are prompted to enter a name.
+#define ANTAG_IMPLANT_IMMUNE     0x10 // Cannot be loyalty implanted.
+#define ANTAG_SUSPICIOUS         0x20 // Shows up on roundstart report.
+#define ANTAG_HAS_LEADER         0x40 // Generates a leader antagonist.
+#define ANTAG_HAS_NUKE           0x80 // Will spawn a nuke at supplied location.
+#define ANTAG_RANDSPAWN         0x100 // Potentially randomly spawns due to events.
+#define ANTAG_VOTABLE           0x200 // Can be voted as an additional antagonist before roundstart.
+#define ANTAG_SET_APPEARANCE    0x400 // Causes antagonists to use an appearance modifier on spawn.
+#define ANTAG_RANDOM_EXCEPTED   0x800 // If a game mode randomly selects antag types, antag types with this flag should be excluded.
+
+// Mode/antag template macros.
+#define MODE_BORER "borer"
+#define MODE_XENOMORPH "xeno"
+#define MODE_LOYALIST "loyalist"
+#define MODE_MUTINEER "mutineer"
+#define MODE_COMMANDO "commando"
+#define MODE_DEATHSQUAD "deathsquad"
+#define MODE_ERT "ert"
+#define MODE_ACTOR "actor"
+#define MODE_MERCENARY "mercenary"
+#define MODE_NINJA "ninja"
+#define MODE_RAIDER "raider"
+#define MODE_WIZARD "wizard"
+#define MODE_CHANGELING "changeling"
+#define MODE_CULTIST "cultist"
+#define MODE_MONKEY "monkey"
+#define MODE_RENEGADE "renegade"
+#define MODE_REVOLUTIONARY "revolutionary"
+#define MODE_LOYALIST "loyalist"
+#define MODE_MALFUNCTION "malf"
+#define MODE_TRAITOR "traitor"
+#define MODE_DEITY "deity"
+#define MODE_GODCULTIST "god cultist"
+
+#define DEFAULT_TELECRYSTAL_AMOUNT 130
+
+/////////////////
+////WIZARD //////
+/////////////////
+
+/*		WIZARD SPELL FLAGS		*/
+#define GHOSTCAST		0x1		//can a ghost cast it?
+#define NEEDSCLOTHES	0x2		//does it need the wizard garb to cast? Nonwizard spells should not have this
+#define NEEDSHUMAN		0x4		//does it require the caster to be human?
+#define Z2NOCAST		0x8		//if this is added, the spell can't be cast at centcomm
+#define STATALLOWED		0x10	//if set, the user doesn't have to be conscious to cast. Required for ghost spells
+#define IGNOREPREV		0x20	//if set, each new target does not overlap with the previous one
+//The following flags only affect different types of spell, and therefore overlap
+//Targeted spells
+#define INCLUDEUSER		0x40	//does the spell include the caster in its target selection?
+#define SELECTABLE		0x80	//can you select each target for the spell?
+//AOE spells
+#define IGNOREDENSE		0x40	//are dense turfs ignored in selection?
+#define IGNORESPACE		0x80	//are space turfs ignored in selection?
+//End split flags
+#define CONSTRUCT_CHECK	0x100	//used by construct spells - checks for nullrods
+#define NO_BUTTON		0x200	//spell won't show up in the HUD with this
+
+//invocation
+#define SpI_SHOUT	"shout"
+#define SpI_WHISPER	"whisper"
+#define SpI_EMOTE	"emote"
+#define SpI_NONE	"none"
+
+//upgrading
+#define Sp_SPEED	"speed"
+#define Sp_POWER	"power"
+#define Sp_TOTAL	"total"
+
+//casting costs
+#define Sp_RECHARGE	"recharge"
+#define Sp_CHARGES	"charges"
+#define Sp_HOLDVAR	"holdervar"
+
+#define INITIALIZATION_NOW 1
+#define INITIALIZATION_HAS_BEGUN 2
+#define INITIALIZATION_COMPLETE 4
+#define INITIALIZATION_NOW_AND_COMPLETE (INITIALIZATION_NOW|INITIALIZATION_COMPLETE)

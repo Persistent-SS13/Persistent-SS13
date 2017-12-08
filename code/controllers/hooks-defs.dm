@@ -1,4 +1,10 @@
 /**
+ * Global init hook.
+ * Called in global_init.dm when the server is initialized.
+ */
+/hook/global_init
+
+/**
  * Startup hook.
  * Called in world.dm when the server starts.
  */
@@ -17,11 +23,10 @@
 /hook/roundend
 
 /**
- * LateSpawn hook.
- * Called in newplayer.dm when a humanoid character joins the round after it started.
- * Parameters: var/mob/living/carbon/human
+ * Shutdown hook.
+ * Called in world.dm when world/Del is called.
  */
-/hook/latespawn
+/hook/shutdown
 
 /**
  * Death hook.
@@ -40,7 +45,7 @@
 /**
  * Debrained hook.
  * Called in brain_item.dm when someone gets debrained.
- * Parameters: var/obj/item/brain
+ * Parameters: var/obj/item/organ/internal/brain
  */
 /hook/debrain
 
@@ -54,7 +59,7 @@
 /**
  * Podman hook.
  * Called in podmen.dm when someone is brought back as a Diona.
- * Parameters: var/mob/living/carbon/primitive/diona
+ * Parameters: var/mob/living/carbon/alien/diona
  */
 /hook/harvest_podman
 
@@ -92,31 +97,3 @@
  * Parameters: var/obj/structure/closet/crate/sold, var/area/shuttle
  */
 /hook/sell_crate
-
-/**
- * Captain spawned hook.
- * Called in supervisor.dm when a captain spawns
- * Parameters: var/mob/living/carbon/human/captain
- */
-/hook/captain_spawned
-
-/**
- * Mob login hook.
- * Called in login.dm when a player logs in to a mob.
- * Parameters: var/client/client, var/mob/mob
- */
-/hook/mob_login
-
- /**
- * Mob logout hook.
- * Called in logout.dm when a player logs out of a mob.
- * Parameters: var/client/client, var/mob/mob
- */
-/hook/mob_logout
-
-/**
- * Mob area change hook.
- * Called in area.dm when a mob moves from one area to another.
- * Parameters: var/mob/mob, var/area/newarea, var/area/oldarea
- */
-/hook/mob_area_change

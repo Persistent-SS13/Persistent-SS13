@@ -23,22 +23,7 @@ a, a:link, a:visited, a:active, .linkOn, .linkOff
 	padding: 1px 4px 1px 4px;
 	margin: 0 2px 0 0;
 	cursor:default;
-}
-
-a.nobg, a.nobg:link, a.nobg:visited, a.nobg:active
-{ 
-	color: #ffffff; 
-	text-decoration: none;
-	background: transparent;
-	border: none;
-	padding: 0px;
-	margin: 0px;
-	cursor:default;
-	font-weight:bold;
-}
-a.nobg:hover 
-{ 
-	color:#40628a;
+	white-space:nowrap;
 }
 
 a:hover 
@@ -252,19 +237,6 @@ div.notice
 	margin: 3px 0;
 }
 
-.statusLabel
-{
-	width: 138px;
-	float: left;
-	overflow: hidden;
-	color: #98B0C3;
-}
-
-.statusValue
-{
-	float: left;
-}
-
 .block
 {
 	padding: 8px;
@@ -339,4 +311,13 @@ div.notice
 {
 	width: 100%;
 	clear: both;
+}
+
+.statusDisplay
+{
+	background: #000000;
+	color: #ffffff;
+	border: 1px solid #40628a;
+	padding: 4px;
+	margin: 3px 0;
 }

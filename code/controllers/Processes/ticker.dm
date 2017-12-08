@@ -9,7 +9,6 @@ var/global/datum/controller/process/ticker/tickerProcess
 	schedule_interval = 20 // every 2 seconds
 
 	lastTickerTime = world.timeofday
-	log_startup_progress("Time ticker starting up.")
 
 	if(!ticker)
 		ticker = new
@@ -34,3 +33,6 @@ var/global/datum/controller/process/ticker/tickerProcess
 
 /datum/controller/process/ticker/proc/getLastTickerTimeDuration()
 	return lastTickerTimeDuration
+
+/world/proc/has_round_started()
+	return (ticker && ticker.current_state >= GAME_STATE_PLAYING)

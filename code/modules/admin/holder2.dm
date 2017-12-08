@@ -1,47 +1,57 @@
+#define STEALTH_OFF 0
+#define STEALTH_MANUAL 1
+#define STEALTH_AUTO 2
+
 var/list/admin_datums = list()
 
 /datum/admins
-	var/rank			= "Temporary Admin"
-	var/client/owner	= null
-	var/rights = 0
-	var/fakekey			= null
-	var/big_brother		= 0
+	var/rank         = "Temporary Admin"
+	var/client/owner = null
+	var/rights       = 0
+	var/stealthy_    = STEALTH_OFF
 
-	var/datum/marked_datum
+	var/weakref/marked_datum_weak
 
 	var/admincaster_screen = 0	//See newscaster.dm under machinery for a full description
 	var/datum/feed_message/admincaster_feed_message = new /datum/feed_message   //These two will act as holders.
 	var/datum/feed_channel/admincaster_feed_channel = new /datum/feed_channel
 	var/admincaster_signature	//What you'll sign the newsfeeds as
 
+/datum/admins/proc/marked_datum()
+	if(marked_datum_weak)
+		return marked_datum_weak.resolve()
+
 /datum/admins/New(initial_rank = "Temporary Admin", initial_rights = 0, ckey)
 	if(!ckey)
 		error("Admin datum created without a ckey argument. Datum has been deleted")
 		qdel(src)
 		return
-	admincaster_signature = "Nanotrasen Officer #[rand(0,9)][rand(0,9)][rand(0,9)]"
+	admincaster_signature = "[GLOB.using_map.company_name] Officer #[rand(0,9)][rand(0,9)][rand(0,9)]"
 	rank = initial_rank
 	rights = initial_rights
 	admin_datums[ckey] = src
-
-/datum/admins/Destroy()
-	..()
-	return QDEL_HINT_HARDDEL_NOW
 
 /datum/admins/proc/associate(client/C)
 	if(istype(C))
 		owner = C
 		owner.holder = src
 		owner.add_admin_verbs()	//TODO
-		owner.verbs -= /client/proc/readmin
-		admins |= C
+		GLOB.admins |= C
 
 /datum/admins/proc/disassociate()
 	if(owner)
-		admins -= owner
+		GLOB.admins -= owner
 		owner.remove_admin_verbs()
+		owner.deadmin_holder = owner.holder
 		owner.holder = null
-		owner = null
+
+/datum/admins/proc/reassociate()
+	if(owner)
+		GLOB.admins += owner
+		owner.holder = src
+		owner.deadmin_holder = null
+		owner.add_admin_verbs()
+
 
 /*
 checks if usr is an admin with at least ONE of the flags in rights_required. (Note, they don't need all the flags)
@@ -51,27 +61,30 @@ generally it would be used like so:
 
 proc/admin_proc()
 	if(!check_rights(R_ADMIN)) return
-	to_chat(world, "you have enough rights!")
+	to_chat(usr, "you have enough rights!")
 
-NOTE: it checks usr! not src! So if you're checking somebody's rank in a proc which they did not call
-you will have to do something like if(client.holder.rights & R_ADMIN) yourself.
+NOTE: It checks usr by default. Supply the "user" argument if you wish to check for a specific mob.
 */
-/proc/check_rights(rights_required, show_msg=1, var/mob/user = usr)
-	if(user && user.client)
-		if(rights_required)
-			if(user.client.holder)
-				if(rights_required & user.client.holder.rights)
-					return 1
-				else
-					if(show_msg)
-						to_chat(user, "<font color='red'>Error: You do not have sufficient rights to do that. You require one of the following flags:[rights2text(rights_required," ")].</font>")
+/proc/check_rights(rights_required, show_msg=1, var/client/C = usr)
+	if(ismob(C))
+		var/mob/M = C
+		C = M.client
+	if(!C)
+		return FALSE
+	if(!C.holder)
+		if(show_msg)
+			to_chat(C, "<span class='warning'>Error: You are not an admin.</span>")
+		return FALSE
+
+	if(rights_required)
+		if(rights_required & C.holder.rights)
+			return TRUE
 		else
-			if(user.client.holder)
-				return 1
-			else
-				if(show_msg)
-					to_chat(user, "<font color='red'>Error: You are not an admin.</font>")
-	return 0
+			if(show_msg)
+				to_chat(C, "<span class='warning'>Error: You do not have sufficient rights to do that. You require one of the following flags:[rights2text(rights_required," ")].</span>")
+			return FALSE
+	else
+		return TRUE
 
 //probably a bit iffy - will hopefully figure out a better solution
 /proc/check_if_greater_rights_than(client/other)
@@ -86,16 +99,52 @@ you will have to do something like if(client.holder.rights & R_ADMIN) yourself.
 	return 0
 
 /client/proc/deadmin()
-	admin_datums -= ckey
 	if(holder)
 		holder.disassociate()
-		qdel(holder)
+		//qdel(holder)
 	return 1
 
-//This proc checks whether subject has at least ONE of the rights specified in rights_required.
-/proc/check_rights_for(client/subject, rights_required)
-	if(subject && subject.holder)
-		if(rights_required && !(rights_required & subject.holder.rights))
-			return 0
-		return 1
-	return 0
+/mob/Stat()
+	. = ..()
+	if(!client)
+		return
+
+	var/stealth_status = client.is_stealthed()
+	if(stealth_status && statpanel("Status"))
+		stat("Stealth", "Engaged [client.holder.stealthy_ == STEALTH_AUTO ? "(Auto)" : "(Manual)"]")
+
+/client/proc/is_stealthed()
+	if(!holder)
+		return FALSE
+
+	// If someone has been AFK since round-start or longer, stealth them
+	// BYOND keeps track of inactivity between rounds as long as it's not a full stop/start.
+	if(holder.stealthy_ == STEALTH_OFF && ((inactivity >= world.time) || (config.autostealth && inactivity >= MinutesToTicks(config.autostealth))))
+		holder.stealthy_ = STEALTH_AUTO
+	else if(holder.stealthy_ == STEALTH_AUTO && inactivity < world.time)
+		// And if someone has been set to auto-stealth and returns, unstealth them
+		holder.stealthy_ = STEALTH_OFF
+	return holder.stealthy_
+
+/mob/proc/is_stealthed()
+	return client && client.is_stealthed()
+
+/client/proc/stealth()
+	set category = "Admin"
+	set name = "Stealth Mode"
+
+	if(!holder)
+		to_chat(src, "<span class='warning'>Error: You are not an admin.</span>")
+		return
+
+	holder.stealthy_ = holder.stealthy_ == STEALTH_OFF ? STEALTH_MANUAL : STEALTH_OFF
+	if(holder.stealthy_)
+		to_chat(src, "<span class='notice'>You are now stealthed.</span>")
+	else
+		to_chat(src, "<span class='notice'>You are no longer stealthed.</span>")
+	log_and_message_admins("has turned stealth mode [holder.stealthy_ ? "ON" : "OFF"]")
+	feedback_add_details("admin_verb","SM") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+#undef STEALTH_OFF
+#undef STEALTH_MANUAL
+#undef STEALTH_AUTO

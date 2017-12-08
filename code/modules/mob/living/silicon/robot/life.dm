@@ -1,221 +1,312 @@
 /mob/living/silicon/robot/Life()
 	set invisibility = 0
-	set background = BACKGROUND_ENABLED
+	set background = 1
 
-	if(src.notransform)
+	if (src.transforming)
 		return
+
+	src.blinded = null
 
 	//Status updates, death etc.
 	clamp_values()
+	handle_regular_status_updates()
+	handle_actions()
 
-	if(..())
-		handle_robot_cell()
+	if(client)
+		handle_regular_hud_updates()
+		update_items()
+	if (src.stat != DEAD) //still using power
+		use_power()
+		process_killswitch()
 		process_locks()
 		process_queued_alarms()
+	update_canmove()
 
 /mob/living/silicon/robot/proc/clamp_values()
-	SetStunned(min(stunned, 30))
-	SetParalysis(min(paralysis, 30))
-	SetWeakened(min(weakened, 20))
-	SetSleeping(0)
 
-/mob/living/silicon/robot/proc/handle_robot_cell()
-	if(stat != DEAD)
-		if(!is_component_functioning("power cell") || !cell)
-			Paralyse(2)
-			uneq_all()
-			low_power_mode = 1
-			update_headlamp()
-			diag_hud_set_borgcell()
-			return
-		if(low_power_mode)
-			if(is_component_functioning("power cell") && cell && cell.charge)
-				low_power_mode = 0
-				update_headlamp()
-		else if(stat == CONSCIOUS)
-			use_power()
+//	SetStunned(min(stunned, 30))
+	SetParalysis(min(paralysis, 30))
+//	SetWeakened(min(weakened, 20))
+	sleeping = 0
+	adjustBruteLoss(0)
+	adjustToxLoss(0)
+	adjustOxyLoss(0)
+	adjustFireLoss(0)
 
 /mob/living/silicon/robot/proc/use_power()
-	if(is_component_functioning("power cell") && cell && cell.charge)
-		if(cell.charge <= 100)
-			uneq_all()
-		var/amt = Clamp((lamp_intensity - 2) * 2,1,cell.charge) //Always try to use at least one charge per tick, but allow it to completely drain the cell.
-		cell.use(amt) //Usage table: 1/tick if off/lowest setting, 4 = 4/tick, 6 = 8/tick, 8 = 12/tick, 10 = 16/tick
+	// Debug only
+//	log_debug(life.dm line 35: cyborg use_power() called at tick [controller_iteration]")
+
+	used_power_this_tick = 0
+	for(var/V in components)
+		var/datum/robot_component/C = components[V]
+		C.update_power_state()
+
+	if ( cell && is_component_functioning("power cell") && src.cell.charge > 0 )
+		if(src.module_state_1)
+			cell_use_power(50) // 50W load for every enabled tool TODO: tool-specific loads
+		if(src.module_state_2)
+			cell_use_power(50)
+		if(src.module_state_3)
+			cell_use_power(50)
+
+		if(lights_on)
+			if(intenselight)
+				cell_use_power(100)	// Upgraded light. Double intensity, much larger power usage.
+			else
+				cell_use_power(30) 	// 30W light. Normal lights would use ~15W, but increased for balance reasons.
+
+		src.has_power = 1
 	else
-		uneq_all()
-		low_power_mode = 1
-		update_headlamp()
-	diag_hud_set_borgcell()
+		if (src.has_power)
+			to_chat(src, "<span class='warning'>You are now running on emergency backup power.</span>")
+		src.has_power = 0
+		if(lights_on) // Light is on but there is no power!
+			lights_on = 0
+			set_light(0)
 
 /mob/living/silicon/robot/handle_regular_status_updates()
 
-	. = ..()
-
-	if(camera && !scrambledcodes)
-		if(stat == DEAD || wires.IsCameraCut())
-			camera.status = 0
+	if(src.camera && !scrambledcodes)
+		if(src.stat == 2 || wires.IsIndexCut(BORG_WIRE_CAMERA))
+			src.camera.set_status(0)
 		else
-			camera.status = 1
+			src.camera.set_status(1)
 
-	if(getOxyLoss() > 50)
+	updatehealth()
+
+	if(src.sleeping)
 		Paralyse(3)
+		src.sleeping--
 
-	if(sleeping)
-		Paralyse(3)
-		sleeping--
-
-	if(resting)
+	if(src.resting)
 		Weaken(5)
 
-	if(.) //alive
-		if(health <= config.health_threshold_dead)
-			death()
-			diag_hud_set_status()
-			return
+	if(health < config.health_threshold_dead && src.stat != 2) //die only once
+		death()
 
-		if(!istype(src, /mob/living/silicon/robot/drone))
-			if(health < 50) //Gradual break down of modules as more damage is sustained
-				if(uneq_module(module_state_3))
-					to_chat(src, "<span class='warning'>SYSTEM ERROR: Module 3 OFFLINE.</span>")
+	if (src.stat != DEAD) //Alive.
+		if (src.paralysis || src.stunned || src.weakened || !src.has_power) //Stunned etc.
+			src.set_stat(UNCONSCIOUS)
+			if (src.stunned > 0)
+				AdjustStunned(-1)
+			if (src.weakened > 0)
+				AdjustWeakened(-1)
+			if (src.paralysis > 0)
+				AdjustParalysis(-1)
+				src.blinded = 1
+			else
+				src.blinded = 0
 
-				if(health < 0)
-					if(uneq_module(module_state_2))
-						to_chat(src, "<span class='warning'>SYSTEM ERROR: Module 2 OFFLINE.</span>")
+		else	//Not stunned.
+			src.set_stat(CONSCIOUS)
 
-					if(health < -50)
-						if(uneq_module(module_state_1))
-							to_chat(src, "<span class='warning'>CRITICAL ERROR: All modules OFFLINE.</span>")
+		confused = max(0, confused - 1)
 
-		if(paralysis || stunned || weakened)
-			stat = UNCONSCIOUS
+	else //Dead.
+		src.blinded = 1
+		src.set_stat(DEAD)
 
-			if(!paralysis > 0)
-				eye_blind = 0
+	if (src.stuttering) src.stuttering--
 
-		else
-			stat = CONSCIOUS
+	if (src.eye_blind)
+		src.eye_blind--
+		src.blinded = 1
 
-		diag_hud_set_health()
-		diag_hud_set_status()
-	else //dead
-		eye_blind = 1
+	if (src.ear_deaf > 0) src.ear_deaf--
+	if (src.ear_damage < 25)
+		src.ear_damage -= 0.05
+		src.ear_damage = max(src.ear_damage, 0)
+
+	src.set_density(!src.lying)
+
+	if ((src.sdisabilities & BLIND))
+		src.blinded = 1
+	if ((src.sdisabilities & DEAF))
+		src.ear_deaf = 1
+
+	if (src.eye_blurry > 0)
+		src.eye_blurry--
+		src.eye_blurry = max(0, src.eye_blurry)
+
+	if (src.druggy > 0)
+		src.druggy--
+		src.druggy = max(0, src.druggy)
 
 	//update the state of modules and components here
-	if(stat != CONSCIOUS)
+	if (src.stat != 0)
 		uneq_all()
 
-	if(!is_component_functioning("radio") || stat == UNCONSCIOUS)
-		radio.on = 0
-	else
-		radio.on = 1
+	if(radio)
+		if(!is_component_functioning("radio"))
+			radio.on = 0
+		else
+			radio.on = 1
 
-	if(is_component_functioning("camera") && stat == CONSCIOUS)
-		blinded = 0
+	if(is_component_functioning("camera"))
+		src.blinded = 0
 	else
-		blinded = 1
-
-	if(!is_component_functioning("actuator"))
-		Paralyse(3)
+		src.blinded = 1
 
 	return 1
 
-/mob/living/silicon/robot/update_sight()
-	if(stat == DEAD || sight_mode & BORGXRAY)
-		sight |= SEE_TURFS
-		sight |= SEE_MOBS
-		sight |= SEE_OBJS
-		see_in_dark = 8
-		see_invisible = SEE_INVISIBLE_LEVEL_TWO
-	else
-		see_in_dark = 8
-		if(sight_mode & BORGMESON && sight_mode & BORGTHERM)
-			sight |= SEE_TURFS
-			sight |= SEE_MOBS
-			see_invisible = SEE_INVISIBLE_MINIMUM
-		else if(sight_mode & BORGMESON)
-			sight |= SEE_TURFS
-			see_invisible = SEE_INVISIBLE_MINIMUM
-			see_in_dark = 1
-		else if(sight_mode & BORGTHERM)
-			sight |= SEE_MOBS
-			see_invisible = SEE_INVISIBLE_LEVEL_TWO
-		else if(stat != DEAD)
-			sight &= ~SEE_MOBS
-			sight &= ~SEE_TURFS
-			sight &= ~SEE_OBJS
-			see_invisible = SEE_INVISIBLE_LEVEL_TWO
-		if(see_override)
-			see_invisible = see_override
-
-/mob/living/silicon/robot/handle_hud_icons()
-	update_items()
-	update_cell()
-	if(emagged)
-		throw_alert("hacked", /obj/screen/alert/hacked)
-	else
-		clear_alert("hacked")
+/mob/living/silicon/robot/handle_regular_hud_updates()
 	..()
 
-/mob/living/silicon/robot/handle_hud_icons_health()
-	if(healths)
-		if(stat != DEAD)
-			if(health >= maxHealth)
-				healths.icon_state = "health0"
-			else if(health > maxHealth * 0.5)
-				healths.icon_state = "health2"
-			else if(health > 0)
-				healths.icon_state = "health3"
-			else if(health > -maxHealth * 0.5)
-				healths.icon_state = "health4"
-			else if(health > -maxHealth)
-				healths.icon_state = "health5"
-			else
-				healths.icon_state = "health6"
-		else
-			healths.icon_state = "health7"
-
-	switch(bodytemperature) //310.055 optimal body temp
-		if(335 to INFINITY)
-			throw_alert("temp", /obj/screen/alert/hot/robot, 2)
-		if(320 to 335)
-			throw_alert("temp", /obj/screen/alert/hot/robot, 1)
-		if(300 to 320)
-			clear_alert("temp")
-		if(260 to 300)
-			throw_alert("temp", /obj/screen/alert/cold/robot, 1)
-		else
-			throw_alert("temp", /obj/screen/alert/cold/robot, 2)
-
-/mob/living/silicon/robot/proc/update_cell()
-	if(cell)
-		var/cellcharge = cell.charge/cell.maxcharge
-		switch(cellcharge)
-			if(0.75 to INFINITY)
-				clear_alert("charge")
-			if(0.5 to 0.75)
-				throw_alert("charge", /obj/screen/alert/lowcell, 1)
-			if(0.25 to 0.5)
-				throw_alert("charge", /obj/screen/alert/lowcell, 2)
-			if(0.01 to 0.25)
-				throw_alert("charge", /obj/screen/alert/lowcell, 3)
-			else
-				throw_alert("charge", /obj/screen/alert/emptycell)
+	var/obj/item/borg/sight/hud/hud = (locate(/obj/item/borg/sight/hud) in src)
+	if(hud && hud.hud)
+		hud.hud.process_hud(src)
 	else
-		throw_alert("charge", /obj/screen/alert/nocell)
+		switch(src.sensor_mode)
+			if (SEC_HUD)
+				process_sec_hud(src,0)
+			if (MED_HUD)
+				process_med_hud(src,0)
 
+	if (src.healths)
+		if (src.stat != 2)
+			if(istype(src,/mob/living/silicon/robot/drone))
+				switch(health)
+					if(35 to INFINITY)
+						src.healths.icon_state = "health0"
+					if(25 to 34)
+						src.healths.icon_state = "health1"
+					if(15 to 24)
+						src.healths.icon_state = "health2"
+					if(5 to 14)
+						src.healths.icon_state = "health3"
+					if(0 to 4)
+						src.healths.icon_state = "health4"
+					if(-35 to 0)
+						src.healths.icon_state = "health5"
+					else
+						src.healths.icon_state = "health6"
+			else
+				switch(health)
+					if(200 to INFINITY)
+						src.healths.icon_state = "health0"
+					if(150 to 200)
+						src.healths.icon_state = "health1"
+					if(100 to 150)
+						src.healths.icon_state = "health2"
+					if(50 to 100)
+						src.healths.icon_state = "health3"
+					if(0 to 50)
+						src.healths.icon_state = "health4"
+					if(config.health_threshold_dead to 0)
+						src.healths.icon_state = "health5"
+					else
+						src.healths.icon_state = "health6"
+		else
+			src.healths.icon_state = "health7"
+
+	if (src.syndicate && src.client)
+		for(var/datum/mind/tra in traitors.current_antagonists)
+			if(tra.current)
+				// TODO: Update to new antagonist system.
+				var/I = image('icons/mob/mob.dmi', loc = tra.current, icon_state = "traitor")
+				src.client.images += I
+		src.disconnect_from_ai()
+		if(src.mind)
+			// TODO: Update to new antagonist system.
+			if(!src.mind.special_role)
+				src.mind.special_role = "traitor"
+				traitors.current_antagonists |= src.mind
+
+	if (src.cells)
+		if (src.cell)
+			var/chargeNum = Clamp(ceil(cell.percent()/25), 0, 4)	//0-100 maps to 0-4, but give it a paranoid clamp just in case.
+			src.cells.icon_state = "charge[chargeNum]"
+		else
+			src.cells.icon_state = "charge-empty"
+
+	if(bodytemp)
+		switch(src.bodytemperature) //310.055 optimal body temp
+			if(335 to INFINITY)
+				src.bodytemp.icon_state = "temp2"
+			if(320 to 335)
+				src.bodytemp.icon_state = "temp1"
+			if(300 to 320)
+				src.bodytemp.icon_state = "temp0"
+			if(260 to 300)
+				src.bodytemp.icon_state = "temp-1"
+			else
+				src.bodytemp.icon_state = "temp-2"
+
+//Oxygen and fire does nothing yet!!
+//	if (src.oxygen) src.oxygen.icon_state = "oxy[src.oxygen_alert ? 1 : 0]"
+//	if (src.fire) src.fire.icon_state = "fire[src.fire_alert ? 1 : 0]"
+
+	if(stat != DEAD)
+		if(blinded)
+			overlay_fullscreen("blind", /obj/screen/fullscreen/blind)
+		else
+			clear_fullscreen("blind")
+			set_fullscreen(disabilities & NEARSIGHTED, "impaired", /obj/screen/fullscreen/impaired, 1)
+			set_fullscreen(eye_blurry, "blurry", /obj/screen/fullscreen/blurry)
+			set_fullscreen(druggy, "high", /obj/screen/fullscreen/high)
+
+		if (machine)
+			if (machine.check_eye(src) < 0)
+				reset_view(null)
+		else
+			if(client && !client.adminobs)
+				reset_view(null)
+
+	return 1
+
+/mob/living/silicon/robot/handle_vision()
+	..()
+
+	if (src.stat == DEAD || (XRAY in mutations) || (src.sight_mode & BORGXRAY))
+		set_sight(sight|SEE_TURFS|SEE_MOBS|SEE_OBJS)
+		set_see_in_dark(8)
+		set_see_invisible(SEE_INVISIBLE_LEVEL_TWO)
+	else if ((src.sight_mode & BORGMESON) && (src.sight_mode & BORGTHERM))
+		set_sight(sight|SEE_TURFS|SEE_MOBS)
+		set_see_in_dark(8)
+		set_see_invisible(SEE_INVISIBLE_NOLIGHTING)
+	else if (src.sight_mode & BORGMESON)
+		set_sight(sight|SEE_TURFS)
+		set_see_in_dark(8)
+		set_see_invisible(SEE_INVISIBLE_NOLIGHTING)
+	else if (src.sight_mode & BORGMATERIAL)
+		set_sight(sight|SEE_OBJS)
+		set_see_in_dark(8)
+	else if (src.sight_mode & BORGTHERM)
+		set_sight(sight|SEE_MOBS)
+		set_see_in_dark(8)
+		set_see_invisible(SEE_INVISIBLE_LEVEL_TWO)
+	else if (src.stat != DEAD)
+		set_sight(sight&(~SEE_TURFS)&(~SEE_MOBS)&(~SEE_OBJS))
+		set_see_in_dark(8) 			 // see_in_dark means you can FAINTLY see in the dark, humans have a range of 3 or so, tajaran have it at 8
+		set_see_invisible(SEE_INVISIBLE_LIVING) // This is normal vision (25), setting it lower for normal vision means you don't "see" things like darkness since darkness
+							 // has a "invisible" value of 15
 
 
 /mob/living/silicon/robot/proc/update_items()
-	if(client)
-		for(var/obj/I in get_all_slots())
-			client.screen |= I
-	if(module_state_1)
-		module_state_1:screen_loc = ui_inv1
-	if(module_state_2)
-		module_state_2:screen_loc = ui_inv2
-	if(module_state_3)
-		module_state_3:screen_loc = ui_inv3
-	update_icons()
+	if (src.client)
+		src.client.screen -= src.contents
+		for(var/obj/I in src.contents)
+			if(I && !(istype(I,/obj/item/weapon/cell) || istype(I,/obj/item/device/radio)  || istype(I,/obj/machinery/camera) || istype(I,/obj/item/device/mmi)))
+				src.client.screen += I
+	if(src.module_state_1)
+		src.module_state_1:screen_loc = ui_inv1
+	if(src.module_state_2)
+		src.module_state_2:screen_loc = ui_inv2
+	if(src.module_state_3)
+		src.module_state_3:screen_loc = ui_inv3
+	update_icon()
+
+/mob/living/silicon/robot/proc/process_killswitch()
+	if(killswitch)
+		killswitch_time --
+		if(killswitch_time <= 0)
+			if(src.client)
+				to_chat(src, "<span class='danger'>Killswitch Activated</span>")
+			killswitch = 0
+			spawn(5)
+				gib()
 
 /mob/living/silicon/robot/proc/process_locks()
 	if(weapon_lock)
@@ -223,40 +314,20 @@
 		weaponlock_time --
 		if(weaponlock_time <= 0)
 			if(src.client)
-				to_chat(src, "\red <B>Weapon Lock Timed Out!")
+				to_chat(src, "<span class='danger'>Weapon Lock Timed Out!</span>")
 			weapon_lock = 0
 			weaponlock_time = 120
 
-/mob/living/silicon/robot/update_canmove(delay_action_updates = 0)
-	if(paralysis || stunned || weakened || buckled || lockcharge)
-		canmove = 0
-	else
-		canmove = 1
-	update_transform()
-	if(!delay_action_updates)
-		update_action_buttons_icon()
+/mob/living/silicon/robot/update_canmove()
+	if(paralysis || stunned || weakened || buckled || lockcharge || !is_component_functioning("actuator")) canmove = 0
+	else canmove = 1
 	return canmove
 
-//Robots on fire
-/mob/living/silicon/robot/handle_fire()
-	if(..())
-		return
-	if(fire_stacks > 0)
-		fire_stacks--
-		fire_stacks = max(0, fire_stacks)
-	else
-		ExtinguishMob()
-
-	//adjustFireLoss(3)
-	return
-
 /mob/living/silicon/robot/update_fire()
-	overlays -= image("icon"='icons/mob/OnFire.dmi', "icon_state"="Generic_mob_burning")
+	overlays -= image("icon"='icons/mob/OnFire.dmi', "icon_state"="Standing")
 	if(on_fire)
-		overlays += image("icon"='icons/mob/OnFire.dmi', "icon_state"="Generic_mob_burning")
+		overlays += image("icon"='icons/mob/OnFire.dmi', "icon_state"="Standing")
 
 /mob/living/silicon/robot/fire_act()
 	if(!on_fire) //Silicons don't gain stacks from hotspots, but hotspots can ignite them
 		IgniteMob()
-
-//Robots on fire

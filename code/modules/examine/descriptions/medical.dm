@@ -11,8 +11,8 @@
 	in critical condition by placing them in stasis, so they can be treated at a later time.<br>\
 	<br>\
 	In order for it to work, it must be loaded with chemicals, and the temperature of the solution must reach a certain point. Additionally, it \
-	requires a supply of pure oxygen, provided by canisters that are attached. The most commonly used chemicals in the chambers is Cryoxadone, which \
-	heals most damage types including genetic damage.<br>\
+	requires a supply of pure oxygen, provided by canisters that are attached. The most commonly used chemicals in the chambers are Cryoxadone and \
+	Clonexadone. Clonexadone is more effective in treating all damage, including Genetic damage, but is otherwise functionally identical.<br>\
 	<br>\
 	Activating the freezer nearby, and setting it to a temperature setting below 150, is recommended before operation! Further, any clothing the patient \
 	is wearing that act as an insulator will reduce its effectiveness, and should be removed.<br>\
@@ -40,3 +40,25 @@
 	<br>\
 	Right-click the cell and click 'Eject Occupant' to remove them.  You can enter the cell yourself by right clicking and selecting 'Enter Sleeper'. \
 	Note that you cannot control the sleeper while inside of it."
+
+/obj/item/bodybag/cryobag
+	description_info = "This stasis bag will preserve the occupant, stopping most forms of harm from occuring, such as from oxygen \
+	deprivation, irradiation, shock, and chemicals inside the occupant, at least until the bag is opened again.<br>\
+	<br>\
+	Stasis bags can only be used once, and are rather costly, so use them well.  They are ideal for situations where someone may die \
+	before being able to bring them back to safety, or if they are in a hostile enviroment, such as in vacuum or in a phoron leak, as \
+	the bag will protect the occupant from most outside enviromental hazards.  If you open a bag by mistake, closing the bag with no \
+	occupant will not use up the bag, and you can pick it back up.<br>\
+	<br>\
+	You can use a health analyzer to scan the occupant's vitals without opening the bag by clicking the occupied bag with the analyzer."
+
+/obj/structure/closet/body_bag/cryobag
+	description_info = "This stasis bag will preserve the occupant, stopping most forms of harm from occuring, such as from oxygen \
+	deprivation, irradiation, shock, and chemicals inside the occupant, at least until the bag is opened again.<br>\
+	<br>\
+	Stasis bags can only be used once, and are rather costly, so use them well.  They are ideal for situations where someone may die \
+	before being able to bring them back to safety, or if they are in a hostile enviroment, such as in vacuum or in a phoron leak, as \
+	the bag will protect the occupant from most outside enviromental hazards.  If you open a bag by mistake, closing the bag with no \
+	occupant will not use up the bag, and you can pick it back up.<br>\
+	<br>\
+	You can use a health analyzer to scan the occupant's vitals without opening the bag by clicking the occupied bag with the analyzer."

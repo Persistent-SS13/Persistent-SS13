@@ -5,24 +5,22 @@
 
 /datum/controller/process/obj/started()
 	..()
-	if(!processing_objects)
-		processing_objects = list()
-
-/datum/controller/process/obj/statProcess()
-	..()
-	stat(null, "[processing_objects.len] objects")
+	if(!GLOB.processing_objects)
+		GLOB.processing_objects = list()
 
 /datum/controller/process/obj/doWork()
-	for(last_object in processing_objects)
+	for(last_object in GLOB.processing_objects)
 		var/datum/O = last_object
-		if(istype(O) && isnull(O.gcDestroyed))
+		if(!QDELETED(O))
 			try
-				// Reagent datums get shoved in here, but the process proc isn't on the
-				//  base datum type, so we just call it blindly.
 				O:process()
 			catch(var/exception/e)
 				catchException(e, O)
 			SCHECK
 		else
 			catchBadType(O)
-			processing_objects -= O
+			GLOB.processing_objects -= O
+
+/datum/controller/process/obj/statProcess()
+	..()
+	stat(null, "[GLOB.processing_objects.len] object\s")

@@ -5,11 +5,9 @@
 	desc = "A locked box."
 	icon_state = "lockbox+l"
 	item_state = "syringe_kit"
-	w_class = 4
-	alt_w_class = 2
-	max_w_class = 3
-	max_combined_w_class = 14 //The sum of the w_classes of all the items in this storage item.
-	storage_slots = 4
+	w_class = ITEM_SIZE_HUGE
+	max_w_class = ITEM_SIZE_NORMAL
+	max_storage_space = 32 //The sum of the w_classes of all the items in this storage item.
 	req_access = list(access_armory)
 	var/locked = 1
 	var/broken = 0
@@ -18,8 +16,8 @@
 	var/icon_broken = "lockbox+b"
 
 
-	attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-		if(istype(W, /obj/item/weapon/card/id))
+	attackby(obj/item/weapon/W as obj, mob/user as mob)
+		if (istype(W, /obj/item/weapon/card/id))
 			if(src.broken)
 				to_chat(user, "<span class='warning'>It appears to be broken.</span>")
 				return
@@ -27,18 +25,22 @@
 				src.locked = !( src.locked )
 				if(src.locked)
 					src.icon_state = src.icon_locked
-					to_chat(user, "<span class='warning'>You lock the [src.name]!</span>")
+					to_chat(user, "<span class='notice'>You lock \the [src]!</span>")
+					close_all()
 					return
 				else
 					src.icon_state = src.icon_closed
-					to_chat(user, "<span class='warning'>You unlock the [src.name]!</span>")
-					origin_tech = null //wipe out any origin tech if it's unlocked in any way so you can't double-dip tech levels at R&D.
+					to_chat(user, "<span class='notice'>You unlock \the [src]!</span>")
 					return
 			else
 				to_chat(user, "<span class='warning'>Access Denied</span>")
-		else if((istype(W, /obj/item/weapon/card/emag) || istype(W, /obj/item/weapon/melee/energy/blade)) && !broken)
-			emag_act(user)
-			return
+		else if(istype(W, /obj/item/weapon/melee/energy/blade))
+			if(emag_act(INFINITY, user, W, "The locker has been sliced open by [user] with an energy blade!", "You hear metal being sliced and sparks flying."))
+				var/datum/effect/effect/system/spark_spread/spark_system = new /datum/effect/effect/system/spark_spread()
+				spark_system.set_up(5, 0, src.loc)
+				spark_system.start()
+				playsound(src.loc, 'sound/weapons/blade1.ogg', 50, 1)
+				playsound(src.loc, "sparks", 50, 1)
 		if(!locked)
 			..()
 		else
@@ -53,36 +55,26 @@
 			..()
 		return
 
-/obj/item/weapon/storage/lockbox/can_be_inserted(obj/item/W as obj, stop_messages = 0)
-	if(!locked)
-		return ..()
-	if(!stop_messages)
-		to_chat(usr, "<span class='notice'>[src] is locked!</span>")
-	return 0
-
-/obj/item/weapon/storage/lockbox/emag_act(user as mob)
+/obj/item/weapon/storage/lockbox/emag_act(var/remaining_charges, var/mob/user, var/emag_source, var/visual_feedback = "", var/audible_feedback = "")
 	if(!broken)
+		if(visual_feedback)
+			visual_feedback = "<span class='warning'>[visual_feedback]</span>"
+		else
+			visual_feedback = "<span class='warning'>The locker has been sliced open by [user] with an electromagnetic card!</span>"
+		if(audible_feedback)
+			audible_feedback = "<span class='warning'>[audible_feedback]</span>"
+		else
+			audible_feedback = "<span class='warning'>You hear a faint electrical spark.</span>"
+
 		broken = 1
 		locked = 0
 		desc = "It appears to be broken."
 		icon_state = src.icon_broken
-		to_chat(user, "<span class='notice'>You unlock \the [src].</span>")
-		origin_tech = null //wipe out any origin tech if it's unlocked in any way so you can't double-dip tech levels at R&D.
-		return
-
-/obj/item/weapon/storage/lockbox/hear_talk(mob/living/M as mob, msg)
-
-/obj/item/weapon/storage/lockbox/hear_message(mob/living/M as mob, msg)
-
-/obj/item/weapon/storage/lockbox/large
-	name = "Large lockbox"
-	desc = "A large lockbox"
-	max_w_class = 4
-	max_combined_w_class = 4 //The sum of the w_classes of all the items in this storage item.
-	storage_slots = 1
+		visible_message(visual_feedback, audible_feedback)
+		return 1
 
 /obj/item/weapon/storage/lockbox/loyalty
-	name = "Lockbox (Mindshield Implants)"
+	name = "lockbox of loyalty implants"
 	req_access = list(access_security)
 
 	New()
@@ -94,37 +86,10 @@
 
 
 /obj/item/weapon/storage/lockbox/clusterbang
-	name = "lockbox (clusterbang)"
+	name = "lockbox of clusterbangs"
 	desc = "You have a bad feeling about opening this."
 	req_access = list(access_security)
 
 	New()
 		..()
-		new /obj/item/weapon/grenade/clusterbuster(src)
-
-
-/obj/item/weapon/storage/lockbox/medal
-	name = "medal box"
-	desc = "A locked box used to store medals of honor."
-	icon_state = "medalbox+l"
-	item_state = "syringe_kit"
-	w_class = 3
-	max_w_class = 2
-	max_combined_w_class = 20
-	storage_slots = 12
-	req_access = list(access_captain)
-	icon_locked = "medalbox+l"
-	icon_closed = "medalbox"
-	icon_broken = "medalbox+b"
-
-	New()
-		..()
-		new /obj/item/clothing/accessory/medal/gold/heroism(src)
-		new /obj/item/clothing/accessory/medal/silver/security(src)
-		new /obj/item/clothing/accessory/medal/silver/valor(src)
-		new /obj/item/clothing/accessory/medal/nobel_science(src)
-		new /obj/item/clothing/accessory/medal/bronze_heart(src)
-		new /obj/item/clothing/accessory/medal/conduct(src)
-		new /obj/item/clothing/accessory/medal/conduct(src)
-		new /obj/item/clothing/accessory/medal/conduct(src)
-		new /obj/item/clothing/accessory/medal/gold/captain(src)
+		new /obj/item/weapon/grenade/flashbang/clusterbang(src)

@@ -1,161 +1,192 @@
-/obj/structure/stool/bed/chair/wheelchair
+/obj/structure/bed/chair/wheelchair
 	name = "wheelchair"
 	desc = "You sit in this. Either by will or force."
 	icon_state = "wheelchair"
 	anchored = 0
-	movable = 1
+	buckle_movable = 1
 
-	var/move_delay = null
+	var/driving = 0
+	var/mob/living/pulling = null
+	var/bloodiness
 
-/obj/structure/stool/bed/chair/wheelchair/handle_rotation()
+/obj/structure/bed/chair/wheelchair/update_icon()
+	return
+
+/obj/structure/bed/chair/wheelchair/set_dir()
+	..()
 	overlays = null
-	var/image/O = image(icon = 'icons/obj/objects.dmi', icon_state = "w_overlay", layer = FLY_LAYER, dir = src.dir)
+	var/image/O = image(icon = 'icons/obj/furniture.dmi', icon_state = "w_overlay", dir = src.dir)
+	O.plane = ABOVE_HUMAN_PLANE
+	O.layer = ABOVE_HUMAN_LAYER
 	overlays += O
 	if(buckled_mob)
-		buckled_mob.dir = dir
+		buckled_mob.set_dir(dir)
 
-/obj/structure/stool/bed/chair/wheelchair/relaymove(mob/user, direction)
+/obj/structure/bed/chair/wheelchair/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if(istype(W, /obj/item/weapon/wrench) || istype(W,/obj/item/stack) || istype(W, /obj/item/weapon/wirecutters))
+		return
+	..()
+
+/obj/structure/bed/chair/wheelchair/relaymove(mob/user, direction)
+	// Redundant check?
+	if(user.stat || user.stunned || user.weakened || user.paralysis || user.lying || user.restrained())
+		if(user==pulling)
+			pulling = null
+			user.pulledby = null
+			to_chat(user, "<span class='warning'>You lost your grip!</span>")
+		return
+	if(buckled_mob && pulling && user == buckled_mob)
+		if(pulling.stat || pulling.stunned || pulling.weakened || pulling.paralysis || pulling.lying || pulling.restrained())
+			pulling.pulledby = null
+			pulling = null
+	if(user.pulling && (user == pulling))
+		pulling = null
+		user.pulledby = null
+		return
 	if(propelled)
-		return 0
-
-	if(!Process_Spacemove(direction) || !has_gravity(src.loc) || !isturf(loc))
-		return 0
-
-	if(world.time < move_delay)
+		return
+	if(pulling && (get_dist(src, pulling) > 1))
+		pulling = null
+		user.pulledby = null
+		if(user==pulling)
+			return
+	if(pulling && (get_dir(src.loc, pulling.loc) == direction))
+		to_chat(user, "<span class='warning'>You cannot go there.</span>")
+		return
+	if(pulling && buckled_mob && (buckled_mob == user))
+		to_chat(user, "<span class='warning'>You cannot drive while being pushed.</span>")
 		return
 
-	var/calculated_move_delay
-	calculated_move_delay += 2 //wheelchairs are not infact sport bikes
-
+	// Let's roll
+	driving = 1
+	var/turf/T = null
+	//--1---Move occupant---1--//
 	if(buckled_mob)
-		if(buckled_mob.incapacitated())
-			return 0
-
-		var/mob/living/thedriver = user
-		var/mob_delay = thedriver.movement_delay()
-		if(mob_delay > 0)
-			calculated_move_delay += mob_delay
-
-		if(ishuman(buckled_mob))
-			var/mob/living/carbon/human/driver = user
-			var/obj/item/organ/external/l_hand = driver.get_organ("l_hand")
-			var/obj/item/organ/external/r_hand = driver.get_organ("r_hand")
-			if((!l_hand || (l_hand.status & ORGAN_DESTROYED)) && (!r_hand || (r_hand.status & ORGAN_DESTROYED)))
-				return 0 // No hands to drive your chair? Tough luck!
-
-			for(var/organ_name in list("l_hand","r_hand","l_arm","r_arm"))
-				var/obj/item/organ/external/E = driver.get_organ(organ_name)
-				if(!E || (E.status & ORGAN_DESTROYED))
-					calculated_move_delay += 4
-				else if(E.status & ORGAN_SPLINTED)
-					calculated_move_delay += 0.5
-				else if(E.status & ORGAN_BROKEN)
-					calculated_move_delay += 1.5
-
-		if(calculated_move_delay < 4)
-			calculated_move_delay = 4 //no racecarts
-
-		move_delay = world.time
-		move_delay += calculated_move_delay
-
-		if(!buckled_mob.Move(get_step(buckled_mob, direction), direction))
-			loc = buckled_mob.loc //we gotta go back
-			last_move = buckled_mob.last_move
-			inertia_dir = last_move
-			buckled_mob.inertia_dir = last_move
-			. = 0
-
+		buckled_mob.buckled = null
+		step(buckled_mob, direction)
+		buckled_mob.buckled = src
+	//--2----Move driver----2--//
+	if(pulling)
+		T = pulling.loc
+		if(get_dist(src, pulling) >= 1)
+			step(pulling, get_dir(pulling.loc, src.loc))
+	//--3--Move wheelchair--3--//
+	step(src, direction)
+	if(buckled_mob) // Make sure it stays beneath the occupant
+		Move(buckled_mob.loc)
+	set_dir(direction)
+	if(pulling) // Driver
+		if(pulling.loc == src.loc) // We moved onto the wheelchair? Revert!
+			pulling.forceMove(T)
 		else
-			. = 1
+			spawn(0)
+			if(get_dist(src, pulling) > 1) // We are too far away? Losing control.
+				pulling = null
+				user.pulledby = null
+			pulling.set_dir(get_dir(pulling, src)) // When everything is right, face the wheelchair
+	if(bloodiness)
+		create_track()
+	driving = 0
 
-/obj/structure/stool/bed/chair/wheelchair/Bump(atom/A)
+/obj/structure/bed/chair/wheelchair/Move()
+	..()
+	if(buckled_mob)
+		var/mob/living/occupant = buckled_mob
+		if(!driving)
+			occupant.buckled = null
+			occupant.Move(src.loc)
+			occupant.buckled = src
+			if (occupant && (src.loc != occupant.loc))
+				if (propelled)
+					for (var/mob/O in src.loc)
+						if (O != occupant)
+							Bump(O)
+				else
+					unbuckle_mob()
+			if (pulling && (get_dist(src, pulling) > 1))
+				pulling.pulledby = null
+				to_chat(pulling, "<span class='warning'>You lost your grip!</span>")
+				pulling = null
+		else
+			if (occupant && (src.loc != occupant.loc))
+				src.forceMove(occupant.loc) // Failsafe to make sure the wheelchair stays beneath the occupant after driving
+
+/obj/structure/bed/chair/wheelchair/attack_hand(mob/living/user as mob)
+	if (pulling)
+		MouseDrop(usr)
+	else
+		user_unbuckle_mob(user)
+	return
+
+/obj/structure/bed/chair/wheelchair/CtrlClick(var/mob/user)
+	if(in_range(src, user))
+		if(!ishuman(user))	return
+		if(user == buckled_mob)
+			to_chat(user, "<span class='warning'>You realize you are unable to push the wheelchair you sit in.</span>")
+			return
+		if(!pulling)
+			pulling = user
+			user.pulledby = src
+			if(user.pulling)
+				user.stop_pulling()
+			user.set_dir(get_dir(user, src))
+			to_chat(user, "You grip \the [name]'s handles.")
+		else
+			to_chat(usr, "You let go of \the [name]'s handles.")
+			pulling.pulledby = null
+			pulling = null
+		return
+
+/obj/structure/bed/chair/wheelchair/Bump(atom/A)
 	..()
 	if(!buckled_mob)	return
 
-	if(istype(A, /obj/machinery/door))
-		A.Bumped(buckled_mob)
+	if(propelled || (pulling && (pulling.a_intent == I_HURT)))
+		var/mob/living/occupant = unbuckle_mob()
 
-	if(propelled)
-		var/mob/living/occupant = buckled_mob
-		unbuckle_mob()
+		if (pulling && (pulling.a_intent == I_HURT))
+			occupant.throw_at(A, 3, 3, pulling)
+		else if (propelled)
+			occupant.throw_at(A, 3, propelled)
 
+		var/def_zone = ran_zone()
+		var/blocked = occupant.run_armor_check(def_zone, "melee")
 		occupant.throw_at(A, 3, propelled)
-
-		occupant.apply_effect(6, STUN, 0)
-		occupant.apply_effect(6, WEAKEN, 0)
-		occupant.apply_effect(6, STUTTER, 0)
+		occupant.apply_effect(6, STUN, blocked)
+		occupant.apply_effect(6, WEAKEN, blocked)
+		occupant.apply_effect(6, STUTTER, blocked)
+		occupant.apply_damage(10, BRUTE, def_zone, blocked)
 		playsound(src.loc, 'sound/weapons/punch1.ogg', 50, 1, -1)
 		if(istype(A, /mob/living))
 			var/mob/living/victim = A
-			victim.apply_effect(6, STUN, 0)
-			victim.apply_effect(6, WEAKEN, 0)
-			victim.apply_effect(6, STUTTER, 0)
-			victim.take_organ_damage(10)
-
-		occupant.visible_message("<span class='danger'>[occupant] crashed into \the [A]!</span>")
-
-/obj/structure/stool/bed/chair/wheelchair/bike
-	name = "bicycle"
-	desc = "Two wheels of FURY!"
-	//placeholder until i get a bike sprite
-	icon = 'icons/vehicles/motorcycle.dmi'
-	icon_state = "motorcycle_4dir"
-
-/obj/structure/stool/bed/chair/wheelchair/bike/relaymove(mob/user, direction)
-	if(propelled)
-		return 0
-
-	if(!Process_Spacemove(direction) || !has_gravity(src.loc) || !isturf(loc))	//bikes in space.
-		return 0
-
-	if(world.time < move_delay)
-		return
-
-	var/calculated_move_delay
-	calculated_move_delay = 0 //bikes are infact sport bikes
-
-	if(buckled_mob)
-		if(buckled_mob.incapacitated())
-			unbuckle_mob()	//if the rider is incapacitated, unbuckle them (they can't balance so they fall off)
-			return 0
-
-		var/mob/living/thedriver = user
-		var/mob_delay = thedriver.movement_delay()
-		if(mob_delay > 0)
-			calculated_move_delay += mob_delay
-
-		if(ishuman(buckled_mob))
-			var/mob/living/carbon/human/driver = user
-			var/obj/item/organ/external/l_hand = driver.get_organ("l_hand")
-			var/obj/item/organ/external/r_hand = driver.get_organ("r_hand")
-			if((!l_hand || (l_hand.status & ORGAN_DESTROYED)) && (!r_hand || (r_hand.status & ORGAN_DESTROYED)))
-				calculated_move_delay += 0.5	//I can ride my bike with no handlebars... (but it's slower)
-
-			for(var/organ_name in list("l_leg","r_leg","l_foot","r_foot"))
-				var/obj/item/organ/external/E = driver.get_organ(organ_name)
-				if(!E || (E.status & ORGAN_DESTROYED))
-					return 0	//Bikes need both feet/legs to work. missing even one makes it so you can't ride the bike
-				else if(E.status & ORGAN_SPLINTED)
-					calculated_move_delay += 0.5
-				else if(E.status & ORGAN_BROKEN)
-					calculated_move_delay += 1.5
-
-		move_delay = world.time
-		move_delay += calculated_move_delay
-
-		if(!buckled_mob.Move(get_step(buckled_mob, direction), direction))
-			loc = buckled_mob.loc //we gotta go back
-			last_move = buckled_mob.last_move
-			inertia_dir = last_move
-			buckled_mob.inertia_dir = last_move
-			. = 0
-
+			def_zone = ran_zone()
+			blocked = victim.run_armor_check(def_zone, "melee")
+			victim.apply_effect(6, STUN, blocked)
+			victim.apply_effect(6, WEAKEN, blocked)
+			victim.apply_effect(6, STUTTER, blocked)
+			victim.apply_damage(10, BRUTE, def_zone, blocked)
+		if(pulling)
+			occupant.visible_message("<span class='danger'>[pulling] has thrusted \the [name] into \the [A], throwing \the [occupant] out of it!</span>")
+			admin_attack_log(pulling, occupant, "Crashed their victim into \an [A].", "Was crashed into \an [A].", "smashed into \the [A] using")
 		else
-			. = 1
+			occupant.visible_message("<span class='danger'>[occupant] crashed into \the [A]!</span>")
 
-/obj/structure/stool/bed/chair/wheelchair/bike/handle_rotation()
-	overlays = null
-	var/image/O = image(icon = 'icons/vehicles/motorcycle.dmi', icon_state = "motorcycle_overlay_4d", layer = FLY_LAYER, dir = src.dir)
-	overlays += O
-	if(buckled_mob)
-		buckled_mob.dir = dir
+/obj/structure/bed/chair/wheelchair/proc/create_track()
+	var/obj/effect/decal/cleanable/blood/tracks/B = new(loc)
+	var/newdir = get_dir(get_step(loc, dir), loc)
+	if(newdir == dir)
+		B.set_dir(newdir)
+	else
+		newdir = newdir | dir
+		if(newdir == 3)
+			newdir = 1
+		else if(newdir == 12)
+			newdir = 4
+		B.set_dir(newdir)
+	bloodiness--
+
+/obj/structure/bed/chair/wheelchair/buckle_mob(mob/M as mob, mob/user as mob)
+	if(M == pulling)
+		pulling = null
+		usr.pulledby = null
+	..()

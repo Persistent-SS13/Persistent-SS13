@@ -1,11 +1,8 @@
 // the SMES
 // stores power
 
-#define SMESMAXCHARGELEVEL 200000
-#define SMESMAXOUTPUT 200000
-#define SMESRATE 0.05			// rate of internal charge to external power
-
-
+#define SMESMAXCHARGELEVEL 250000
+#define SMESMAXOUTPUT 250000
 
 /obj/machinery/power/smes
 	name = "power storage unit"
@@ -13,9 +10,11 @@
 	icon_state = "smes"
 	density = 1
 	anchored = 1
+	use_power = 0
+	clicksound = "switch"
 
 	var/capacity = 5e6 // maximum charge
-	var/charge = 0 // actual charge
+	var/charge = 1e6 // actual charge
 
 	var/input_attempt = 0 			// 1 = attempting to charge, 0 = not attempting to charge
 	var/inputting = 0 				// 1 = actually inputting, 0 = not inputting
@@ -23,93 +22,75 @@
 	var/input_level_max = 200000 	// cap on input_level
 	var/input_available = 0 		// amount of charge available from input last tick
 
-	var/output_attempt = 1 			// 1 = attempting to output, 0 = not attempting to output
-	var/outputting = 1 				// 1 = actually outputting, 0 = not outputting
+	var/output_attempt = 0 			// 1 = attempting to output, 0 = not attempting to output
+	var/outputting = 0 				// 1 = actually outputting, 0 = not outputting
 	var/output_level = 50000		// amount of power the SMES attempts to output
 	var/output_level_max = 200000	// cap on output_level
 	var/output_used = 0				// amount of power actually outputted. may be less than output_level if the powernet returns excess power
 
 	//Holders for powerout event.
-	var/last_output_attempt	= 0
-	var/last_input_attempt	= 0
-	var/last_charge			= 0
+	//var/last_output_attempt	= 0
+	//var/last_input_attempt	= 0
+	//var/last_charge			= 0
 
-	var/open_hatch = 0
+	//For icon overlay updates
+	var/last_disp
+	var/last_chrg
+	var/last_onln
+
+	var/damage = 0
+	var/maxdamage = 500 // Relatively resilient, given how expensive it is, but once destroyed produces small explosion.
+
+	var/input_cut = 0
+	var/input_pulsed = 0
+	var/output_cut = 0
+	var/output_pulsed = 0
+	var/failure_timer = 0			// Set by gridcheck event, temporarily disables the SMES.
+	var/target_load = 0
 	var/name_tag = null
 	var/building_terminal = 0 //Suggestions about how to avoid clickspam building several terminals accepted!
-	var/obj/machinery/power/terminal/terminal = null
-	map_storage_saved_vars = "density;icon_state;dir;name;pixel_x;pixel_y;stat;emagged;req_access_txt;id;stat;charge;name_tag"
+	var/list/terminals = list()
+	var/should_be_mapped = 0 // If this is set to 0 it will send out warning on New()
+
+/obj/machinery/power/smes/drain_power(var/drain_check, var/surge, var/amount = 0)
+
+	if(drain_check)
+		return 1
+
+	var/smes_amt = min((amount * CELLRATE), charge)
+	charge -= smes_amt
+	return smes_amt / CELLRATE
+
 
 /obj/machinery/power/smes/New()
 	..()
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/smes(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/high(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/high(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/high(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/high(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/high(null)
-	component_parts += new /obj/item/weapon/stock_parts/capacitor(null)
-	component_parts += new /obj/item/stack/cable_coil(null, 5)
-	RefreshParts()
+	if(!should_be_mapped)
+		warning("Non-buildable or Non-magical SMES at [src.x]X [src.y]Y [src.z]Z")
 
-	spawn(5)
-		if(!powernet)
-			connect_to_network()
-
-		dir_loop:
-			for(var/d in cardinal)
-				var/turf/T = get_step(src, d)
-				for(var/obj/machinery/power/terminal/term in T)
-					if(term && term.dir == turn(d, 180))
-						terminal = term
-						break dir_loop
-		if(!terminal)
-			stat |= BROKEN
-			return
-		terminal.master = src
-		if(!terminal.powernet)
-			terminal.connect_to_network()
-		update_icon()
-	return
-/obj/machinery/power/smes/after_load()
-	dir_loop:
-		for(var/d in cardinal)
-			var/turf/T = get_step(src, d)
-			for(var/obj/machinery/power/terminal/term in T)
-				if(term && term.dir == turn(d, 180))
-					terminal = term
-					break dir_loop
-	if(!terminal)
+/obj/machinery/power/smes/Initialize()
+	. = ..()
+	for(var/d in GLOB.cardinal)
+		var/turf/T = get_step(src, d)
+		for(var/obj/machinery/power/terminal/term in T)
+			if(term && term.dir == turn(d, 180) && !term.master)
+				terminals |= term
+				term.master = src
+				term.connect_to_network()
+	if(!terminals.len)
 		stat |= BROKEN
 		return
-	terminal.master = src
-	if(!terminal.powernet)
-		terminal.connect_to_network()
 	update_icon()
-/obj/machinery/power/smes/upgraded/New()
-	..()
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/smes(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/hyper(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/hyper(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/hyper(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/hyper(null)
-	component_parts += new /obj/item/weapon/stock_parts/cell/hyper(null)
-	component_parts += new /obj/item/weapon/stock_parts/capacitor/super(null)
-	component_parts += new /obj/item/stack/cable_coil(null, 5)
-	RefreshParts()
 
-/obj/machinery/power/smes/RefreshParts()
-	var/IO = 0
-	var/C = 0
-	for(var/obj/item/weapon/stock_parts/capacitor/CP in component_parts)
-		IO += CP.rating
-	input_level_max = 200000 * IO
-	output_level_max = 200000 * IO
-	for(var/obj/item/weapon/stock_parts/cell/PC in component_parts)
-		C += PC.maxcharge
-	capacity = C / (15000) * 1e6
+/obj/machinery/power/smes/add_avail(var/amount)
+	if(..(amount))
+		powernet.smes_newavail += amount
+		return 1
+	return 0
+
+
+/obj/machinery/power/smes/disconnect_terminal(var/obj/machinery/power/terminal/term)
+	terminals -= term
+	term.master = null
 
 /obj/machinery/power/smes/update_icon()
 	overlays.Cut()
@@ -119,174 +100,92 @@
 
 	if(inputting == 2)
 		overlays += image('icons/obj/power.dmi', "smes-oc2")
-	else if(inputting == 1)
+	else if (inputting == 1)
 		overlays += image('icons/obj/power.dmi', "smes-oc1")
-	else
-		if(input_attempt)
-			overlays += image('icons/obj/power.dmi', "smes-oc0")
+	else if (input_attempt)
+		overlays += image('icons/obj/power.dmi', "smes-oc0")
 
 	var/clevel = chargedisplay()
-	if(clevel>0)
+	if(clevel)
 		overlays += image('icons/obj/power.dmi', "smes-og[clevel]")
-	return
 
-/obj/machinery/power/smes/attackby(obj/item/I, mob/user, params)
-	//opening using screwdriver
-	if(default_deconstruction_screwdriver(user, "[initial(icon_state)]-o", initial(icon_state), I))
-		update_icon()
-		return
-
-	//changing direction using wrench
-	if(default_change_direction_wrench(user, I))
-		terminal = null
-		var/turf/T = get_step(src, dir)
-		for(var/obj/machinery/power/terminal/term in T)
-			if(term && term.dir == turn(dir, 180))
-				terminal = term
-				terminal.master = src
-				to_chat(user, "<span class='notice'>Terminal found.</span>")
-				break
-		if(!terminal)
-			to_chat(user, "<span class='alert'>No power source found.</span>")
-			return
-		stat &= ~BROKEN
-		update_icon()
-		return
-
-	//exchanging parts using the RPE
-	if(exchange_parts(user, I))
-		return
-
-	//building and linking a terminal
-	if(istype(I, /obj/item/stack/cable_coil))
-		var/dir = get_dir(user,src)
-		if(dir & (dir-1))//we don't want diagonal click
-			return
-
-		if(terminal) //is there already a terminal ?
-			to_chat(user, "<span class='alert'>This SMES already has a power terminal!</span>")
-			return
-
-		if(!panel_open) //is the panel open ?
-			to_chat(user, "<span class='alert'>You must open the maintenance panel first!</span>")
-			return
-
-		var/turf/T = get_turf(user)
-		if(T.intact) //is the floor plating removed ?
-			to_chat(user, "<span class='alert'>You must first remove the floor plating!</span>")
-			return
-
-		var/obj/item/stack/cable_coil/C = I
-		if(C.amount < 10)
-			to_chat(user, "<span class='alert'>You need more wires.</span>")
-			return
-
-		//build the terminal and link it to the network
-		make_terminal(user)
-		terminal.connect_to_network()
-		return
-
-	//disassembling the terminal
-	if(istype(I, /obj/item/weapon/wirecutters) && terminal && panel_open)
-		var/turf/T = get_turf(terminal)
-		if(T.intact) //is the floor plating removed ?
-			to_chat(user, "<span class='alert'>You must first expose the power terminal!</span>")
-			return
-
-		to_chat(user, "<span class='notice'>You begin to dismantle the power terminal...</span>")
-		playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
-
-		if(do_after(user, 50, target = src))
-			if(prob(50) && electrocute_mob(usr, terminal.powernet, terminal)) //animate the electrocution if uncautious and unlucky
-				var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
-				s.set_up(5, 1, src)
-				s.start()
-				return
-
-			//give the wires back and delete the terminal
-			new /obj/item/stack/cable_coil(T,10)
-			user.visible_message(\
-				"<span class='alert'>[user.name] cuts the cables and dismantles the power terminal.</span>",\
-				"<span class='notice'>You cut the cables and dismantle the power terminal.</span>")
-			inputting = 0 //stop inputting, since we have don't have a terminal anymore
-			qdel(terminal)
-			return
-
-	//crowbarring it !
-	default_deconstruction_crowbar(user, I)
-
-/obj/machinery/power/smes/disconnect_terminal()
-	if(terminal)
-		terminal.master = null
-		terminal = null
-		return 1
-	return 0
-
-/obj/machinery/power/smes/Destroy()
-	if(ticker && ticker.current_state == GAME_STATE_PLAYING)
-		var/area/area = get_area(src)
-		if(area)
-			message_admins("SMES deleted at (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>[area.name]</a>)")
-			log_game("SMES deleted at ([area.name])")
-			investigate_log("<font color='red'>deleted</font> at ([area.name])","singulo")
-	if(terminal)
-		disconnect_terminal()
-	return ..()
-
-	return round(5.5*charge/(capacity ? capacity : 5e6))
+	if(outputting == 2)
+		overlays += image('icons/obj/power.dmi', "smes-op2")
+	else if (outputting == 1)
+		overlays += image('icons/obj/power.dmi', "smes-op1")
+	else
+		overlays += image('icons/obj/power.dmi', "smes-op0")
 
 /obj/machinery/power/smes/proc/chargedisplay()
 	return round(5.5*charge/(capacity ? capacity : 5e6))
 
-#define SMESRATE 0.05
+/obj/machinery/power/smes/proc/input_power(var/percentage)
+	var/to_input = target_load * (percentage/100)
+	to_input = between(0, to_input, target_load)
+	input_available = 0
+	if(percentage == 100)
+		inputting = 2
+	else if(percentage)
+		inputting = 1
+	// else inputting = 0, as set in process()
+
+	for(var/obj/machinery/power/terminal/term in terminals)
+		var/inputted = term.powernet.draw_power(to_input)
+		add_charge(inputted)
+		input_available += inputted
+
+// Mostly in place due to child types that may store power in other way (PSUs)
+/obj/machinery/power/smes/proc/add_charge(var/amount)
+	charge += amount*CELLRATE
+
+/obj/machinery/power/smes/proc/remove_charge(var/amount)
+	charge -= amount*CELLRATE
 
 /obj/machinery/power/smes/process()
-
 	if(stat & BROKEN)	return
-
-	//store machine state to see if we need to update the icon overlays
-	var/last_disp = chargedisplay()
-	var/last_chrg = inputting
-	var/last_onln = outputting
-
-	//inputting
-	if(input_attempt)
-		var/target_load = min((capacity-charge)/SMESRATE, input_level)	// charge at set rate, limited to spare capacity
-		var/actual_load = draw_power(target_load)						// add the load to the terminal side network
-		charge += actual_load * SMESRATE								// increase the charge
-
-		if(actual_load >= target_load) // Did we charge at full rate?
-			inputting = 2
-		else if(actual_load) // If not, did we charge at least partially?
-			inputting = 1
-		else // Or not at all?
-			inputting = 0
-
-	//outputting
-	if(outputting)
-		output_used = min( charge/SMESRATE, output_level)		//limit output to that stored
-
-		charge -= output_used*SMESRATE		// reduce the storage (may be recovered in /restore() if excessive)
-
-		add_avail(output_used)				// add output to powernet (smes side)
-
-		if(output_used < 0.0001)			// either from no charge or set to 0
-			outputting = 0
-			investigate_log("lost power and turned <font color='red'>off</font>","singulo")
-	else if(output_attempt && charge > output_level && output_level > 0)
-		outputting = 1
-	else
-		output_used = 0
+	if(failure_timer)	// Disabled by gridcheck.
+		failure_timer--
+		return
 
 	// only update icon if state changed
 	if(last_disp != chargedisplay() || last_chrg != inputting || last_onln != outputting)
 		update_icon()
 
+	//store machine state to see if we need to update the icon overlays
+	last_disp = chargedisplay()
+	last_chrg = inputting
+	last_onln = outputting
 
+	input_available = 0
+	//inputting
+	if(input_attempt && (!input_pulsed && !input_cut))
+		target_load = min((capacity-charge)/CELLRATE, input_level)	// Amount we will request from the powernet.
+		var/input_available = FALSE
+		for(var/obj/machinery/power/terminal/term in terminals)
+			if(!term.powernet)
+				continue
+			input_available = TRUE
+			term.powernet.smes_demand += target_load
+			term.powernet.inputting.Add(src)
+		if(!input_available)
+			target_load = 0 // We won't input any power without powernet connection.
+		inputting = 0
+
+	output_used = 0
+	//outputting
+	if(output_attempt && (!output_pulsed && !output_cut) && powernet && charge)
+		output_used = min( charge/CELLRATE, output_level)		//limit output to that stored
+		remove_charge(output_used)			// reduce the storage (may be recovered in /restore() if excessive)
+		add_avail(output_used)				// add output to powernet (smes side)
+		outputting = 2
+	else if(!powernet || !charge)
+		outputting = 1
+	else
+		outputting = 0
 
 // called after all power processes are finished
 // restores charge level to smes if there was excess this ptick
-/obj/machinery/power/smes/proc/restore()
+/obj/machinery/power/smes/proc/restore(var/percent_load)
 	if(stat & BROKEN)
 		return
 
@@ -294,20 +193,18 @@
 		output_used = 0
 		return
 
-	var/excess = powernet.netexcess		// this was how much wasn't used on the network last ptick, minus any removed by other SMESes
-
-	excess = min(output_used, excess)				// clamp it to how much was actually output by this SMES last ptick
-
-	excess = min((capacity-charge)/SMESRATE, excess)	// for safety, also limit recharge by space capacity of SMES (shouldn't happen)
+	var/total_restore = output_used * (percent_load / 100) // First calculate amount of power used from our output
+	total_restore = between(0, total_restore, output_used) // Now clamp the value between 0 and actual output, just for clarity.
+	total_restore = output_used - total_restore			   // And, at last, subtract used power from outputted power, to get amount of power we will give back to the SMES.
 
 	// now recharge this amount
 
 	var/clev = chargedisplay()
 
-	charge += excess * SMESRATE			// restore unused power
-	powernet.netexcess -= excess		// remove the excess from the powernet, so later SMESes don't try to use it
+	add_charge(total_restore)				// restore unused power
+	powernet.netexcess -= total_restore		// remove the excess from the powernet, so later SMESes don't try to use it
 
-	output_used -= excess
+	output_used -= total_restore
 
 	if(clev != chargedisplay() ) //if needed updates the icons overlay
 		update_icon()
@@ -315,65 +212,142 @@
 
 //Will return 1 on failure
 /obj/machinery/power/smes/proc/make_terminal(const/mob/user)
-	if(user.loc == loc)
+	if (user.loc == loc)
 		to_chat(user, "<span class='warning'>You must not be on the same tile as the [src].</span>")
 		return 1
 
 	//Direction the terminal will face to
 	var/tempDir = get_dir(user, src)
 	switch(tempDir)
-		if(NORTHEAST, SOUTHEAST)
+		if (NORTHEAST, SOUTHEAST)
 			tempDir = EAST
-		if(NORTHWEST, SOUTHWEST)
+		if (NORTHWEST, SOUTHWEST)
 			tempDir = WEST
 	var/turf/tempLoc = get_step(src, reverse_direction(tempDir))
-	if(istype(tempLoc, /turf/space))
+	if (istype(tempLoc, /turf/space))
 		to_chat(user, "<span class='warning'>You can't build a terminal on space.</span>")
 		return 1
-	else if(istype(tempLoc))
-		if(tempLoc.intact)
+	else if (istype(tempLoc))
+		if(!tempLoc.is_plating())
 			to_chat(user, "<span class='warning'>You must remove the floor plating first.</span>")
 			return 1
+	if(check_terminal_exists(tempLoc, user, tempDir))
+		return 1
 	to_chat(user, "<span class='notice'>You start adding cable to the [src].</span>")
-	if(do_after(user, 50, target = src))
-		var/turf/T = get_turf(user)
-		var/obj/structure/cable/N = T.get_cable_node() //get the connecting node cable, if there's one
-		if(prob(50) && electrocute_mob(user, N, N)) //animate the electrocution if uncautious and unlucky
-			var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
-			s.set_up(5, 1, src)
-			s.start()
-			return
-
-		user.visible_message(\
-			"<span class='notice'>[user.name] adds the cables and connects the power terminal.</span>",\
-			"<span class='notice'>You add the cables and connect the power terminal.</span>")
-
-		terminal = new /obj/machinery/power/terminal(tempLoc)
-		terminal.dir = tempDir
-		terminal.master = src
+	if(do_after(user, 50, src))
+		if(check_terminal_exists(tempLoc, user, tempDir))
+			return 1
+		var/obj/machinery/power/terminal/term = new/obj/machinery/power/terminal(tempLoc)
+		term.set_dir(tempDir)
+		term.master = src
+		term.connect_to_network()
+		terminals |= term
 		return 0
 	return 1
 
-/obj/machinery/power/smes/draw_power(var/amount)
-	if(terminal && terminal.powernet)
-		return terminal.powernet.draw_power(amount)
+
+/obj/machinery/power/smes/proc/check_terminal_exists(var/turf/location, var/mob/user, var/direction)
+	for(var/obj/machinery/power/terminal/term in location)
+		if(term.dir == direction)
+			to_chat(user, "<span class='notice'>There is already a terminal here.</span>")
+			return 1
 	return 0
+
+/obj/machinery/power/smes/draw_power(var/amount)
+	var/drained = 0
+	for(var/obj/machinery/power/terminal/term in terminals)
+		if(!term.powernet)
+			continue
+		if((amount - drained) <= 0)
+			return 0
+		drained += term.powernet.draw_power(amount - drained)
+	return drained
+
 
 /obj/machinery/power/smes/attack_ai(mob/user)
 	add_hiddenprint(user)
-	ui_interact(user)
-
-/obj/machinery/power/smes/attack_ghost(mob/user)
 	ui_interact(user)
 
 /obj/machinery/power/smes/attack_hand(mob/user)
 	add_fingerprint(user)
 	ui_interact(user)
 
-/obj/machinery/power/smes/attack_alien(mob/living/carbon/alien/humanoid/user)
-	return
+
+/obj/machinery/power/smes/attackby(var/obj/item/weapon/W as obj, var/mob/user as mob)
+
+	if(default_deconstruction_screwdriver(user, W))
+		return
+
+	if (!panel_open)
+		to_chat(user, "<span class='warning'>You need to open access hatch on [src] first!</span>")
+		return 0
+
+	if(istype(W, /obj/item/stack/cable_coil) && !building_terminal)
+		building_terminal = 1
+		var/obj/item/stack/cable_coil/CC = W
+		if (CC.get_amount() < 10)
+			to_chat(user, "<span class='warning'>You need more cables.</span>")
+			building_terminal = 0
+			return 0
+		if (make_terminal(user))
+			building_terminal = 0
+			return 0
+		building_terminal = 0
+		CC.use(10)
+		user.visible_message(\
+				"<span class='notice'>[user.name] has added cables to the [src].</span>",\
+				"<span class='notice'>You added cables to the [src].</span>")
+		stat = 0
+		return 0
+
+	if(istype(W, /obj/item/weapon/weldingtool))
+		var/obj/item/weapon/weldingtool/WT = W
+		if(!WT.isOn())
+			to_chat(user, "Turn on \the [WT] first!")
+			return 0
+		if(!damage)
+			to_chat(user, "\The [src] is already fully repaired.")
+			return 0
+		if(WT.remove_fuel(0,user) && do_after(user, damage, src))
+			to_chat(user, "You repair all structural damage to \the [src]")
+			damage = 0
+		return 0
+	else if(istype(W, /obj/item/weapon/wirecutters) && !building_terminal)
+		building_terminal = 1
+		var/obj/machinery/power/terminal/term
+		for(var/obj/machinery/power/terminal/T in get_turf(user))
+			if(T.master == src)
+				term = T
+				break
+		if(!term)
+			to_chat(user, "<span class='warning'>There is no terminal on this tile.</span>")
+			return 0
+		var/turf/tempTDir = get_turf(term)
+		if (istype(tempTDir))
+			if(!tempTDir.is_plating())
+				to_chat(user, "<span class='warning'>You must remove the floor plating first.</span>")
+			else
+				to_chat(user, "<span class='notice'>You begin to cut the cables...</span>")
+				playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
+				if(do_after(user, 50, src))
+					if (prob(50) && electrocute_mob(usr, term.powernet, term))
+						var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+						s.set_up(5, 1, src)
+						s.start()
+						if(usr.stunned)
+							return 0
+					new /obj/item/stack/cable_coil(loc,10)
+					user.visible_message(\
+						"<span class='notice'>[user.name] cut the cables and dismantled the power terminal.</span>",\
+						"<span class='notice'>You cut the cables and dismantle the power terminal.</span>")
+					terminals -= term
+					qdel(term)
+		building_terminal = 0
+		return 0
+	return 1
 
 /obj/machinery/power/smes/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
+
 	if(stat & BROKEN)
 		return
 
@@ -381,34 +355,38 @@
 	var/data[0]
 	data["nameTag"] = name_tag
 	data["storedCapacity"] = round(100.0*charge/capacity, 0.1)
+	data["storedCapacityAbs"] = round(charge/1000, 0.1)
+	data["storedCapacityMax"] = round(capacity/1000, 0.1)
 	data["charging"] = inputting
 	data["chargeMode"] = input_attempt
-	data["chargeLevel"] = input_level
-	data["chargeMax"] = input_level_max
+	data["chargeLevel"] = round(input_level/1000, 0.1)
+	data["chargeMax"] = round(input_level_max/1000)
+	data["chargeLoad"] = round(input_available/1000, 0.1)
 	data["outputOnline"] = output_attempt
-	data["outputLevel"] = output_level
-	data["outputMax"] = output_level_max
-	data["outputLoad"] = round(output_used)
+	data["outputLevel"] = round(output_level/1000, 0.1)
+	data["outputMax"] = round(output_level_max/1000)
+	data["outputLoad"] = round(output_used/1000, 0.1)
+	data["failTime"] = failure_timer * 2
+	data["outputting"] = outputting
 
-	if(outputting)
-		data["outputting"] = 2			// smes is outputting
-	else if(!outputting && output_attempt)
-		data["outputting"] = 1			// smes is online but not outputting because it's charge level is too low
-	else
-		data["outputting"] = 0			// smes is not outputting
 
 	// update the ui if it exists, returns null if no ui is passed/found
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
-	if(!ui)
+	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	if (!ui)
 		// the ui does not exist, so we'll create a new() one
         // for a list of parameters and their descriptions see the code docs in \code\modules\nano\nanoui.dm
-		ui = new(user, src, ui_key, "smes.tmpl", "SMES Power Storage Unit", 540, 380)
+		ui = new(user, src, ui_key, "smes.tmpl", "SMES Unit", 540, 380)
 		// when the ui is first opened this is the data it will use
 		ui.set_initial_data(data)
 		// open the new ui window
 		ui.open()
 		// auto update every Master Controller tick
 		ui.set_auto_update(1)
+
+/obj/machinery/power/smes/proc/Percentage()
+	if(!capacity)
+		return 0
+	return round(100.0*charge/capacity, 0.1)
 
 /obj/machinery/power/smes/Topic(href, href_list)
 	if(..())
@@ -417,11 +395,15 @@
 	if( href_list["cmode"] )
 		inputting(!input_attempt)
 		update_icon()
-
+		return 1
 	else if( href_list["online"] )
 		outputting(!output_attempt)
 		update_icon()
-
+		return 1
+	else if( href_list["reboot"] )
+		failure_timer = 0
+		update_icon()
+		return 1
 	else if( href_list["input"] )
 		switch( href_list["input"] )
 			if("min")
@@ -429,9 +411,9 @@
 			if("max")
 				input_level = input_level_max
 			if("set")
-				input_level = input(usr, "Enter new input level (0-[input_level_max])", "SMES Input Power Control", input_level) as num
+				input_level = (input(usr, "Enter new input level (0-[input_level_max/1000] kW)", "SMES Input Power Control", input_level/1000) as num) * 1000
 		input_level = max(0, min(input_level_max, input_level))	// clamp to range
-
+		return 1
 	else if( href_list["output"] )
 		switch( href_list["output"] )
 			if("min")
@@ -439,39 +421,13 @@
 			if("max")
 				output_level = output_level_max
 			if("set")
-				output_level = input(usr, "Enter new output level (0-[output_level_max])", "SMES Output Power Control", output_level) as num
+				output_level = (input(usr, "Enter new output level (0-[output_level_max/1000] kW)", "SMES Output Power Control", output_level/1000) as num) * 1000
 		output_level = max(0, min(output_level_max, output_level))	// clamp to range
+		return 1
 
-	investigate_log("input/output; [input_level>output_level?"<font color='green'>":"<font color='red'>"][input_level]/[output_level]</font> | Output-mode: [output_attempt?"<font color='green'>on</font>":"<font color='red'>off</font>"] | Input-mode: [input_attempt?"<font color='green'>auto</font>":"<font color='red'>off</font>"] by [usr.key]","singulo")
 
-	return 1
-
-/obj/machinery/power/smes/proc/ion_act()
-	if(is_station_level(src.z))
-		if(prob(1)) //explosion
-			for(var/mob/M in viewers(src))
-				M.show_message("\red The [src.name] is making strange noises!", 3, "\red You hear sizzling electronics.", 2)
-			sleep(10*pick(4,5,6,7,10,14))
-			var/datum/effect/system/harmless_smoke_spread/smoke = new /datum/effect/system/harmless_smoke_spread()
-			smoke.set_up(3, 0, src.loc)
-			smoke.attach(src)
-			smoke.start()
-			explosion(src.loc, -1, 0, 1, 3, 1, 0)
-			qdel(src)
-			return
-		if(prob(15)) //Power drain
-			var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
-			s.set_up(3, 1, src)
-			s.start()
-			if(prob(50))
-				emp_act(1)
-			else
-				emp_act(2)
-		if(prob(5)) //smoke only
-			var/datum/effect/system/harmless_smoke_spread/smoke = new /datum/effect/system/harmless_smoke_spread()
-			smoke.set_up(3, 0, src.loc)
-			smoke.attach(src)
-			smoke.start()
+/obj/machinery/power/smes/proc/energy_fail(var/duration)
+	failure_timer = max(failure_timer, duration)
 
 /obj/machinery/power/smes/proc/inputting(var/do_input)
 	input_attempt = do_input
@@ -483,28 +439,58 @@
 	if(!output_attempt)
 		outputting = 0
 
+/obj/machinery/power/smes/proc/take_damage(var/amount)
+	amount = max(0, round(amount))
+	damage += amount
+	if(damage > maxdamage)
+		visible_message("<span class='danger'>\The [src] explodes in large rain of sparks and smoke!</span>")
+		// Depending on stored charge percentage cause damage.
+		switch(Percentage())
+			if(75 to INFINITY)
+				explosion(get_turf(src), 1, 2, 4)
+			if(40 to 74)
+				explosion(get_turf(src), 0, 2, 3)
+			if(5 to 39)
+				explosion(get_turf(src), 0, 1, 2)
+		qdel(src) // Either way we want to ensure the SMES is deleted.
+
 /obj/machinery/power/smes/emp_act(severity)
-	inputting(rand(0,1))
-	outputting(rand(0,1))
-	output_level = rand(0, output_level_max)
-	input_level = rand(0, input_level_max)
-	charge -= 1e6/severity
-	if(charge < 0)
-		charge = 0
+	if(prob(50))
+		inputting(rand(0,1))
+		outputting(rand(0,1))
+	if(prob(50))
+		output_level = rand(0, output_level_max)
+		input_level = rand(0, input_level_max)
+	if(prob(50))
+		charge -= 1e6/severity
+		if (charge < 0)
+			charge = 0
+	if(prob(50))
+		energy_fail(rand(0 + (severity * 30),30 + (severity * 30)))
 	update_icon()
 	..()
 
-/obj/machinery/power/smes/engineering
-	charge = 2e6 // Engineering starts with some charge for singulo
+/obj/machinery/power/smes/bullet_act(var/obj/item/projectile/Proj)
+	if(Proj.damage_type == BRUTE || Proj.damage_type == BURN)
+		take_damage(Proj.damage)
 
-/obj/machinery/power/smes/magical
-	name = "magical power storage unit"
-	desc = "A high-capacity superconducting magnetic energy storage (SMES) unit. Magically produces power."
-	capacity = 9000000
-	output_level = 250000
+/obj/machinery/power/smes/ex_act(var/severity)
+	// Two strong explosions will destroy a SMES.
+	// Given the SMES creates another explosion on it's destruction it sounds fairly reasonable.
+	take_damage(250 / severity)
 
-/obj/machinery/power/smes/magical/process()
-	charge = 5000000
-	..()
-
-#undef SMESRATE
+/obj/machinery/power/smes/examine(var/mob/user)
+	. = ..()
+	to_chat(user, "The service hatch is [panel_open ? "open" : "closed"].")
+	if(!damage)
+		return
+	var/damage_percentage = round((damage / maxdamage) * 100)
+	switch(damage_percentage)
+		if(75 to INFINITY)
+			to_chat(user, "<span class='danger'>It's casing is severely damaged, and sparking circuitry may be seen through the holes!</span>")
+		if(50 to 74)
+			to_chat(user, "<span class='notice'>It's casing is considerably damaged, and some of the internal circuits appear to be exposed!</span>")
+		if(25 to 49)
+			to_chat(user, "<span class='notice'>It's casing is quite seriously damaged.</span>")
+		if(0 to 24)
+			to_chat(user, "It's casing has some minor damage.")

@@ -2,7 +2,7 @@ var/list/obj/effect/bump_teleporter/BUMP_TELEPORTERS = list()
 
 /obj/effect/bump_teleporter
 	name = "bump-teleporter"
-	icon = 'icons/mob/screen_gen.dmi'
+	icon = 'icons/mob/screen1.dmi'
 	icon_state = "x2"
 	var/id = null			//id of this bump_teleporter.
 	var/id_target = null	//id of bump_teleporter which this moves you to.
@@ -30,5 +30,5 @@ var/list/obj/effect/bump_teleporter/BUMP_TELEPORTERS = list()
 
 	for(var/obj/effect/bump_teleporter/BT in BUMP_TELEPORTERS)
 		if(BT.id == src.id_target)
-			usr.loc = BT.loc	//Teleport to location with correct id.
+			usr.forceMove(BT.loc)	//Teleport to location with correct id.
 			return

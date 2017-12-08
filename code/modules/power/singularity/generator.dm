@@ -8,19 +8,14 @@
 	density = 1
 	use_power = 0
 	var/energy = 0
-	var/creation_type = /obj/singularity
 
 /obj/machinery/the_singularitygen/process()
 	var/turf/T = get_turf(src)
 	if(src.energy >= 200)
-		message_admins("A [creation_type] has been created at [x], [y], [z] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>JMP</a>)")
-		investigate_log("A [creation_type] has been created at [x], [y], [z]","singulo")
-
-		var/obj/singularity/S = new creation_type(T, 50)
-		transfer_fingerprints_to(S)
+		new /obj/singularity/(T, 50)
 		if(src) qdel(src)
 
-/obj/machinery/the_singularitygen/attackby(obj/item/W, mob/user, params)
+/obj/machinery/the_singularitygen/attackby(obj/item/W, mob/user)
 	if(istype(W, /obj/item/weapon/wrench))
 		anchored = !anchored
 		playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
@@ -28,7 +23,6 @@
 			user.visible_message("[user.name] secures [src.name] to the floor.", \
 				"You secure the [src.name] to the floor.", \
 				"You hear a ratchet")
-			src.add_hiddenprint(user)
 		else
 			user.visible_message("[user.name] unsecures [src.name] from the floor.", \
 				"You unsecure the [src.name] from the floor.", \

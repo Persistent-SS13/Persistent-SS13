@@ -4,7 +4,7 @@ Changelogs are included with commits as text .yml files created individually by 
 
 TO MAKE A CHANGELOG .YML ENTRRY
 
-1. Make a copy of the file example.yml in html/changelogs and rename it to [YOUR USERNAME]-PR-[YOUR PR NUMBER].yml (the pr and pr number are organizational and can be ignored if you so wish)
+1. Make a copy of the file example.yml in html/changelogs and rename it to [YOUR USERNAME]-PR-[YOUR PR NUMBER].yml or [YOUR USERNAME]-[YOUR BRANCH NAME]. Only the username is strictly required, anything else is organizational and can be ignored if you so wish.
 
 2. Change the author to yourself
 
@@ -16,4 +16,4 @@ TO MAKE A CHANGELOG .YML ENTRRY
 
 #######################################################
 
-If you have trouble ask for help in #codertrain on the Paradise Station IRC.
+If you have trouble ask for help in #codershuttle on irc.sorcery.net or read https://tgstation13.org/wiki/Guide_to_Changelogs

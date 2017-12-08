@@ -4,19 +4,17 @@
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "scroll"
 	var/uses = 4.0
-	w_class = 2
+	w_class = ITEM_SIZE_TINY
 	item_state = "paper"
 	throw_speed = 4
 	throw_range = 20
-	origin_tech = "bluespace=4"
-	burn_state = FLAMMABLE
-
-/obj/item/weapon/teleportation_scroll/apprentice
-	name = "lesser scroll of teleportation"
-	uses = 1
-	origin_tech = "bluespace 2"
+	origin_tech = list(TECH_BLUESPACE = 4)
 
 /obj/item/weapon/teleportation_scroll/attack_self(mob/user as mob)
+	if((user.mind && !wizards.is_antagonist(user.mind)))
+		to_chat(usr, "<span class='warning'>You stare at the scroll but cannot make sense of the markings!</span>")
+		return
+
 	user.set_machine(src)
 	var/dat = "<B>Teleportation Scroll:</B><BR>"
 	dat += "Number of uses: [src.uses]<BR>"
@@ -29,42 +27,32 @@
 	return
 
 /obj/item/weapon/teleportation_scroll/Topic(href, href_list)
-	..()
-	if(usr.stat || usr.restrained() || src.loc != usr)
-		return
-	var/mob/living/carbon/human/H = usr
-	if(!( istype(H, /mob/living/carbon/human)))
+	if(..())
 		return 1
-	if((usr == src.loc || (in_range(src, usr) && istype(src.loc, /turf))))
+	var/mob/living/carbon/human/H = usr
+	if (!( istype(H, /mob/living/carbon/human)))
+		return 1
+	if ((usr == src.loc || (in_range(src, usr) && istype(src.loc, /turf))))
 		usr.set_machine(src)
-		if(href_list["spell_teleport"])
-			if(src.uses >= 1)
+		if (href_list["spell_teleport"])
+			if (src.uses >= 1)
 				teleportscroll(H)
 	attack_self(H)
 	return
 
 /obj/item/weapon/teleportation_scroll/proc/teleportscroll(var/mob/user)
+	var/area/thearea = input(user, "Area to jump to", "BOOYEA") as null|anything in teleportlocs
+	thearea = thearea ? teleportlocs[thearea] : thearea
 
-	var/A
-
-	A = input(user, "Area to jump to", "BOOYEA", A) in teleportlocs
-	var/area/thearea = teleportlocs[A]
-
-	if(user.stat || user.restrained())
-		return
-	if(!((user == loc || (in_range(src, user) && istype(src.loc, /turf)))))
+	if (!thearea || CanUseTopic(user) != STATUS_INTERACTIVE)
 		return
 
-	if(thearea.tele_proof && !istype(thearea, /area/wizard_station))
-		to_chat(user, "A mysterious force disrupts your arcane spell matrix, and you remain where you are.")
-		return
-
-	var/datum/effect/system/harmless_smoke_spread/smoke = new /datum/effect/system/harmless_smoke_spread()
+	var/datum/effect/effect/system/smoke_spread/smoke = new /datum/effect/effect/system/smoke_spread()
 	smoke.set_up(5, 0, user.loc)
 	smoke.attach(user)
 	smoke.start()
 	var/list/L = list()
-	for(var/turf/T in get_area_turfs(thearea.type))
+	for(var/turf/T in get_area_turfs(thearea))
 		if(!T.density)
 			var/clear = 1
 			for(var/obj/O in T)
@@ -93,7 +81,7 @@
 			break
 
 	if(!success)
-		user.loc = pick(L)
+		user.forceMove(pick(L))
 
 	smoke.start()
 	src.uses -= 1

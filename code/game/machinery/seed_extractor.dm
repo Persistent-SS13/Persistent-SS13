@@ -5,35 +5,16 @@
 	icon_state = "sextractor"
 	density = 1
 	anchored = 1
+	use_power = 2
+	idle_power_usage = 10
+	active_power_usage = 2000
 
-/obj/machinery/seed_extractor/New()
-	..()
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/seed_extractor(null)
-	component_parts += new /obj/item/weapon/stock_parts/matter_bin(null)
-	component_parts += new /obj/item/weapon/stock_parts/manipulator(null)
-	RefreshParts()
-
-/obj/machinery/seed_extractor/RefreshParts() //If you want to make the machine upgradable, this is where you would change any vars basd on its stock parts.
-	return
-
-obj/machinery/seed_extractor/attackby(var/obj/item/O as obj, var/mob/user as mob, params)
-
-	if(default_deconstruction_screwdriver(user, "sextractor_open", "sextractor", O))
-		return
-
-	if(exchange_parts(user, O))
-		return
-
-	if(fastenWrench(user, O))
-		return
-
-	default_deconstruction_crowbar(user, O)
+obj/machinery/seed_extractor/attackby(var/obj/item/O as obj, var/mob/user as mob)
 
 	// Fruits and vegetables.
 	if(istype(O, /obj/item/weapon/reagent_containers/food/snacks/grown) || istype(O, /obj/item/weapon/grown))
 
-		user.drop_item(O)
+		user.remove_from_mob(O)
 
 		var/datum/seed/new_seed_type
 		if(istype(O, /obj/item/weapon/grown))
@@ -58,8 +39,13 @@ obj/machinery/seed_extractor/attackby(var/obj/item/O as obj, var/mob/user as mob
 	//Grass.
 	else if(istype(O, /obj/item/stack/tile/grass))
 		var/obj/item/stack/tile/grass/S = O
-		to_chat(user, "<span class='notice'>You extract some seeds from the [S.name].</span>")
-		S.use(1)
-		new /obj/item/seeds/grassseed(loc)
+		if (S.use(1))
+			to_chat(user, "<span class='notice'>You extract some seeds from the grass tile.</span>")
+			new /obj/item/seeds/grassseed(loc)
+
+	else if(istype(O, /obj/item/weapon/fossil/plant)) // Fossils
+		var/obj/item/seeds/random/R = new(get_turf(src))
+		to_chat(user, "\The [src] scans \the [O] and spits out \a [R].")
+		qdel(O)
 
 	return

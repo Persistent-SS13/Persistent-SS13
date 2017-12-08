@@ -4,43 +4,25 @@
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "densecrate"
 	density = 1
-	var/obj/item/weapon/paper/manifest/manifest
+	flags = OBJ_CLIMBABLE
 
-/obj/structure/largecrate/New()
-	..()
-	update_icon()
-
-/obj/structure/largecrate/update_icon()
-	..()
-	overlays.Cut()
-	if(manifest)
-		overlays += "manifest"
+/obj/structure/largecrate/Initialize()
+	. = ..()
+	for(var/obj/I in src.loc)
+		if(I.density || I.anchored || I == src || !I.simulated)
+			continue
+		I.forceMove(src)
 
 /obj/structure/largecrate/attack_hand(mob/user as mob)
-	if(manifest)
-		to_chat(user, "<span class='notice'>You tear the manifest off of the crate.</span>")
-		playsound(src.loc, 'sound/items/poster_ripped.ogg', 75, 1)
-		manifest.forceMove(loc)
-		if(ishuman(user))
-			user.put_in_hands(manifest)
-		manifest = null
-		update_icon()
-		return
-	else
-		to_chat(user, "<span class='notice'>You need a crowbar to pry this open!</span>")
-		return
+	to_chat(user, "<span class='notice'>You need a crowbar to pry this open!</span>")
+	return
 
-/obj/structure/largecrate/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
+/obj/structure/largecrate/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/crowbar))
-		if(manifest)
-			manifest.forceMove(loc)
-			manifest = null
-			update_icon()
-		new /obj/item/stack/sheet/wood(src)
+		new /obj/item/stack/material/wood(src)
 		var/turf/T = get_turf(src)
-		for(var/O in contents)
-			var/atom/movable/A = O
-			A.forceMove(T)
+		for(var/atom/movable/AM in contents)
+			if(AM.simulated) AM.forceMove(T)
 		user.visible_message("<span class='notice'>[user] pries \the [src] open.</span>", \
 							 "<span class='notice'>You pry open \the [src].</span>", \
 							 "<span class='notice'>You hear splitting wood.</span>")
@@ -49,50 +31,58 @@
 		return attack_hand(user)
 
 /obj/structure/largecrate/mule
+	name = "MULE crate"
+
+/obj/structure/largecrate/hoverpod
+	name = "\improper Hoverpod assembly crate"
+	desc = "It comes in a box for the fabricator's sake. Where does the wood come from? ... And why is it lighter?"
 	icon_state = "mulecrate"
 
-/obj/structure/largecrate/lisa
-	icon_state = "lisacrate"
-
-/obj/structure/largecrate/lisa/attackby(obj/item/weapon/W as obj, mob/user as mob)	//ugly but oh well
+/obj/structure/largecrate/hoverpod/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/crowbar))
-		new /mob/living/simple_animal/pet/corgi/Lisa(loc)
+		var/obj/item/mecha_parts/mecha_equipment/ME
+		var/obj/mecha/working/hoverpod/H = new (loc)
+
+		ME = new /obj/item/mecha_parts/mecha_equipment/tool/hydraulic_clamp
+		ME.attach(H)
+		ME = new /obj/item/mecha_parts/mecha_equipment/tool/passenger
+		ME.attach(H)
 	..()
 
-/obj/structure/largecrate/cow
+/obj/structure/largecrate/animal
+	icon_state = "mulecrate"
+	var/held_count = 1
+	var/held_type
+
+/obj/structure/largecrate/animal/New()
+	..()
+	for(var/i = 1;i<=held_count;i++)
+		new held_type(src)
+
+/obj/structure/largecrate/animal/mulebot
+	name = "Mulebot crate"
+	held_type = /mob/living/bot/mulebot
+
+/obj/structure/largecrate/animal/corgi
+	name = "corgi carrier"
+	held_type = /mob/living/simple_animal/corgi
+
+/obj/structure/largecrate/animal/cow
 	name = "cow crate"
-	icon_state = "lisacrate"
+	held_type = /mob/living/simple_animal/cow
 
-/obj/structure/largecrate/cow/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/weapon/crowbar))
-		new /mob/living/simple_animal/cow(loc)
-	..()
-
-/obj/structure/largecrate/goat
+/obj/structure/largecrate/animal/goat
 	name = "goat crate"
-	icon_state = "lisacrate"
+	held_type = /mob/living/simple_animal/hostile/retaliate/goat
 
-/obj/structure/largecrate/goat/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/weapon/crowbar))
-		new /mob/living/simple_animal/hostile/retaliate/goat(loc)
-	..()
+/obj/structure/largecrate/animal/cat
+	name = "cat carrier"
+	held_type = /mob/living/simple_animal/cat
 
-/obj/structure/largecrate/chick
+/obj/structure/largecrate/animal/cat/bones
+	held_type = /mob/living/simple_animal/cat/fluff/bones
+
+/obj/structure/largecrate/animal/chick
 	name = "chicken crate"
-	icon_state = "lisacrate"
-
-/obj/structure/largecrate/chick/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/weapon/crowbar))
-		var/num = rand(4, 6)
-		for(var/i = 0, i < num, i++)
-			new /mob/living/simple_animal/chick(loc)
-	..()
-
-/obj/structure/largecrate/cat
-	name = "cat crate"
-	icon_state = "lisacrate"
-
-/obj/structure/largecrate/cat/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/weapon/crowbar))
-		new /mob/living/simple_animal/pet/cat(loc)
-	..()
+	held_count = 5
+	held_type = /mob/living/simple_animal/chick

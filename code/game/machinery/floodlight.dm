@@ -4,93 +4,103 @@
 	name = "Emergency Floodlight"
 	icon = 'icons/obj/machines/floodlight.dmi'
 	icon_state = "flood00"
-	anchored = 0
 	density = 1
 	var/on = 0
-	var/obj/item/weapon/stock_parts/cell/high/cell = null
-	var/use = 5
+	var/obj/item/weapon/cell/cell = null
+	var/use = 200 // 200W light
 	var/unlocked = 0
 	var/open = 0
-	var/brightness_on = 14
-	light_power = 20
-	//var/brightness_on = 999		//can't remember what the maxed out value is //Lighting overhaul: No max, stop TRYING TO ILLUMINATE MORE TILES THAN THE MAP CONSISTS OF.
+	var/brightness_on = 8		//can't remember what the maxed out value is
 
 /obj/machinery/floodlight/New()
-	src.cell = new(src)
+	cell = new/obj/item/weapon/cell/crap(src)
 	..()
 
-/obj/machinery/floodlight/Destroy()
-	if(cell)
-		qdel(cell)
-		cell = null
-	return ..()
-
-/obj/machinery/floodlight/proc/updateicon()
+/obj/machinery/floodlight/update_icon()
+	overlays.Cut()
 	icon_state = "flood[open ? "o" : ""][open && cell ? "b" : ""]0[on]"
 
 /obj/machinery/floodlight/process()
-	if(on)
-		cell.charge -= use
-		if(cell.charge <= 0)
-			on = 0
-			updateicon()
-			set_light(0)
-			src.visible_message("<span class='warning'>[src] shuts down due to lack of power!</span>")
-			return
+	if(!on)
+		return
+
+	if(!cell || (cell.charge < (use * CELLRATE)))
+		turn_off(1)
+		return
+
+	// If the cell is almost empty rarely "flicker" the light. Aesthetic only.
+	if((cell.percent() < 10) && prob(5))
+		set_light(brightness_on/2, brightness_on/4)
+		spawn(20)
+			if(on)
+				set_light(brightness_on, brightness_on/2)
+
+	cell.use(use*CELLRATE)
+
+
+// Returns 0 on failure and 1 on success
+/obj/machinery/floodlight/proc/turn_on(var/loud = 0)
+	if(!cell)
+		return 0
+	if(cell.charge < (use * CELLRATE))
+		return 0
+
+	on = 1
+	set_light(brightness_on, brightness_on / 2)
+	update_icon()
+	if(loud)
+		visible_message("\The [src] turns on.")
+	return 1
+
+/obj/machinery/floodlight/proc/turn_off(var/loud = 0)
+	on = 0
+	set_light(0, 0)
+	update_icon()
+	if(loud)
+		visible_message("\The [src] shuts down.")
 
 /obj/machinery/floodlight/attack_ai(mob/user as mob)
-	return
+	if(istype(user, /mob/living/silicon/robot) && Adjacent(user))
+		return attack_hand(user)
+
+	if(on)
+		turn_off(1)
+	else
+		if(!turn_on(1))
+			to_chat(user, "You try to turn on \the [src] but it does not work.")
+
 
 /obj/machinery/floodlight/attack_hand(mob/user as mob)
 	if(open && cell)
 		if(ishuman(user))
 			if(!user.get_active_hand())
 				user.put_in_hands(cell)
+				cell.loc = user.loc
 		else
 			cell.loc = loc
 
 		cell.add_fingerprint(user)
-		cell.updateicon()
+		cell.update_icon()
 
 		src.cell = null
+		on = 0
+		set_light(0)
 		to_chat(user, "You remove the power cell")
-		updateicon()
+		update_icon()
 		return
 
 	if(on)
-		on = 0
-		to_chat(user, "\blue You turn off the light")
-		set_light(0)
+		turn_off(1)
 	else
-		if(!cell)
-			return
-		if(cell.charge <= 0)
-			return
-		on = 1
-		to_chat(user, "\blue You turn on the light")
-		set_light(brightness_on)
+		if(!turn_on(1))
+			to_chat(user, "You try to turn on \the [src] but it does not work.")
 
-	updateicon()
+	update_icon()
 
 
-/obj/machinery/floodlight/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/weapon/wrench))
-		if(!anchored && !isinspace())
-			playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
-			user.visible_message( \
-				"[user] tightens \the [src]'s casters.", \
-				"<span class='notice'> You have tightened \the [src]'s casters.</span>", \
-				"You hear ratchet.")
-			anchored = 1
-		else if(anchored)
-			playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
-			user.visible_message( \
-				"[user] loosens \the [src]'s casters.", \
-				"<span class='notice'> You have loosened \the [src]'s casters.</span>", \
-				"You hear ratchet.")
-			anchored = 0
-	if(istype(W, /obj/item/weapon/screwdriver))
-		if(!open)
+/obj/machinery/floodlight/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if (istype(W, /obj/item/weapon/screwdriver))
+		if (!open)
 			if(unlocked)
 				unlocked = 0
 				to_chat(user, "You screw the battery panel in place.")
@@ -98,7 +108,7 @@
 				unlocked = 1
 				to_chat(user, "You unscrew the battery panel.")
 
-	if(istype(W, /obj/item/weapon/crowbar))
+	if (istype(W, /obj/item/weapon/crowbar))
 		if(unlocked)
 			if(open)
 				open = 0
@@ -109,7 +119,7 @@
 					open = 1
 					to_chat(user, "You remove the battery panel.")
 
-	if(istype(W, /obj/item/weapon/stock_parts/cell))
+	if (istype(W, /obj/item/weapon/cell))
 		if(open)
 			if(cell)
 				to_chat(user, "There is a power cell already installed.")
@@ -118,4 +128,4 @@
 				W.loc = src
 				cell = W
 				to_chat(user, "You insert the power cell.")
-	updateicon()
+	update_icon()

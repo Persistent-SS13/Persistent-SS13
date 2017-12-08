@@ -22,8 +22,8 @@
 
 /proc/ToRban_update()
 	spawn(0)
-		diary << "Downloading updated ToR data..."
-		var/http[] = world.Export("http://exitlist.torproject.org/exit-addresses")
+		log_misc("Downloading updated ToR data...")
+		var/http[] = world.Export("https://check.torproject.org/exit-addresses")
 
 		var/list/rawlist = file2list(http["CONTENT"])
 		if(rawlist.len)
@@ -35,12 +35,11 @@
 					var/cleaned = copytext(line,13,length(line)-19)
 					if(!cleaned)	continue
 					F[cleaned] << 1
-			to_chat(F["last_update"], world.realtime)
-			diary << "ToR data updated!"
-			if(usr)
-				to_chat(usr, "ToRban updated.")
+			F["last_update"] << world.realtime
+			log_misc("ToR data updated!")
+			if(usr)	to_chat(usr, "ToRban updated.")
 			return 1
-		diary << "ToR data update aborted: no data."
+		log_misc("ToR data update aborted: no data.")
 		return 0
 
 /client/proc/ToRban(task in list("update","toggle","show","remove","remove all","find"))

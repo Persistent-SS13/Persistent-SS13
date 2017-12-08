@@ -9,7 +9,7 @@
 
 /datum/event/pda_spam/proc/pick_message_server()
 	if(message_servers)
-		for(var/obj/machinery/message_server/MS in message_servers)
+		for (var/obj/machinery/message_server/MS in message_servers)
 			if(MS.active)
 				useMS = MS
 				break
@@ -27,18 +27,16 @@
 	if(useMS)
 		if(prob(5))
 			// /obj/machinery/message_server/proc/send_pda_message(var/recipient = "",var/sender = "",var/message = "")
+			var/obj/item/device/pda/P
 			var/list/viables = list()
-			for(var/obj/item/device/pda/check_pda in PDAs)
-				var/datum/data/pda/app/messenger/check_m = check_pda.find_program(/datum/data/pda/app/messenger)
-
-				if(!check_m || !check_m.can_receive())
+			for(var/obj/item/device/pda/check_pda in sortAtom(PDAs))
+				if (!check_pda.owner||check_pda.toff||check_pda == src||check_pda.hidden)
 					continue
 				viables.Add(check_pda)
 
 			if(!viables.len)
 				return
-			var/obj/item/device/pda/P = pick(viables)
-			var/datum/data/pda/app/messenger/PM = P.find_program(/datum/data/pda/app/messenger)
+			P = pick(viables)
 
 			var/sender
 			var/message
@@ -60,14 +58,14 @@
 					sender = pick("Galactic Payments Association","Better Business Bureau","Nyx E-Payments","NAnoTransen Finance Deparmtent","Luxury Replicas")
 					message = pick("Luxury watches for Blowout sale prices!",\
 					"Watches, Jewelry & Accessories, Bags & Wallets !",\
-					"Deposit 100$ and get 300$ totally free!",\
-					" 100K NT.|WOWGOLD ?nly $89            <HOT>",\
+					"Deposit T100 and get T300 totally free!",\
+					" 100K NT.|WOWGOLD õnly T89            <HOT>",\
 					"We have been filed with a complaint from one of your customers in respect of their business relations with you.",\
 					"We kindly ask you to open the COMPLAINT REPORT (attached) to reply on this complaint..")
 				if(4)
 					sender = pick("Buy Dr. Maxman","Having dysfuctional troubles?")
 					message = pick("DR MAXMAN: REAL Doctors, REAL Science, REAL Results!",\
-					"Dr. Maxman was created by George Acuilar, M.D, a CentComm Certified Urologist who has treated over 70,000 patients sector wide with 'male problems'.",\
+					"Dr. Maxman was created by George Acuilar, M.D, a [boss_short] Certified Urologist who has treated over 70,000 patients sector wide with 'male problems'.",\
 					"After seven years of research, Dr Acuilar and his team came up with this simple breakthrough male enhancement formula.",\
 					"Men of all species report AMAZING increases in length, width and stamina.")
 				if(5)
@@ -80,11 +78,11 @@
 					"Due to my lack of agents I require an off-world financial account to immediately deposit the sum of 1 POINT FIVE MILLION credits.",\
 					"Greetings sir, I regretfully to inform you that as I lay dying here due to my lack ofheirs I have chosen you to recieve the full sum of my lifetime savings of 1.5 billion credits")
 				if(6)
-					sender = pick("NanoTrasen Morale Divison","Feeling Lonely?","Bored?","www.wetskrell.nt")
-					message = pick("The NanoTrasen Morale Division wishes to provide you with quality entertainment sites.",\
+					sender = pick("[company_name] Morale Divison","Feeling Lonely?","Bored?","www.wetskrell.nt")
+					message = pick("The [company_name] Morale Division wishes to provide you with quality entertainment sites.",\
 					"WetSkrell.nt is a xenophillic website endorsed by NT for the use of male crewmembers among it's many stations and outposts.",\
-					"Wetskrell.nt only provides the higest quality of male entertaiment to NanoTrasen Employees.",\
-					"Simply enter your NanoTrasen Bank account system number and pin. With three easy steps this service could be yours!")
+					"Wetskrell.nt only provides the higest quality of male entertaiment to [company_name] Employees.",\
+					"Simply enter your [company_name] Bank account system number and pin. With three easy steps this service could be yours!")
 				if(7)
 					sender = pick("You have won free tickets!","Click here to claim your prize!","You are the 1000th vistor!","You are our lucky grand prize winner!")
 					message = pick("You have won tickets to the newest ACTION JAXSON MOVIE!",\
@@ -92,15 +90,31 @@
 					"You have won tickets to the newest romantic comedy 16 RULES OF LOVE!",\
 					"You have won tickets to the newest thriller THE CULT OF THE SLEEPING ONE!")
 
-			if(useMS.send_pda_message("[P.owner]", sender, message))	//Message been filtered by spam filter.
+			if (useMS.send_pda_message("[P.owner]", sender, message))	//Message been filtered by spam filter.
 				return
 
 			last_spam_time = world.time
 
-			if(prob(50)) //Give the AI an increased chance to intercept the message
+			if (prob(50)) //Give the AI an increased chance to intercept the message
 				for(var/mob/living/silicon/ai/ai in mob_list)
 					// Allows other AIs to intercept the message but the AI won't intercept their own message.
 					if(ai.aiPDA != P && ai.aiPDA != src)
 						ai.show_message("<i>Intercepted message from <b>[sender]</b></i> (Unknown / spam?) <i>to <b>[P:owner]</b>: [message]</i>")
 
-			PM.notify("<b>Message from [sender] (Unknown / spam?), </b>\"[message]\" (Unable to Reply)", 0)
+			//Commented out because we don't send messages like this anymore.  Instead it will just popup in their chat window.
+			//P.tnote += "<i><b>&larr; From [sender] (Unknown / spam?):</b></i><br>[message]<br>"
+
+			if (!P.message_silent)
+				playsound(P.loc, 'sound/machines/twobeep.ogg', 50, 1)
+			for (var/mob/O in hearers(3, P.loc))
+				if(!P.message_silent) O.show_message(text("\icon[P] *[P.ttone]*"))
+			//Search for holder of the PDA.
+			var/mob/living/L = null
+			if(P.loc && isliving(P.loc))
+				L = P.loc
+			//Maybe they are a pAI!
+			else
+				L = get(P, /mob/living/silicon)
+
+			if(L)
+				to_chat(L, "\icon[P] <b>Message from [sender] (Unknown / spam?), </b>\"[message]\" (Unable to Reply)")

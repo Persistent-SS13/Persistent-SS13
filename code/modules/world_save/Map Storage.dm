@@ -331,8 +331,7 @@ map_storage
 		list/existing_references = list()
 		list/saving_references = list()
 		list/all_loaded = list()
-		list/datum_reference = list()
-		list/dtm_references = list()
+		list/found_types = list()
 		var/per_pause = 200
 		var/so_far = 0
 	New(game_id, backdoor, ignore)
@@ -485,10 +484,13 @@ map_storage
 			var/final_params = list2params(content_refs)
 			savefile.cd = "/entries/[ref]"
 			savefile["content"] = final_params
-
-		// Add any variables changed and their associated values to a list called changed_vars.
-		var/list/changed_vars = list()
-		var/list/changing_vars = A.get_saved_vars()
+		var/list/changing_vars
+		if(found_types.Find(A.type))
+			changing_vars = found_types[A.type]
+		else
+			changing_vars = A.get_saved_vars()
+			found_types["[A.type]"] = changing_vars
+		
 		var/list/old_vars = params2list(A.map_storage_saved_vars)
 		var/list/safe_lists = params2list(A.safe_list_vars)
 		if(istype(A, /atom/movable))
@@ -497,8 +499,12 @@ map_storage
 				changing_vars += "reagents"
 				changing_vars += "air_contents"
 		for(var/v in changing_vars)
+			if(!old_vars.Find(v))
+				message_admins("added var?:|[v]| 1")
 			savefile.cd = "/entries/[ref]"
 			if(A.vars.Find(v))
+				if(!old_vars.Find(v))
+					message_admins("added var?:|[v]| 2")
 				if(istype(A.vars[v], /obj))
 					var/atom/movable/varob = A.vars[v]
 					var/conparams = BuildVarDirectory(savefile, varob, 1)
@@ -588,6 +594,7 @@ map_storage
 		var/ckey = ""
 		saving_references = list()
 		existing_references = list()
+		found_types = list()
 		var/mob/current
 		if(!H)
 			message_admins("trying to save char without mind")
@@ -627,6 +634,7 @@ map_storage
 		message_admins("Load_Records ran!")
 		all_loaded = list()
 		existing_references = list()
+		found_types = list()
 		all_loaded = list()
 		if(!search)
 			return
@@ -684,7 +692,7 @@ map_storage
 			return
 		all_loaded = list()
 		existing_references = list()
-		all_loaded = list()
+		found_types = list()
 		var/savefile/savefile = new("char_saves/[ckey]/[slot].sav")
 		savefile.cd = "/data"
 		var/bodyind = savefile["body"]
@@ -734,6 +742,7 @@ map_storage
 		so_far = 0
 		all_loaded = list()
 		existing_references = list()
+		found_types = list()
 		all_loaded = list()
 		var/savefile/savefile = new("char_saves/[ckey]/[slot].sav")
 		savefile.cd = "/data"
@@ -829,6 +838,7 @@ map_storage
 			return 0
 		saving_references = list()
 		existing_references = list()
+		found_types = list()
 		// ***** MAP SECTION *****
 		for(var/A in areas)
 			for(var/turf/turf in get_area_turfs(A))
@@ -845,6 +855,7 @@ map_storage
 		for(var/A in areas)
 			saving_references = list()
 			existing_references = list()
+			found_types = list()
 			var/B = replacetext("[A]", "/", "-")
 			if(fexists("map_saves/[B].sav"))
 				var/savefile/sav = new("map_saves/[B].sav")
@@ -886,6 +897,7 @@ map_storage
 	proc/Save_Chunk(tx, ty, z)
 		saving_references = list()
 		existing_references = list()
+		found_types = list()
 		tx = tx + 1 - tx % 15
 		ty = ty + 1 - ty % 15
 		for(var/x = tx, x < tx + 15, x++)

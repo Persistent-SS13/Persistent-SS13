@@ -768,3 +768,11 @@
 	materials = list(MAT_METAL = 750, MAT_GLASS = 300)
 	build_path = /obj/item/clothing/glasses/welding
 	category = list("initial","Construction")
+
+/datum/design/airlock_board/keypad
+	name = "Airlock Keypad Electronics"
+	id = "airlock_board_keypad"
+	build_type = AUTOLATHE
+	materials = list(MAT_METAL = 50, MAT_GLASS = 50)
+	build_path = /obj/item/weapon/airlock_electronics/keypad_electronics
+	category = list("initial", "Electronics")

@@ -504,7 +504,7 @@
 	can_hold = list("/obj/item/slime_extract","/obj/item/weapon/reagent_containers/food/snacks/monkeycube","/obj/item/weapon/reagent_containers/syringe","/obj/item/weapon/reagent_containers/glass/beaker","/obj/item/weapon/reagent_containers/glass/bottle","/obj/item/weapon/reagent_containers/blood","/obj/item/weapon/reagent_containers/hypospray/autoinjector")
 	burn_state = FLAMMABLE
 	
-/obj/item/weapon/reagent_containers/food/snacks/monkeycube/afterattack(obj/O, mob/user, proximity)
+/obj/item/weapon/storage/bag/bio/afterattack(obj/O, mob/user, proximity)
 	if(!proximity) return
 		if(istype(O, /obj/machinery/computer/camera_advanced/xenobio))
 		var/obj/machinery/computer/camera_advanced/xenobio/X = O

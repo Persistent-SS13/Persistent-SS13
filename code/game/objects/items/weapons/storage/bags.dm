@@ -503,3 +503,18 @@
 	w_class = 1
 	can_hold = list("/obj/item/slime_extract","/obj/item/weapon/reagent_containers/food/snacks/monkeycube","/obj/item/weapon/reagent_containers/syringe","/obj/item/weapon/reagent_containers/glass/beaker","/obj/item/weapon/reagent_containers/glass/bottle","/obj/item/weapon/reagent_containers/blood","/obj/item/weapon/reagent_containers/hypospray/autoinjector")
 	burn_state = FLAMMABLE
+	
+/obj/item/weapon/storage/bag/bio/afterattack(obj/O, mob/user, proximity)
+	if(!proximity) return
+		if(istype(O, /obj/machinery/computer/camera_advanced/xenobio))
+		var/obj/machinery/computer/camera_advanced/xenobio/X = O
+		var/loaded = 0
+		for(var/obj/G in P.contents)
+			if(istype(G, /obj/item/reagent_containers/food/snacks/monkeycube))
+				loaded = 1
+				monkeys++
+				qdel(G)
+		if (loaded)
+			to_chat(user, "<span class='notice'>You fill [src] with the monkey cubes stored in [O]. [src] now has [monkeys] monkey cubes stored.</span>")
+		return
+	..()

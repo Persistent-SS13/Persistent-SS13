@@ -6,7 +6,7 @@ Persistent SS13 is a persistent station based on paradise code.
 ### Paradise
 [Website](http://www.nanotrasen.se/) - [Code](https://github.com/ParadiseSS13/Paradise) - [IRC](http://www.nanotrasen.se/phpBB3/viewtopic.php?f=10&t=1113)
 
----
+---za
 
 
 ### INSTALLATION
